@@ -1,0 +1,24 @@
+{
+  "name": "Roze — Assistante Réseaux Sociaux",
+  "short_name": "Roze",
+  "description": "Ton assistante réseaux sociaux personnalisée",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#E8186D",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

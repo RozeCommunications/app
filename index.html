@@ -2005,12 +2005,27 @@ function fermerStreakModal(){
 
 async function enrSemaine(){
   if(!CFG.as){ toast('⚙️ Configure l\'URL Apps Script dans Mon Compte','err'); return; }
-  const d={action:'enregistrer_semaine',anecdote:v('q1'),retourClient:v('q2'),freinEntendu:v('q3'),observation:v('q4'),fierte:v('q5'),offreSemaine:v('q6'),photoDisponible:v('q7'),sujetLibre:v('q8')};
+  const d={
+    action: 'enregistrer_semaine',
+    semaine: getSemaineCourante(),
+    ia:      CFG.ia || 'claude',
+    cle_ia:  CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+    questions: {
+      q1:v('q1'), q2:v('q2'), q3:v('q3'), q4:v('q4'),
+      q5:v('q5'), q6:v('q6'), q7:v('q7'), q8:v('q8')
+    }
+  };
   try{
     const r=await fetch(CFG.as,{method:'POST',body:JSON.stringify(d)});
     const j=await r.json();
-    if(j.succes){ calculerEtMajStreak(); const lundi=lundiSem(new Date()); localStorage.setItem('roze_sem_'+lundi.toISOString().split('T')[0],'1'); majAccueil(); toast('✅ Semaine enregistrée !','ok'); }
-    else toast('❌ '+(j.erreur||'Erreur'),'err');
+    if(j.succes){
+      calculerEtMajStreak();
+      const lundi=lundiSem(new Date());
+      localStorage.setItem('roze_sem_'+lundi.toISOString().split('T')[0],'1');
+      majAccueil();
+      viderDraft();
+      toast('✅ Semaine enregistrée — mémoire IA mise à jour !','ok');
+    } else toast('❌ '+(j.erreur||'Erreur'),'err');
   }catch{ toast('❌ Impossible de joindre Google Sheets','err'); }
 }
 
@@ -2844,7 +2859,14 @@ RÈGLES COPYWRITING LINKEDIN (méthode Thibault Louis) — OBLIGATOIRES :
 6. Tutoiement ou vouvoiement : respecter strictement le profil du client.
 7. CTA final : 1 phrase simple et directe. Pas de "N'hésitez pas à..." ou "Je serais ravi de...".
 8. Le post fait 150 à 220 mots maximum (LinkedIn pénalise au-delà).
-9. Le post doit sembler écrit par un humain, pas par une IA.`;
+9. Le post doit sembler écrit par un humain, pas par une IA.
+
+EXIGENCES D'HUMANITÉ — NON NÉGOCIABLES :
+- Ancre le post dans un fait réel issu de la matière de la semaine (anecdote, retour client, observation)
+- Utilise des détails concrets et spécifiques — jamais de généralités
+- La voix doit correspondre exactement à la personne décrite dans le profil
+- Évite tout ce qui semble "template" : reformule chaque phrase pour qu'elle soit unique
+- Si la matière de la semaine est vide, invente RIEN — base-toi uniquement sur le profil`;
 
   const templ = {
     'Post texte': `${base}${mat}${anti}${sujetBloc}${actuBloc}${q8Bloc}
@@ -2871,10 +2893,20 @@ PILIER SÉLECTIONNÉ : ${pilier||'expertise'}
 ${hook}
 
 Génère un CARROUSEL ${reseau} (format 1080x1440px, ratio 3:4).
-La slide 1 (hook) doit utiliser le hook défini ci-dessus.
-Si une photo est disponible cette semaine (Q7), intègre-la dans la slide 1 ou la slide CTA.
+La slide 1 utilise le hook défini ci-dessus — ancré dans une réalité vécue ou une donnée surprenante.
+Si une photo est disponible (Q7), intègre-la dans la slide 1 ou le CTA.
 
-Réponds UNIQUEMENT avec ce JSON valide, sans texte avant ni après :
+EXIGENCES QUALITÉ :
+- Chaque slide parle à UNE personne réelle, pas à "les professionnels"
+- Les titres sont directs, concrets, jamais génériques ni lisses
+- Le corps de chaque slide est une phrase courte et actionnable
+- Le CTA final est personnel et chaleureux, pas commercial
+- Le tout sonne comme si la personne l'avait écrit elle-même
+
+RÈGLE ABSOLUE : réponds UNIQUEMENT avec le JSON brut ci-dessous.
+Aucun texte avant, aucun texte après, aucune balise markdown, aucun \`\`\`json.
+Commence directement par { et termine par }.
+
 {
   "slides": [
     {"num": 1, "type": "hook", "titre": "...", "sousTitre": "...", "corps": ""},
@@ -2885,13 +2917,13 @@ Réponds UNIQUEMENT avec ce JSON valide, sans texte avant ni après :
     {"num": 6, "type": "contenu", "titre": "...", "sousTitre": "", "corps": "..."},
     {"num": 7, "type": "cta", "titre": "...", "sousTitre": "...", "corps": "..."}
   ],
-  "legende": "légende complète avec hashtags (max 5 pour Instagram, 3 pour LinkedIn)"
+  "legende": "légende humaine et directe avec hashtags (max 5 Instagram, 3 LinkedIn)"
 }
 Règles slides :
-- Slide 1 : titre hook max 8 mots (percutant), sous-titre max 12 mots, corps vide
-- Slides 2-6 : titre court max 6 mots, corps max 25 mots, une idée par slide
-- Slide 7 : CTA direct avec mot-clé DM si disponible dans le profil
-- Espace vide = lisibilité — jamais de slide surchargée`,
+- Slide 1 : titre hook max 8 mots, sous-titre max 12 mots, corps vide
+- Slides 2-6 : titre max 6 mots, corps max 25 mots, une seule idée par slide
+- Slide 7 : CTA chaleureux avec mot-clé DM si présent dans le profil
+- Pas de slide surchargée — l'espace vide est un outil de lecture`,
 
     'Vidéo': `${base}${mat}${anti}${sujetBloc}${actuBloc}${q8Bloc}
 PILIER SÉLECTIONNÉ : ${pilier||'expertise'}
@@ -3047,34 +3079,51 @@ async function appelClaude(prompt){
 
 function splitTexteLegende(texte){
   if(!texte) return {texte:'', legende:''};
-  const t = texte.trim();
 
-  // Tentative extraction JSON carrousel (peut être entouré de texte parasite)
-  const jsonStart = t.indexOf('{"slides"');
-  const jsonStart2 = t.indexOf('{ "slides"');
-  const jIdx = jsonStart > -1 ? jsonStart : jsonStart2;
+  // Nettoyer les balises markdown ```json ... ``` si présentes
+  let t = texte.trim();
+  t = t.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/,'').trim();
+
+  // Tentative extraction JSON carrousel
+  // Chercher { "slides" ou {"slides" n'importe où dans le texte
+  const patterns = ['{"slides"', '{ "slides"', '{\n  "slides"', '{\n"slides"'];
+  let jIdx = -1;
+  for(const p of patterns){
+    const i = t.indexOf(p);
+    if(i > -1){ jIdx = i; break; }
+  }
+
   if(jIdx > -1){
     try{
       // Trouver l'accolade fermante correspondante
-      let depth = 0, end = -1;
+      let depth = 0, endIdx = -1;
       for(let i=jIdx; i<t.length; i++){
         if(t[i]==='{') depth++;
-        else if(t[i]==='}') { depth--; if(depth===0){ end=i; break; } }
+        else if(t[i]==='}') { depth--; if(depth===0){ endIdx=i; break; } }
       }
-      if(end > -1){
-        const jsonStr = t.slice(jIdx, end+1);
+      if(endIdx > -1){
+        const jsonStr = t.slice(jIdx, endIdx+1);
         const data = JSON.parse(jsonStr);
         if(data.slides && Array.isArray(data.slides) && data.slides.length > 0){
           return { texte:t, legende:data.legende||'', isCarrousel:true, slides:data.slides };
         }
       }
-    }catch(e){}
+    }catch(e){
+      // JSON malformé — tenter nettoyage agressif
+      try{
+        const jsonStr = t.slice(jIdx).replace(/,\s*([}\]])/g,'$1');
+        const data = JSON.parse(jsonStr);
+        if(data.slides && Array.isArray(data.slides)){
+          return { texte:t, legende:data.legende||'', isCarrousel:true, slides:data.slides };
+        }
+      }catch(e2){}
+    }
   }
 
   // Légende séparée par marqueur
-  const idx = texte.indexOf('LÉGENDE:');
+  const idx = t.indexOf('LÉGENDE:');
   if(idx===-1) return {texte:t, legende:''};
-  return {texte:texte.slice(0,idx).trim(), legende:texte.slice(idx+8).trim()};
+  return {texte:t.slice(0,idx).trim(), legende:t.slice(idx+8).trim()};
 }
 
 function lireRythme(){
@@ -3115,7 +3164,6 @@ async function genUnPost(){
   const reseau    = getGenReseau();
   const format    = getGenFormat();
   const sujet     = document.getElementById('gen-sujet').value.trim();
-  const avecActu  = document.getElementById('cb-actu').checked;
   const datePub   = document.getElementById('gen-date').value || dateAujourdhui();
 
   const inlineLoader    = document.getElementById('gen-inline-loader');
@@ -3134,31 +3182,27 @@ async function genUnPost(){
   if(btnGen) btnGen.disabled=true;
 
   try{
-    const [profil, modeles] = await Promise.all([lireMd(), lireFichierModeles()]);
-    const profilComplet = profil + (modeles ? '\n\n---\nMODÈLES ÉDITORIAUX ROZE (à respecter) :\n' + modeles : '');
-    const mat    = matiereSemaine();
-    // Si pilier Visibilité sans actu : déclencher recherche auto
-    let actuFinal = actuTexte;
-    if(genPilier === 'visibilite' && !actuFinal && getCleAPI()){
-      try{
-        const refs = lsJ('roze_references')||[];
-        const q = refs.length
-          ? 'actualités récentes '+refs[0]+' '+new Date().getFullYear()
-          : 'actualités tendances '+new Date().getFullYear();
-        const wr = await fetch('https://api.anthropic.com/v1/messages',{
-          method:'POST',
-          headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-          body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:'Recherche web : "'+q+'". Résume en 2-3 phrases les infos les plus récentes. Uniquement le résumé.'}]})
-        });
-        const wd = await wr.json();
-        actuFinal = (wd.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
-      }catch(e){}
-    }
-    const actu = (avecActu && actuTexte) || actuFinal
-      ? `\n\nACTUALITÉ RÉCENTE DU SECTEUR (intègre-la naturellement) :\n${avecActu&&actuTexte?actuTexte:actuFinal}` : '';
-    const pilierBloc = getGenPilierBloc();
-    const prompt = promptPost(reseau, format, profilComplet, mat, sujet, actu + pilierBloc, genPilier||'autre');
-    const texte  = await appelIA(prompt);
+    const mat = matiereSemaine();
+
+    // Envoi vers Apps Script — la génération se fait côté serveur
+    const body = {
+      action:  'generer_post',
+      ia:      CFG.ia || 'claude',
+      cle_ia:  CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+      reseau,
+      format,
+      pilier:  genPilier || 'autorite',
+      sujet,
+      matiere: mat,
+    };
+
+    const r = await fetch(CFG.as, {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+    const j = await r.json();
+    if(j.erreur) throw new Error(j.erreur);
+    const texte = j.texte || '';
 
     inlineLoader.classList.remove('on');
     if(btnGen) btnGen.disabled=false;
@@ -3168,7 +3212,6 @@ async function genUnPost(){
     const t = parsed.isCarrousel ? texte : parsed.texte;
 
     if(parsed.isCarrousel){
-      // Afficher le viewer carrousel
       document.getElementById('lbl-gen-texte').style.display='block';
       document.getElementById('lbl-gen-texte').textContent='Aperçu carrousel';
       result.textContent='';
@@ -3181,7 +3224,6 @@ async function genUnPost(){
       legZone.classList.add('on');
       actions.style.display='flex';
     } else {
-      // Afficher résultat texte classique
       result.textContent = t;
       result.classList.add('on');
       document.getElementById('lbl-gen-texte').style.display='block';
@@ -3191,26 +3233,22 @@ async function genUnPost(){
       actions.style.display='flex';
     }
 
-    // Stocker pour sauvegarde
     result.dataset.date   = datePub;
     result.dataset.reseau = reseau;
     result.dataset.format = format;
     result.dataset.isCarrousel = parsed.isCarrousel ? '1' : '0';
     if(parsed.isCarrousel) result.dataset.slides = JSON.stringify(parsed.slides);
 
-    // Reset actu
-    actuTexte='';
-    document.getElementById('cb-actu').checked=false;
-    document.getElementById('actu-result').classList.remove('on');
     toast('✅ Post généré !','ok');
 
   }catch(e){
     inlineLoader.classList.remove('on');
     if(btnGen) btnGen.disabled=false;
-    toast(traduireErreurIA(e),'err');
+    toast('❌ Erreur : ' + e.message,'err');
     return;
   }
 }
+
 
 async function regenLegendePaneau(){
   if(!verifierCleIA()) return;
@@ -3278,46 +3316,58 @@ function copierGenPanel(){
 
 async function genSemaine(){
   if(!verifierCleIA()) return;
-  const posts = lireRythme(); // inclut les Stories si IG actif
+  const posts = lireRythme();
   if(!posts.length){ toast('⚠️ Aucun contenu à générer — vérifie Mon Compte','err'); return; }
 
-  const loader=document.getElementById('loader'); const zoneRes=document.getElementById('zone-res');
+  const loader=document.getElementById('loader');
+  const zoneRes=document.getElementById('zone-res');
   loader.classList.add('on'); zoneRes.innerHTML='';
   toast('⏳ Génération de la semaine en cours…','ok');
 
   try{
-    const [profil, modeles] = await Promise.all([lireMd(), lireFichierModeles()]);
-    const profilComplet = profil + (modeles ? '\n\n---\nMODÈLES ÉDITORIAUX ROZE :\n' + modeles : '');
     const mat = matiereSemaine();
-    // Distribution automatique sur les jours de la semaine
     const lundi = lundiSem(new Date());
     const jours = Array.from({length:7},(_,i)=>{ const d=new Date(lundi.getTime()+i*86400000); return d.toISOString().split('T')[0]; });
-    const resultats = [];
 
-    for(let i=0;i<posts.length;i++){
-      const p = posts[i];
-      const prompt = promptPost(p.reseau,p.typeContenu,profilComplet,mat,'','',p.pilier||'autre');
-      const texte = await appelIA(prompt);
-      const _parsed = splitTexteLegende(texte);
-      const {legende:l} = _parsed;
-      const t = _parsed.isCarrousel ? texte : _parsed.texte;
+    const body = {
+      action:   'generer_semaine',
+      ia:       CFG.ia || 'claude',
+      cle_ia:   CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+      posts:    posts,
+      matiere:  mat,
+    };
+
+    const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
+    const j = await r.json();
+    if(j.erreur) throw new Error(j.erreur);
+
+    const resultats = j.resultats || [];
+
+    // Sauvegarder chaque post
+    for(let i=0;i<resultats.length;i++){
+      const res = resultats[i];
+      const parsed = splitTexteLegende(res.texte||'');
+      const {legende:l} = parsed;
+      const t = parsed.isCarrousel ? res.texte : parsed.texte;
       const date = jours[i % jours.length];
       const id = Date.now()+i;
-      await sauvegarderEtSyncPost({id,reseau:p.reseau,typeContenu:p.typeContenu,texte:t,legende:l,date,dateAffiche:new Date(date+'T12:00:00').toLocaleDateString('fr-FR'),statut:'À relire'});
-      resultats.push({label:`${p.reseau} · ${p.typeContenu}`,texte:t,legende:l,id});
+      await sauvegarderEtSyncPost({id, reseau:res.reseau, typeContenu:res.typeContenu, texte:t, legende:l, date,
+        dateAffiche:new Date(date+'T12:00:00').toLocaleDateString('fr-FR'), statut:'À relire'});
+      resultats[i] = {...res, texte:t, legende:l, id,
+        label:`${res.reseau} · ${res.typeContenu}`,
+        isCarrousel: parsed.isCarrousel, slides: parsed.slides};
     }
 
     loader.classList.remove('on');
-    // Enrichir les résultats avec isCarrousel si besoin
-    const resultatsEnrichis = resultats.map(r => {
-      const parsed = splitTexteLegende(r.texte||'');
-      if(parsed.isCarrousel) return {...r, isCarrousel:true, slides:parsed.slides, legende:parsed.legende||r.legende};
-      return r;
-    });
-    afficherRes(resultatsEnrichis);
+    afficherRes(resultats);
     toast(`✅ ${resultats.length} contenus générés et planifiés !`,'ok');
-  }catch(e){ loader.classList.remove('on'); toast(traduireErreurIA(e),'err'); }
+
+  }catch(e){
+    loader.classList.remove('on');
+    toast('❌ Erreur : ' + e.message,'err');
+  }
 }
+
 
 function afficherRes(resultats){
   const zone = document.getElementById('zone-res'); zone.innerHTML='';

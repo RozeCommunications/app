@@ -17,8 +17,63 @@
       --li-glow:rgba(0,119,181,.18);--ig-glow:rgba(232,24,109,.18);
       --noir:#111;--anthracite:#1a1a1a;--gris-fonce:#222;--gris-carte:#2a2a2a;
       --gris-moyen:#333;--gris-input:#2e2e2e;--gris-border:#3a3a3a;--gris-clair:#aaaaaa;
-      --blanc:#fff;--blanc-doux:#f0f0f0;--succes:#2ecc71;
+      --blanc:#fff;--blanc-doux:#f0f0f0;--succes:#2ecc71;--texte-sec:#cccccc;
       --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
+    }
+
+    /* ══ THÈME LIGHT ══ */
+    [data-theme="light"]{
+      --noir:#f5f3f0;
+      --anthracite:#edeae6;
+      --gris-fonce:#e4e0db;
+      --gris-carte:#ffffff;
+      --gris-moyen:#d8d4cf;
+      --gris-input:#f0ede9;
+      --gris-border:#ddd9d4;
+      --gris-clair:#6b6560;
+      --blanc:#1a1714;
+      --blanc-doux:#2d2926;
+      --texte-sec:#5a5552;
+      --rose-glow:rgba(232,24,109,.12);
+    }
+    [data-theme="light"] body{
+      background:linear-gradient(160deg,#f8f6f3 0%,#f0ede9 50%,#ede8e3 100%);
+    }
+    [data-theme="light"] header{
+      background:rgba(248,246,243,.92);
+      border-bottom:1px solid rgba(232,24,109,.12);
+    }
+    [data-theme="light"] .pc-encart::before{
+      background:linear-gradient(135deg,rgba(232,24,109,.2) 0%,rgba(255,255,255,.6) 100%);
+    }
+    [data-theme="light"] .cta-semaine{
+      background:linear-gradient(135deg,#c0125a,#e8186d);
+    }
+    [data-theme="light"] .sq-nok{
+      background:#1a1714;
+      color:#fff;
+    }
+    [data-theme="light"] .sq-ok{
+      background:rgba(46,204,113,.15);
+      color:#1a7a46;
+      border:1px solid rgba(46,204,113,.3);
+    }
+    [data-theme="light"] .streak-bar{
+      background:#fff;
+      border:1px solid var(--gris-border);
+    }
+    [data-theme="light"] .sem-mini{
+      background:#fff;
+      border:1px solid var(--gris-border);
+    }
+    [data-theme="light"] .tab{
+      background:rgba(0,0,0,.04);
+      color:var(--gris-clair);
+    }
+    [data-theme="light"] .tab.on{
+      background:#fff;
+      color:var(--blanc);
+      box-shadow:0 1px 4px rgba(0,0,0,.1);
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
     html{height:100%;}
@@ -27,6 +82,7 @@
     /* ─ HEADER ─ */
     header{background:var(--anthracite);border-bottom:1px solid var(--gris-border);padding:0 1.2rem;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:50;}
     .logo{display:flex;align-items:center;gap:8px;}
+    .logo-img{height:32px;width:32px;border-radius:8px;object-fit:cover;display:block;}
     .dot{width:22px;height:22px;background:linear-gradient(135deg,var(--rose-sombre),var(--rose));border-radius:50%;animation:pulse 2.5s infinite;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
     @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.85;transform:scale(1.08);}}
     .logo span{font-family:'Playfair Display',serif;font-size:.82rem;font-weight:700;letter-spacing:.01em;color:#cccccc;}
@@ -85,10 +141,41 @@
     .streak-bar{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:12px;padding:.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
     .streak-bar .lbl2{font-size:.82rem;color:#bbbbbb;}
     .streak-bar .val{font-size:.9rem;font-weight:700;color:var(--rose);}
-    .cta-semaine{background:linear-gradient(135deg,var(--rose-sombre),var(--rose));border-radius:16px;padding:1.2rem 1.4rem;margin-bottom:1rem;cursor:pointer;transition:transform .2s;box-shadow:0 8px 32px rgba(232,24,109,.25);display:flex;align-items:center;justify-content:space-between;}
+    .cta-semaine{background:linear-gradient(135deg,var(--rose-sombre),var(--rose));border-radius:16px;padding:1.2rem 1rem;margin-bottom:1rem;cursor:pointer;transition:transform .2s;box-shadow:0 8px 32px rgba(232,24,109,.25);display:flex;flex-direction:column;}
+    .cta-sem-row{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:nowrap;}
     .cta-semaine:active{transform:scale(.98);}
     .cta-semaine h3{font-size:1rem;font-weight:700;margin-bottom:.2rem;}
     .cta-semaine p{font-size:.78rem;opacity:.85;margin:0;}
+    
+    .cta-sem-left{display:flex;flex-direction:column;gap:.15rem;min-width:0;}
+    .cta-sem-date{font-size:1.05rem;font-weight:700;color:#fff;margin:0;min-width:0;}
+    .sq-badge{
+      font-size:.78rem;
+      font-weight:700;
+      padding:.52rem .85rem;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      gap:.4rem;
+      cursor:pointer;
+      white-space:nowrap;
+      flex-shrink:0;
+    }
+    .sq-badge-txt{ white-space:normal; flex:1; }
+    .sq-badge-arrow{
+      font-size:1rem;
+      flex-shrink:0;
+      transition:transform .2s ease;
+    }
+    .sq-nok:hover .sq-badge-arrow{ transform:translateX(3px); }
+    .sq-ok{background:rgba(46,204,113,.18);color:#2ecc71;border:1px solid rgba(46,204,113,.3);}
+    .sq-nok{
+      background:#111;
+      color:#fff;
+      border:none;
+      font-weight:700;
+      box-shadow:0 2px 10px rgba(0,0,0,.4);
+    }
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;}
     .mini{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:14px;padding:1.1rem;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
     .mini::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--rose),var(--rose-clair));transform:scaleX(0);transition:transform .3s;transform-origin:left;}
@@ -338,22 +425,22 @@
 
     /* ─ COMPTEUR POSTS ACCUEIL ─ */
     .posts-compteur{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:14px;padding:1rem 1.2rem;margin-bottom:1rem;}
-    .pc-row{display:flex;align-items:center;gap:1.2rem;margin-bottom:.7rem;}
-    .pc-item{display:flex;align-items:baseline;gap:.35rem;}
-    .pc-val{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;color:var(--blanc);}
+    .pc-row{display:flex;align-items:flex-start;gap:.6rem;margin-bottom:.5rem;width:auto;justify-content:flex-start;}
+    .pc-item{display:flex;flex-direction:column;align-items:center;gap:.1rem;}
+    .pc-val{font-family:'Montserrat',sans-serif;font-size:1.3rem;font-weight:400;color:var(--blanc);}
     .pc-val.pc-prets{color:var(--succes);}
-    .pc-lbl{font-size:.78rem;color:#bbbbbb;}
-    .pc-sep{width:1px;height:28px;background:var(--gris-border);margin:0 .2rem;}
+    .pc-lbl{font-size:.64rem;color:#bbbbbb;text-align:center;white-space:nowrap;}
+    .pc-sep{width:1px;height:32px;align-self:center;background:var(--gris-border);margin:0;flex-shrink:0;}
     .pc-barre-wrap{height:4px;background:var(--gris-moyen);border-radius:2px;overflow:hidden;}
     .pc-barre{height:100%;background:linear-gradient(90deg,var(--rose),var(--succes));border-radius:2px;transition:width .6s ease;width:0%;}
-    .sq-badge{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;font-weight:600;padding:3px 10px;border-radius:20px;margin-top:.4rem;}
+    
     .sq-ok{background:rgba(46,204,113,.2);color:#3ddc84;border:1px solid rgba(46,204,113,.45);}
-    .sq-nok{background:rgba(232,24,109,.15);color:#f47eb0;border:1px solid rgba(232,24,109,.35);}
+    
 
     /* ─ STORY DU JOUR DANS COMPTEUR ─ */
     .pc-story{border-left:1px solid var(--gris-border);padding-left:1rem;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:.25rem;}
     .pc-story-titre{font-size:.75rem;font-weight:700;color:var(--gris-clair);text-transform:uppercase;letter-spacing:.07em;}
-    .pc-story-sujet{font-size:.78rem;color:var(--blanc-doux);line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+    .pc-story-sujet{font-size:.78rem;color:var(--blanc-doux);line-height:1.35;}
     .pc-story-badge{display:inline-flex;align-items:center;gap:4px;font-size:.75rem;font-weight:700;padding:2px 9px;border-radius:20px;margin-top:2px;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s;}
     .pc-story-badge.publiee{background:rgba(46,204,113,.12);color:var(--succes);border:1px solid rgba(46,204,113,.3)!important;}
     .pc-story-badge.a-publier{background:rgba(232,24,109,.10);color:var(--rose-clair);border:1px solid rgba(232,24,109,.25)!important;}
@@ -638,30 +725,264 @@
     /* ── Accueil — bandeau story séparé ── */
     .pc-story-bandeau{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:14px;padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin-bottom:.8rem;}
     .pc-story-bandeau-left{flex:1;min-width:0;}
-    .pc-section-lbl{font-size:.62rem;font-weight:800;color:var(--gris-clair);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.3rem;}
+    .pc-section-lbl{
+      font-size:.78rem;
+      font-weight:700;
+      color:var(--blanc);
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      white-space:nowrap;
+      overflow:visible;
+    }
+    /* Séparateur fin sous le titre — utilisé via .pc-section-lbl + .pc-sep-titre */
+    .pc-sep-titre{
+      height:1px;
+      background:rgba(255,255,255,.1);
+      border-radius:999px;
+      margin:.45rem 0 .55rem 0;
+      width:100%;
+      flex-shrink:0;
+    }
+    [data-theme="light"] .pc-sep-titre{
+      background:rgba(0,0,0,.08);
+    }
     
     /* ── Accueil — double bandeau côte à côte ── */
-    .pc-double{
-      display:grid;
-      grid-template-columns:1fr auto 1fr;
-      gap:0;
-      background:var(--gris-carte);
-      border:1px solid var(--gris-border);
-      border-radius:16px;
-      overflow:hidden;
-      margin-bottom:.9rem;
+    /* ── Toggle thème ── */
+    .theme-switch{
+      background:none;
+      border:none;
+      cursor:pointer;
+      padding:0;
+      display:flex;
+      align-items:center;
     }
+    .ts-track{
+      display:flex;
+      align-items:center;
+      width:44px;
+      height:24px;
+      border-radius:999px;
+      background:var(--rose);
+      position:relative;
+      transition:background .25s ease;
+      flex-shrink:0;
+    }
+    .ts-thumb{
+      position:absolute;
+      left:3px;
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      background:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:transform .25s ease;
+      color:var(--rose);
+      flex-shrink:0;
+    }
+    [data-theme="light"] .ts-track{
+      background:#c8c4bf;
+    }
+    [data-theme="light"] .ts-thumb{
+      transform:translateX(20px);
+      color:#6b6560;
+    }
+    .theme-switch input{
+      opacity:0;
+      width:0;
+      height:0;
+      position:absolute;
+    }
+    
+    
+    /* Coché = mode light → fond rose, bouton à droite */
+    
+    
+    /* ── Bouton Générer mes contenus ── */
+    .acc-btn-generer{
+      display:inline-flex;
+      align-items:center;
+      gap:.4rem;
+      padding:.52rem 1.4rem;
+      border-radius:10px;
+      border:none;
+      cursor:pointer;
+      font-family:'DM Sans',sans-serif;
+      font-size:.78rem;
+      font-weight:700;
+      background:linear-gradient(135deg,#c0125a,#e8186d);
+      color:#fff;
+      box-shadow:0 2px 12px rgba(232,24,109,.35);
+      transition:all .18s ease;
+      white-space:nowrap;
+    }
+    .acc-btn-generer:hover{
+      background:linear-gradient(135deg,#d4146a,#f01f7a);
+      box-shadow:0 4px 18px rgba(232,24,109,.5);
+      transform:translateY(-1px);
+    }
+    /* ── Encart unifié Posts+Story+Streak ── */
+    .pc-encart{
+      position:relative;
+      background:var(--gris-carte);
+      border-radius:18px;
+      overflow:hidden;
+      margin-bottom:1rem;
+    }
+    /* Contour dégradé blanc → rose via pseudo-élément */
+    .pc-encart::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      border-radius:18px;
+      padding:1px;
+      background:linear-gradient(135deg,rgba(255,255,255,.28) 0%,rgba(232,24,109,.45) 100%);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+      mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;
+      mask-composite:exclude;
+      pointer-events:none;
+      z-index:1;
+    }
+    .pc-encart-sep{
+      height:1px;
+      background:rgba(255,255,255,0.12);
+      border-radius:999px;
+      margin:0 1.2rem;
+    }
+    .pc-row-full{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:.8rem;
+      margin-bottom:.4rem;
+    }
+    .pc-story-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:.8rem;
+    }
+    .pc-streak-inline{
+      display:flex;
+      align-items:center;
+      gap:.3rem;
+      font-size:.72rem;
+      font-weight:700;
+      color:var(--blanc);
+    }
+    .pc-encart-streak{
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      padding:.75rem 1.2rem;
+    }
+    .pc-encart-streak .lbl2{
+      font-size:.78rem;
+      color:var(--texte-sec);
+      flex:1;
+    }
+    .pc-encart-streak .val{
+      font-family:'Playfair Display',serif;
+      font-size:1.1rem;
+      font-weight:700;
+      color:var(--rose-clair);
+    }
+    /* pc-double retiré — structure verticale */
     .pc-col{
       background:none;
       border:none;
       border-radius:0;
       margin:0;
-      padding:1rem 1.1rem;
+      padding:1.2rem 1rem 1rem 1rem;
+      overflow:hidden;
+      min-width:0;
     }
+    /* ── Story col — 62% ── */
+    .pc-story-col{
+      padding:1.2rem 1rem 1rem 1rem;
+      display:flex;
+      flex-direction:column;
+      gap:.4rem;
+      min-width:0;
+    }
+    .pc-story-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:.4rem;
+      margin-bottom:.1rem;
+    }
+    /* Badge thème (Vente / Valeur / Lifestyle) */
+    .pc-story-typo-badge{
+      font-size:.58rem;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      padding:2px 7px;
+      border-radius:20px;
+      white-space:nowrap;
+      flex-shrink:0;
+    }
+    .typo-vente    { background:rgba(232,24,109,.15); color:var(--rose-clair); border:1px solid rgba(232,24,109,.3); }
+    .typo-valeur   { background:rgba(52,152,219,.15); color:#74b9ff;           border:1px solid rgba(52,152,219,.3); }
+    .typo-lifestyle{ background:rgba(46,204,113,.12); color:#55efc4;           border:1px solid rgba(46,204,113,.25); }
+    /* Sujet — jamais tronqué */
+    .pc-story-sujet{
+      font-size:.78rem;
+      font-weight:500;
+      color:var(--texte-sec);
+      line-height:1.35;
+      white-space:normal;
+      word-break:break-word;
+      flex:1;
+      min-width:0;
+    }
+    /* Bouton Ouvrir et publier — affordant */
+    .pc-story-btn-publier{
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+      margin-top:.3rem;
+      padding:.52rem .85rem;
+      border-radius:10px;
+      border:none;
+      cursor:pointer;
+      font-family:'DM Sans',sans-serif;
+      font-size:.78rem;
+      font-weight:700;
+      transition:all .18s ease;
+      background:linear-gradient(135deg,#c0125a,#e8186d);
+      color:#fff;
+      box-shadow:0 2px 12px rgba(232,24,109,.4);
+    }
+    .pc-story-btn-publier:hover{
+      background:linear-gradient(135deg,#d4146a,#f01f7a);
+      box-shadow:0 4px 18px rgba(232,24,109,.55);
+      transform:translateY(-1px);
+    }
+    .pc-story-btn-publier.publiee{
+      background:rgba(46,204,113,.15);
+      color:#55efc4;
+      border:1.5px solid rgba(46,204,113,.4);
+      box-shadow:none;
+    }
+    .pc-story-btn-publier.publiee:hover{
+      background:rgba(46,204,113,.22);
+      transform:none;
+    }
+    .pc-story-btn-icon{ font-size:.9rem; flex-shrink:0; }
+    .pc-story-btn-txt{ flex:1; text-align:left; }
+    .pc-story-btn-arrow{ font-size:1rem; flex-shrink:0; opacity:.7; }
+    .pc-story-btn-publier.publiee .pc-story-btn-arrow{ display:none; }
+
+
     .pc-vdivider{
       width:1px;
       background:var(--gris-border);
-      margin:.9rem 0;
+      margin:.6rem 0;
       flex-shrink:0;
     }
     .pc-story-col{
@@ -686,26 +1007,33 @@
 
 <header>
   <div class="logo">
-    <div class="dot">
-      <!-- Crayon + 3 étoiles dans le cercle animé -->
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Corps crayon -->
-        <path d="M4 20l1.6-3.6L16 6l2.4 2.4-10.4 10.4L4 20z" fill="white"/>
-        <!-- Pointe -->
-        <path d="M16 6l1.6-1.6a1.2 1.2 0 0 1 1.7 0l.3.3a1.2 1.2 0 0 1 0 1.7L18 8 16 6z" fill="white"/>
-        <!-- Trait bas du crayon -->
-        <path d="M5.5 17.5l1 1" stroke="rgba(255,200,200,0.7)" stroke-width="1.2" stroke-linecap="round"/>
-        <!-- Étoile 1 grande -->
-        <path d="M19.5 1.5l.5 1.6 1.6.5-1.6.5-.5 1.6-.5-1.6-1.6-.5 1.6-.5z" fill="white" stroke="white" stroke-width=".3" stroke-linejoin="round"/>
-        <!-- Étoile 2 moyenne -->
-        <path d="M22 9.5l.35 1.05 1.05.35-1.05.35L22 12.35l-.35-1.05-1.05-.35 1.05-.35z" fill="rgba(255,255,255,.85)" stroke="rgba(255,255,255,.85)" stroke-width=".3" stroke-linejoin="round"/>
-        <!-- Étoile 3 petite -->
-        <path d="M20.5 15l.22.66.66.22-.66.22L20.5 16.8l-.22-.66-.66-.22.66-.22z" fill="rgba(255,255,255,.65)" stroke="rgba(255,255,255,.65)" stroke-width=".2" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <span>Roze <em>Communications</em></span>
+    <img src="data:image/png;base64,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" alt="Roze" class="logo-img"/>
   </div>
-  <div class="badge-nom" id="nom-client" onclick="go('p-aide')" style="cursor:pointer;">Se repérer ›</div>
+  <div style="display:flex;align-items:center;gap:.8rem;">
+    <button class="theme-switch" id="theme-toggle" onclick="toggleTheme()" aria-label="Mode clair / sombre">
+      <span class="ts-track">
+        <span class="ts-thumb">
+          <!-- Lune (dark) -->
+          <svg id="ts-moon" width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
+          </svg>
+          <!-- Soleil (light) -->
+          <svg id="ts-sun" width="11" height="11" viewBox="0 0 24 24" fill="none" style="display:none;">
+            <circle cx="12" cy="12" r="4" fill="currentColor"/>
+            <line x1="12" y1="2" x2="12" y2="5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="12" y1="19" x2="12" y2="22" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="2" y1="12" x2="5" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="19" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="4.93" y1="4.93" x2="6.34" y2="6.34" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="17.66" y1="17.66" x2="19.07" y2="19.07" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="19.07" y1="4.93" x2="17.66" y2="6.34" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="6.34" y1="17.66" x2="4.93" y2="19.07" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+      </span>
+    </button>
+    <div class="badge-nom" id="nom-client" onclick="go('p-aide')" style="cursor:pointer;">Se repérer ›</div>
+  </div>
 </header>
 
 <div class="scroll">
@@ -717,59 +1045,17 @@
       <h1>Ton assistante<br/><em>réseaux sociaux</em></h1>
       <p>Pour devenir régulier, cohérent et impactant en moins de 2h par semaine.</p>
     </div>
-    <!-- Compteur posts semaine -->
-    <!-- Bandeau double : Posts | Story côte à côte -->
-    <div class="pc-double">
-
-      <!-- Colonne gauche : Posts cette semaine -->
-      <div class="posts-compteur pc-col">
-        <div class="pc-section-lbl">📝 Posts</div>
-        <div class="pc-row">
-          <div class="pc-item">
-            <span class="pc-val" id="pc-prevus">0</span>
-            <span class="pc-lbl">prévus</span>
-          </div>
-          <div class="pc-sep"></div>
-          <div class="pc-item">
-            <span class="pc-val pc-prets" id="pc-prets">0</span>
-            <span class="pc-lbl">prêts ✓</span>
-          </div>
+    <!-- ① MA SEMAINE — en premier -->
+    <div class="cta-semaine" onclick="go('p-semaine')">
+      <div class="pc-section-lbl">✍️ Ma semaine</div>
+      <div class="pc-sep-titre"></div>
+      <div class="cta-sem-row">
+        <span id="date-acc" class="cta-sem-date">Dimanche 29 mars</span>
+        <div class="sq-badge sq-nok" id="sq-badge">
+          <span class="sq-badge-txt">⚠️ Questions en attente</span>
+          <span class="sq-badge-arrow">→</span>
         </div>
-        <div class="pc-barre-wrap"><div class="pc-barre" id="pc-barre"></div></div>
       </div>
-
-      <!-- Séparateur vertical -->
-      <div class="pc-vdivider"></div>
-
-      <!-- Colonne droite : Story du jour -->
-      <div class="pc-story-col" id="pc-story-zone">
-        <div class="pc-section-lbl">📱 Story du jour</div>
-        <span class="pc-story-titre" id="pc-story-jour">—</span>
-        <span class="pc-story-sujet" id="pc-story-sujet">—</span>
-        <button class="pc-story-badge a-publier" id="pc-story-badge" onclick="toggleStoryQuick()">⚪ À publier</button>
-      </div>
-
-    </div>
-    <!-- Panneau story rapide -->
-    <div class="story-quick-panel" id="story-quick-panel">
-      <div class="sqp-titre" id="sqp-titre">Story du jour</div>
-      <textarea class="sqp-textarea" id="sqp-texte" placeholder="Saisis ou modifie le script de ta story ici…"></textarea>
-      <div class="sqp-loader" id="sqp-loader"><div class="sqp-mini-ring"></div><span>Génération en cours…</span></div>
-      <div class="sqp-result" id="sqp-result"></div>
-      <div class="sqp-actions">
-        <button class="btn btn-rose" onclick="sqpGenerer()">✨ Générer le script</button>
-        <button class="btn btn-ghost" onclick="sqpSauvegarder()">💾 Sauvegarder</button>
-        <button class="btn btn-outline" onclick="sqpCopier()">Copier</button>
-      </div>
-    </div>
-
-    <div class="streak-bar-wrap">
-      <div class="streak-bar">
-        <span class="lbl2">🔥 Semaines consécutives</span>
-        <span class="val" id="streak-acc">0</span>
-      </div>
-      <div id="streak-fill" style="display:none;"></div>
-      <div id="streak-next" style="display:none;"></div>
     </div>
 
     <!-- Badge sync Google Sheets -->
@@ -778,16 +1064,69 @@
       <button onclick="viderQueueSync()" style="background:none;border:none;color:var(--rose);font-size:.75rem;font-weight:700;cursor:pointer;padding:0;margin-left:auto;">Synchroniser →</button>
     </div>
 
-    <!-- CTA semaine avec statut questions -->
-    <div class="cta-semaine" onclick="go('p-semaine')">
-      <div>
-        <h3>✍️ Ma semaine</h3>
-        <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.2rem;">
-          <p id="date-acc" style="margin:0;">Remplis tes questions maintenant</p>
-          <span class="sq-badge sq-nok" id="sq-badge">⚪ Questions en attente</span>
+    <!-- ② POSTS — encart autonome -->
+    <div class="pc-encart" style="margin-bottom:.8rem;">
+      <div style="padding:1.2rem 1rem 1rem 1rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span class="pc-section-lbl">📝 Posts cette semaine</span>
+          <span class="pc-streak-inline">
+            <span style="font-size:.9rem;">🔥</span><span id="streak-acc">0</span>
+            <span id="streak-acc-lbl" style="font-size:.62rem;color:#bbbbbb;">sem. consécutive</span>
+          </span>
+        </div>
+        <div class="pc-sep-titre"></div>
+        <div class="pc-row-full">
+          <div class="pc-row">
+            <div class="pc-item">
+              <span class="pc-val" id="pc-prevus">0</span>
+              <span class="pc-lbl">prévus</span>
+            </div>
+            <div class="pc-sep"></div>
+            <div class="pc-item">
+              <span class="pc-val" id="pc-en-cours" style="color:var(--rose-clair);">0</span>
+              <span class="pc-lbl">en cours</span>
+            </div>
+            <div class="pc-sep"></div>
+            <div class="pc-item">
+              <span class="pc-val pc-prets" id="pc-prets">0</span>
+              <span class="pc-lbl">publiés</span>
+            </div>
+          </div>
+          <button class="acc-btn-generer" onclick="go('p-generer')">✨ Générer →</button>
+        </div>
+        <div class="pc-barre-wrap"><div class="pc-barre" id="pc-barre"></div></div>
+      </div>
+    </div>
+
+    <!-- ③ STORY DU JOUR — encart autonome -->
+    <div class="pc-encart">
+      <div class="pc-story-col" id="pc-story-zone" style="padding:1.2rem 1rem 1rem 1rem;">
+        <div class="pc-story-header">
+          <div class="pc-section-lbl">📱 Story du jour</div>
+          <span class="pc-story-typo-badge" id="pc-story-typo-badge">—</span>
+        </div>
+        <div class="pc-sep-titre"></div>
+        <div class="pc-story-row">
+          <span class="pc-story-sujet" id="pc-story-sujet">—</span>
+          <button class="pc-story-btn-publier" id="pc-story-badge" onclick="toggleStoryQuick()">
+            <span class="pc-story-btn-icon" id="pc-story-btn-icon">⚠️</span>
+            <span class="pc-story-btn-txt" id="pc-story-btn-txt">À publier</span>
+            <span class="pc-story-btn-arrow">→</span>
+          </button>
         </div>
       </div>
-      <span>→</span>
+      <!-- Panneau story rapide -->
+      <div class="story-quick-panel" id="story-quick-panel">
+        <div class="sqp-titre" id="sqp-titre">Story du jour</div>
+        <textarea class="sqp-textarea" id="sqp-texte" placeholder="Saisis ou modifie le script de ta story ici…"></textarea>
+        <div class="sqp-loader" id="sqp-loader"><div class="sqp-mini-ring"></div><span>Ton IA rédige ta story…</span></div>
+        <div class="sqp-result" id="sqp-result"></div>
+        <div class="sqp-actions">
+          <button class="btn btn-rose" onclick="sqpGenerer()">✨ Générer le script</button>
+          <button class="btn btn-ghost" onclick="sqpSauvegarder()">💾 Sauvegarder</button>
+          <button class="btn btn-outline" onclick="sqpCopier()">Copier</button>
+        </div>
+      </div>
     </div>
     <!-- Mini vue semaine (5 prochains jours) -->
     <div class="sem-mini" id="sem-mini-accueil">
@@ -830,7 +1169,7 @@
     <div class="titre"><h2>Ma <em>semaine</em></h2><p>5 min · 8 questions pour alimenter ton IA chaque semaine</p></div>
     <div class="pill-date">
       <span class="d" id="date-sem"></span>
-      <span class="s">🔥 <span id="streak-sem">0</span> semaines</span>
+      <span class="s" id="streak-sem-lbl">🔥 <span id="streak-sem">0</span> semaines</span>
     </div>
     <div class="sep"><span>Ce qui s'est passé</span></div>
     <div class="bq"><div class="ql"><div class="qn">1</div><span class="qc">Anecdote</span></div><p class="qt">Quelque chose qui s'est passé dans ton travail cette semaine.</p><textarea id="q1" oninput="autosaveDraft()" placeholder="Cette semaine, j'ai rencontré une cliente qui…"></textarea></div>
@@ -929,7 +1268,7 @@
       </div>
 
       <!-- Sujet (optionnel) -->
-      <span class="creer-lbl">Sujet <span style="color:#888;font-weight:400;">(optionnel — laisse vide pour que Claude choisisse)</span></span>
+      <span class="creer-lbl">Sujet <span style="color:#888;font-weight:400;">(optionnel — optionnel — si vide, ton IA le choisit pour toi)</span></span>
       <div class="creer-sujet-row">
         <input type="text" id="gen-sujet" placeholder="Ex : mon retour sur le dernier salon pro…"/>
       </div>
@@ -971,7 +1310,7 @@
       </div>
     </div>
 
-    <div class="loader" id="loader"><div class="ring"></div><p>Claude génère tes contenus<br/><em>dans ta voix…</em></p></div>
+    <div class="loader" id="loader"><div class="ring"></div><p>Ton IA génère tes contenus<br/><em>dans ta voix…</em></p></div>
     <div id="zone-res"></div>
   </section>
 
@@ -1150,9 +1489,9 @@
         <span class="acc-chevron">▼</span>
       </div>
       <div class="acc-body" style="padding-top:.6rem;">
-        <label class="lbl">URL Apps Script</label>
+        <label class="lbl">Lien Google Sheets (Apps Script)</label>
         <input type="url" id="cfg-as" placeholder="https://script.google.com/…" style="font-size:16px;"/>
-        <label class="lbl">Intelligence artificielle</label>
+        <label class="lbl">Ton IA — choisis ton assistant</label>
         <div class="ia-selector">
           <div class="ia-opt" id="ia-opt-claude" onclick="setIA('claude')">
             <span class="ia-logo">🤖</span>
@@ -1178,12 +1517,9 @@
           <div class="opt">Tier gratuit — sans carte bancaire. Génère ta clé en 30 secondes.</div>
         </div>
         <div class="conn-sep"></div>
-        <label class="lbl">Lien Roze_assistant.md (Drive)</label>
-        <input type="url" id="cfg-md" placeholder="https://drive.google.com/file/…"/>
         <label class="lbl">Lien dossier Photos Drive</label>
         <input type="url" id="cfg-drive-photos" placeholder="https://drive.google.com/drive/folders/…"/>
-        <label class="lbl">Lien Roze_modeles.md (Drive)</label>
-        <input type="url" id="cfg-modeles" placeholder="https://drive.google.com/file/…"/>
+
       </div>
     </div>
 
@@ -1215,7 +1551,7 @@
 
   <!-- ══ SE REPÉRER ══ -->
   <section id="p-aide" class="page">
-    <button class="aide-back" onclick="history.back ? history.back() : go('p-accueil')">‹ Retour</button>
+    <button class="aide-back" onclick="go('p-accueil')">‹ Retour</button>
     <div class="titre"><h2>Se <em>repérer</em></h2><p>Glossaire · Piliers · Tutoriel</p></div>
 
     <!-- Onglets Se repérer -->
@@ -1508,7 +1844,7 @@
     </div>
 
     <!-- Sujet -->
-    <span class="creer-lbl">Sujet <span style="color:#888;font-weight:400;">(optionnel — laisse vide pour que Claude choisisse)</span></span>
+    <span class="creer-lbl">Sujet <span style="color:#888;font-weight:400;">(optionnel — optionnel — si vide, ton IA le choisit pour toi)</span></span>
     <div class="creer-sujet-row">
       <input type="text" id="creer-sujet" placeholder="Ex : mon retour sur le dernier salon pro…"/>
       <button class="btn btn-ghost" onclick="genCreerPost()">✨ Générer</button>
@@ -1562,9 +1898,7 @@ let CFG = {
   api:          ls('roze_api')           || '',
   apiGemini:    ls('roze_api_gemini')    || '',
   ia:           ls('roze_ia')            || 'claude',
-  md:           ls('roze_md')            || '',
   drivePhotos:  ls('roze_drive_photos')  || '',
-  modeles:      ls('roze_modeles')       || '',
   couleur1:     ls('roze_couleur1')      || '#E8186D',
   couleur2:     ls('roze_couleur2')      || '#111111',
   couleur3:     ls('roze_couleur3')      || '',
@@ -1587,12 +1921,12 @@ let RYTHME = lsJ('roze_rythme') || {
 // Stories config (7 jours)
 const STORIES_DEF = [
   {jour:'Lundi',   typo:'lifestyle', sujet:'Scène du quotidien pro ou perso qui révèle qui tu es'},
-  {jour:'Mardi',   typo:'valeur',    sujet:'1 astuce utile pour ta cible (1 slide, 1 idée)'},
-  {jour:'Mercredi',typo:'vente',     sujet:'Recontextualisation → problème cible → CTA offre prioritaire'},
+  {jour:'Mardi',   typo:'valeur',    sujet:'1 astuce utile pour ton client cible (1 astuce, plusieurs slides en story)'},
+  {jour:'Mercredi',typo:'vente',     sujet:'Contextualisation → Problème / douleur du client → Appel à action vers l\'offre'},
   {jour:'Jeudi',   typo:'lifestyle', sujet:'Opinion assumée sur un sujet qui touche ta cible'},
-  {jour:'Vendredi',typo:'valeur',    sujet:'1 astuce utile différente de mardi'},
+  {jour:'Vendredi',typo:'valeur',    sujet:'1 astuce utile pour ton client cible — nouvelle idée, nouvel angle'},
   {jour:'Samedi',  typo:'lifestyle', sujet:'Valeur incarnée — montrer, pas déclarer'},
-  {jour:'Dimanche',typo:'vente',     sujet:'Même structure que mercredi, angle différent'},
+  {jour:'Dimanche',typo:'vente',     sujet:'Contextualisation → Problème / douleur du client → Appel à action vers l\'offre'},
 ];
 let STORIES_CFG = lsJ('roze_stories') || JSON.parse(JSON.stringify(STORIES_DEF));
 
@@ -1603,7 +1937,7 @@ let CAL = { vue:'mois', annee:new Date().getFullYear(), mois:new Date().getMonth
 // INIT
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded',()=>{
-  initUI(); chargerCompte(); affDate(); construireStoriesUI(); majGenFormats(getGenReseau()); majRythme();
+  initTheme(); initUI(); chargerCompte(); affDate(); construireStoriesUI(); majGenFormats(getGenReseau()); majRythme();
   majSemMini(); majKPIs();
   // Afficher le badge sync si posts en attente
   const qInit = getQueueSync();
@@ -1649,19 +1983,28 @@ function majStoryDuJour(){
   const publiee = localStorage.getItem('roze_story_pub_' + aujStr) === '1';
 
   // Mettre à jour l'affichage
-  const elJour  = document.getElementById('pc-story-jour');
   const elSujet = document.getElementById('pc-story-sujet');
   const elBadge = document.getElementById('pc-story-badge');
 
-  if(elJour)  elJour.textContent  = joursNoms[idx] + ' · ' + (typoNom[s.typo]||s.typo);
+  // Badge thème coloré
+  const elTypoBadge = document.getElementById('pc-story-typo-badge');
+  const elBtnTxt    = document.getElementById('pc-story-btn-txt');
+  const elBtnIcon   = document.getElementById('pc-story-btn-icon');
+  const typoClasse  = {'vente':'typo-vente','valeur':'typo-valeur','lifestyle':'typo-lifestyle'};
+  if(elTypoBadge){
+    elTypoBadge.textContent = typoNom[s.typo] || s.typo;
+    elTypoBadge.className   = 'pc-story-typo-badge ' + (typoClasse[s.typo]||'');
+  }
   if(elSujet) elSujet.textContent = s.sujet;
   if(elBadge){
     if(publiee){
-      elBadge.textContent = '✅ Publiée';
-      elBadge.className   = 'pc-story-badge publiee';
+      if(elBtnTxt)  elBtnTxt.textContent  = 'Story publiée ✓';
+      if(elBtnIcon) elBtnIcon.textContent  = '✅';
+      elBadge.className   = 'pc-story-btn-publier publiee';
     } else {
-      elBadge.textContent = '⚪ À publier';
-      elBadge.className   = 'pc-story-badge a-publier';
+      if(elBtnTxt)  elBtnTxt.textContent  = 'À publier';
+      if(elBtnIcon) elBtnIcon.textContent  = '⚠️';
+      elBadge.className   = 'pc-story-btn-publier';
     }
   }
 
@@ -1711,51 +2054,42 @@ async function sqpGenerer(){
   loader.classList.add('on');
   result.classList.remove('on');
 
-  const [profil, modeles] = await Promise.all([lireMd(), lireFichierModeles()]);
-  const matiere = matiereSemaine();
-  const profilComplet = profil + (modeles ? '\n\n---\nMODÈLES ÉDITORIAUX ROZE :\n' + modeles : '');
-  const base    = profilComplet ? 'PROFIL :\n' + profilComplet + '\n\n' : '';
+  const matiere  = matiereSemaine();
+  const angleBloc = saisie ? '\nANGLE / CONTEXTE SAISI : ' + saisie + '\n' : '';
 
-  // Si l'utilisateur a saisi un angle custom, l'utiliser comme point de départ
-  const angleBloc = saisie ? '\nANGLE / CONTEXTE SAISI PAR L\'UTILISATEUR :\n' + saisie + '\n' : '';
 
-  let actuWeb = '';
-  if(s.typo === 'valeur'){
-    loader.querySelector('span').textContent = '🔍 Recherche web…';
-    try{
-      const r = await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:'Recherche web actualités récentes ' + (CFG.prenom||'réseaux sociaux') + ' ' + new Date().getFullYear() + '. Résume en 2 phrases.'}]})
-      });
-      const d = await r.json();
-      const txt = (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
-      if(txt) actuWeb = '\nACTU SECTEUR :\n' + txt;
-    }catch(e){}
-    loader.querySelector('span').textContent = '✨ Rédaction…';
-  }
 
-  const prompts = {
-    valeur:    base+'MATIÈRE :\n'+matiere+actuWeb+angleBloc+'\nScript story VALEUR. Sujet : "'+s.sujet+'". 3 slides : titre accrocheur / astuce concrète / CTA doux. Ancré verbatims et prises de position du profil.',
-    vente:     base+'MATIÈRE :\n'+matiere+angleBloc+'\nScript story VENTE. Sujet : "'+s.sujet+'". 3 temps : contexte du jour → lien douleur cible → CTA doux avec mot-clé. Max 5 phrases.',
-    lifestyle: base+'MATIÈRE :\n'+matiere+angleBloc+'\nScript story LIFESTYLE. Sujet : "'+s.sujet+'". Scène réelle, montre sans démontrer. Puise dans anecdotes du profil. Max 4 phrases.'
+  const body = {
+    action:  'generer_post',
+    ia:      CFG.ia || 'claude',
+    cle_ia:  CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+    reseau:  'Instagram',
+    format:  'Stories',
+    pilier:  s.typo === 'vente' ? 'autorite' : s.typo === 'valeur' ? 'expertise' : 'visibilite',
+    sujet:   '[STORY ' + s.typo.toUpperCase() + '] ' + s.sujet + (saisie ? ' — ' + saisie : ''),
+    matiere: matiere,
+    story_type: s.typo
   };
 
   try{
-    const texte = await appelIA(prompts[s.typo] || prompts.lifestyle);
+    if(!CFG.as){ throw new Error('URL Apps Script manquante'); }
+    loader.querySelector('span').textContent = '✨ Génération…';
+    const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
+    const j = await r.json();
+    if(j.erreur) throw new Error(j.erreur);
+    const texte = j.texte || '';
     loader.classList.remove('on');
     result.textContent = texte;
     result.classList.add('on');
-    // Pré-remplir le textarea
     document.getElementById('sqp-texte').value = texte;
-    // Sauvegarder automatiquement
     localStorage.setItem('roze_story_script_' + sqpDate, texte);
     toast('✅ Script généré !','ok');
   }catch(e){
     loader.classList.remove('on');
-    toast(traduireErreurIA(e),'err');
+    toast('❌ ' + e.message,'err');
   }
 }
+
 
 function sqpSauvegarder(){
   const texte = document.getElementById('sqp-texte').value.trim();
@@ -1787,15 +2121,18 @@ function majAccueil(){
 
   const biblio   = getBiblio();
   const cetteSem = biblio.filter(p => p.date >= lundStr && p.date <= dimStr);
-  const prets    = cetteSem.filter(p => p.statut === 'Publié' || p.statut === 'À relire').length;
-  // Nombre prévu = somme des quotas configurés + stories si IG actif
+  // 3 compteurs distincts
+  const publies  = cetteSem.filter(p => p.statut === 'Publié').length;
+  const enCours  = cetteSem.filter(p => p.statut !== 'Publié').length;
+  // Nombre prévu = somme des quotas configurés
   const posts    = lireRythme();
-  const prevus   = posts.length + (RYTHME.ig.actif ? 1 : 0); // +1 pour les stories
+  const prevus   = posts.length;
 
-  document.getElementById('pc-prevus').textContent = prevus;
-  document.getElementById('pc-prets').textContent  = prets;
-  const pct = prevus > 0 ? Math.min(100, Math.round(prets / prevus * 100)) : 0;
-  document.getElementById('pc-barre').style.width  = pct + '%';
+  document.getElementById('pc-prevus').textContent  = prevus;
+  document.getElementById('pc-en-cours').textContent = enCours;
+  document.getElementById('pc-prets').textContent   = publies;
+  const pct = prevus > 0 ? Math.min(100, Math.round(publies / prevus * 100)) : 0;
+  document.getElementById('pc-barre').style.width   = pct + '%';
 
   majTrackerStories();
   majStoryDuJour();
@@ -1815,24 +2152,58 @@ function majAccueil(){
   const badge   = document.getElementById('sq-badge');
   if(badge){
     if(semDone){
-      badge.textContent  = '✅ Questions de la semaine';
+      badge.innerHTML    = '<span class="sq-badge-txt">✅ Réponses ajoutées</span>';
       badge.className    = 'sq-badge sq-ok';
     } else {
-      badge.textContent  = '⚪ Questions en attente';
+      badge.innerHTML    = '<span class="sq-badge-txt">⚠️ Questions en attente</span><span class="sq-badge-arrow">→</span>';
       badge.className    = 'sq-badge sq-nok';
     }
   }
 }
 
 function affDate(){
-  const d = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
-  const m = d[0].toUpperCase()+d.slice(1);
-  ['date-acc','date-sem'].forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent=m; });
+  const now  = new Date();
+  // Ex : "Dimanche 29 mars" → on découpe pour mettre le mois en italique
+  const jour  = now.toLocaleDateString('fr-FR',{weekday:'long'});
+  const num   = now.toLocaleDateString('fr-FR',{day:'numeric'});
+  const mois  = now.toLocaleDateString('fr-FR',{month:'long'});
+  const txt   = jour[0].toUpperCase() + jour.slice(1) + ' ' + num;
+  const html  = txt + ' <em>' + mois + '</em>';
+  ['date-acc','date-sem'].forEach(id=>{
+    const e = document.getElementById(id);
+    if(e) e.innerHTML = html;
+  });
 }
 
 // ══════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// TOGGLE THÈME LIGHT / DARK
+// ══════════════════════════════════════════════════════
+function toggleTheme(){
+  const root = document.documentElement;
+  const isLight = root.getAttribute('data-theme') === 'light';
+  root.setAttribute('data-theme', isLight ? '' : 'light');
+  majIconeSwitch(!isLight);
+  localStorage.setItem('roze_theme', isLight ? 'dark' : 'light');
+}
+
+function majIconeSwitch(light){
+  const moon = document.getElementById('ts-moon');
+  const sun  = document.getElementById('ts-sun');
+  if(moon) moon.style.display = light ? 'none'  : 'block';
+  if(sun)  sun.style.display  = light ? 'block' : 'none';
+}
+
+function initTheme(){
+  const saved = localStorage.getItem('roze_theme') || 'dark';
+  if(saved === 'light'){
+    document.documentElement.setAttribute('data-theme','light');
+    majIconeSwitch(true);
+  }
+}
+
 function go(id, btn){
   // Toujours fermer les modales et restaurer le scroll avant de naviguer
   document.getElementById('ov-edit').classList.remove('on');
@@ -1964,6 +2335,12 @@ function afficherStreak(){
   const elSem = document.getElementById('streak-sem');
   if(elAcc) elAcc.textContent = s;
   if(elSem) elSem.textContent = s;
+  // Singulier / pluriel
+  const lblAcc = document.getElementById('streak-acc-lbl');
+  const lblSem = document.getElementById('streak-sem-lbl');
+  const mot = s <= 1 ? 'sem. consécutive' : 'sem. consécutives';
+  if(lblAcc) lblAcc.textContent = mot;
+  if(lblSem) lblSem.textContent = '🔥 ' + s + ' ' + (s <= 1 ? 'semaine' : 'semaines');
 
   // Barre de progression vers le prochain palier mensuel
   const paliers = [4,8,12,16,20,24,36,48];
@@ -2004,7 +2381,7 @@ function fermerStreakModal(){
 }
 
 async function enrSemaine(){
-  if(!CFG.as){ toast('⚙️ Configure l\'URL Apps Script dans Mon Compte','err'); return; }
+  if(!CFG.as){ toast('⚙️ URL Google Sheets manquante — va dans Mon Compte → Connexions','err'); return; }
   const d={
     action: 'enregistrer_semaine',
     semaine: getSemaineCourante(),
@@ -2751,19 +3128,7 @@ function driveRetour(){
 // ══════════════════════════════════════════
 // LECTURE FICHIER ROZE_MODELES
 // ══════════════════════════════════════════
-async function lireFichierModeles(){
-  if(!CFG.modeles || !CFG.as) return '';
-  try{
-    const r = await fetch(CFG.as,{method:'POST',body:JSON.stringify({action:'lire_md',lienMd:CFG.modeles})});
-    const j = await r.json();
-    return j.contenuMd || '';
-  }catch{ return ''; }
-}
-
-async function lireMd(){
-  if(!CFG.md||!CFG.as) return '';
-  try{ const r=await fetch(CFG.as,{method:'POST',body:JSON.stringify({action:'lire_md',lienMd:CFG.md})}); const j=await r.json(); return j.contenuMd||''; }catch{ return ''; }
-}
+// lireMd et lireFichierModeles supprimés — profil lu depuis Sheets via Apps Script
 
 function matiereSemaine(){
   // Récupère depuis les champs si dispo, sinon depuis le brouillon sauvegardé
@@ -3049,9 +3414,9 @@ function traduireErreurIA(err) {
 // Vérification clé présente selon IA sélectionnée
 function verifierCleIA(){
   if(CFG.ia === 'gemini'){
-    if(!CFG.apiGemini){ toast('⚙️ Configure ta clé API Gemini dans Mon Compte', 'err'); return false; }
+    if(!CFG.apiGemini){ toast('⚙️ Clé API manquante — va dans Mon Compte → Connexions', 'err'); return false; }
   } else {
-    if(!CFG.api){ toast('⚙️ Configure ta clé API Claude dans Mon Compte', 'err'); return false; }
+    if(!CFG.api){ toast('⚙️ Clé API manquante — va dans Mon Compte → Connexions', 'err'); return false; }
   }
   return true;
 }
@@ -3317,12 +3682,12 @@ function copierGenPanel(){
 async function genSemaine(){
   if(!verifierCleIA()) return;
   const posts = lireRythme();
-  if(!posts.length){ toast('⚠️ Aucun contenu à générer — vérifie Mon Compte','err'); return; }
+  if(!posts.length){ toast('⚠️ Aucun format activé — configure ton rythme dans Mon Compte','err'); return; }
 
   const loader=document.getElementById('loader');
   const zoneRes=document.getElementById('zone-res');
   loader.classList.add('on'); zoneRes.innerHTML='';
-  toast('⏳ Génération de la semaine en cours…','ok');
+  toast('⏳ Ton IA génère la semaine en cours…','ok');
 
   try{
     const mat = matiereSemaine();
@@ -3737,16 +4102,24 @@ async function regenPost(){
   const b=getBiblio(); const it=b.find(i=>i.id===editId); if(!it) return;
   const loader=document.getElementById('loader-regen'); loader.classList.add('on');
   try{
-    const [profil, modeles] = await Promise.all([lireMd(), lireFichierModeles()]);
-    const profilComplet = profil + (modeles ? '\n\n---\nMODÈLES ÉDITORIAUX ROZE :\n' + modeles : '');
-    const pilier = it.pilier || 'autre';
-    const prompt = promptPost(getReseauSelectionne(), it.typeContenu, profilComplet, matiereSemaine(), '', '', pilier);
-    const texte = await appelIA(prompt);
-    const {texte:t,legende:l} = splitTexteLegende(texte);
+    const body = {
+      action: 'generer_post',
+      ia: CFG.ia||'claude',
+      cle_ia: CFG.ia==='gemini' ? CFG.apiGemini : CFG.api,
+      reseau: getReseauSelectionne(),
+      format: it.typeContenu,
+      pilier: it.pilier||'autorite',
+      sujet: '',
+      matiere: matiereSemaine()
+    };
+    const r = await fetch(CFG.as, {method:'POST', body:JSON.stringify(body)});
+    const j = await r.json();
+    if(j.erreur) throw new Error(j.erreur);
+    const {texte:t,legende:l} = splitTexteLegende(j.texte||'');
     document.getElementById('edit-texte').value=t;
     document.getElementById('edit-legende').value=l;
     toast('✅ Post régénéré !','ok');
-  }catch(e){ toast(traduireErreurIA(e),'err'); }
+  }catch(e){ toast('❌ '+e.message,'err'); }
   loader.classList.remove('on');
 }
 
@@ -3763,17 +4136,25 @@ async function genDepuisSujet(){
   const b=getBiblio(); const it=b.find(i=>i.id===editId); if(!it) return;
   const loader=document.getElementById('loader-regen'); loader.classList.add('on');
   try{
-    const [profil, modeles] = await Promise.all([lireMd(), lireFichierModeles()]);
-    const profilComplet = profil + (modeles ? '\n\n---\nMODÈLES ÉDITORIAUX ROZE :\n' + modeles : '');
-    const pilier = it.pilier || 'autre';
-    const prompt = promptPost(getReseauSelectionne(), it.typeContenu, profilComplet, matiereSemaine(), sujet, '', pilier);
-    const texte = await appelIA(prompt);
-    const {texte:t,legende:l} = splitTexteLegende(texte);
+    const body = {
+      action: 'generer_post',
+      ia: CFG.ia||'claude',
+      cle_ia: CFG.ia==='gemini' ? CFG.apiGemini : CFG.api,
+      reseau: getReseauSelectionne(),
+      format: it.typeContenu,
+      pilier: it.pilier||'autorite',
+      sujet: sujet,
+      matiere: matiereSemaine()
+    };
+    const r = await fetch(CFG.as, {method:'POST', body:JSON.stringify(body)});
+    const j = await r.json();
+    if(j.erreur) throw new Error(j.erreur);
+    const {texte:t,legende:l} = splitTexteLegende(j.texte||'');
     document.getElementById('edit-texte').value=t;
     document.getElementById('edit-legende').value=l;
     document.getElementById('sujet-manuel-zone').style.display='none';
     toast('✅ Post généré depuis ton sujet !','ok');
-  }catch(e){ toast(traduireErreurIA(e),'err'); }
+  }catch(e){ toast('❌ '+e.message,'err'); }
   loader.classList.remove('on');
 }
 
@@ -3975,18 +4356,37 @@ async function genCreerPost(){
   actions.style.display = 'none';
 
   try{
-    const profil  = await lireMd();
     const matiere = matiereSemaine();
-    const pilierBloc = getCreerPilierBloc();
-    const prompt  = promptPost(reseau, format, profil, matiere, sujet, pilierBloc);
-    const texte   = await appelIA(prompt);
-    const {texte:t, legende:l} = splitTexteLegende(texte);
+    const body = {
+      action:  'generer_post',
+      ia:      CFG.ia || 'claude',
+      cle_ia:  CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+      reseau,
+      format,
+      pilier:  creerPilier || 'autorite',
+      sujet,
+      matiere
+    };
+    if(!CFG.as){ throw new Error('URL Apps Script manquante — configure Mon Compte'); }
+    const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
+    const j = await r.json();
+    if(j.erreur) throw new Error(j.erreur);
+    const {texte:t, legende:l} = splitTexteLegende(j.texte||'');
 
     loader.classList.remove('on');
     document.getElementById('lbl-creer-texte').style.display = 'block';
-    result.textContent = t;
-    result.classList.add('on');
-    document.getElementById('creer-legende').value = l;
+    if(j.texte && splitTexteLegende(j.texte).isCarrousel){
+      const parsed = splitTexteLegende(j.texte);
+      const cvId = 'creer-cv-inline';
+      let cvDiv = document.getElementById(cvId);
+      if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv,result.nextSibling); }
+      afficherCarrousel(parsed.slides, parsed.legende, reseau, cvId);
+      document.getElementById('creer-legende').value = parsed.legende;
+    } else {
+      result.textContent = t;
+      result.classList.add('on');
+      document.getElementById('creer-legende').value = l;
+    }
     legZone.classList.add('on');
     actions.style.display = 'flex';
     toast('✅ Post généré !','ok');
@@ -4068,7 +4468,6 @@ function chargerCompte(){
   setV2('cfg-metier',       CFG.metier);
   setV2('cfg-as',           CFG.as);
   setV2('cfg-api',          CFG.api);
-  setV2('cfg-md',           CFG.md);
   setV2('cfg-couleur1',     CFG.couleur1);
   setV2('cfg-couleur2',     CFG.couleur2);
   setV2('cfg-couleur3',     CFG.couleur3);
@@ -4091,12 +4490,10 @@ function sauvegarderCompte(){
   CFG.prenom = document.getElementById('cfg-prenom').value.trim();
   CFG.as     = document.getElementById('cfg-as').value.trim();
   CFG.api    = document.getElementById('cfg-api').value.trim();
-  CFG.md     = document.getElementById('cfg-md').value.trim();
   CFG.apiGemini = (document.getElementById('cfg-api-gemini')||{}).value?.trim()||'';
   localStorage.setItem('roze_prenom',     CFG.prenom);
   localStorage.setItem('roze_as',         CFG.as);
   localStorage.setItem('roze_api',        CFG.api);
-  localStorage.setItem('roze_md',         CFG.md);
   localStorage.setItem('roze_api_gemini', CFG.apiGemini);
   localStorage.setItem('roze_ia',         CFG.ia||'claude');
   // Charte visuelle
@@ -4110,7 +4507,6 @@ function sauvegarderCompte(){
   CFG.policeCorps  = gv('cfg-police-corps') || 'DM Sans';
   CFG.logoUrl      = gv('cfg-logo-url');
   CFG.drivePhotos  = gv('cfg-drive-photos');
-  CFG.modeles      = gv('cfg-modeles');
   CFG.nom          = gv('cfg-nom');
   CFG.entreprise   = gv('cfg-entreprise');
   CFG.metier       = gv('cfg-metier');
@@ -4123,7 +4519,6 @@ function sauvegarderCompte(){
   localStorage.setItem('roze_police_corps', CFG.policeCorps);
   localStorage.setItem('roze_logo_url',     CFG.logoUrl);
   localStorage.setItem('roze_drive_photos', CFG.drivePhotos);
-  localStorage.setItem('roze_modeles',      CFG.modeles);
   localStorage.setItem('roze_nom',          CFG.nom);
   localStorage.setItem('roze_entreprise',   CFG.entreprise);
   localStorage.setItem('roze_metier',       CFG.metier);
@@ -4246,47 +4641,33 @@ async function genScriptPanel(idx, dateStr){
   const s    = STORIES_CFG[idx];
   const zone = document.getElementById('sp-script-'+idx);
   if(!zone) return;
-  zone.textContent = '⏳ Génération en cours…';
+  zone.textContent = '⏳ Ton IA rédige ta story…';
 
-  // Réutilise la même logique que genStoryTexte() mais sans modale
-  storyModalIndex = idx;
-  const profil = await lireMd();
   const matiere = matiereSemaine();
-  const blocsPersonnalisation = profil ? 'PROFIL COMPLET :\n' + profil : '';
 
-  let actuWeb = '';
-  if(s.typo === 'valeur'){
-    zone.textContent = '🔍 Recherche web…';
-    const refs = lsJ('roze_references') || [];
-    const query = refs.length
-      ? 'actualités récentes ' + refs[0] + ' ' + new Date().getFullYear()
-      : 'actualités tendances réseaux sociaux ' + new Date().getFullYear();
-    try{
-      const r = await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:'Recherche web : "'+query+'". Résume en 2-3 phrases. Réponds uniquement avec le résumé.'}]})
-      });
-      const d = await r.json();
-      const txt = (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
-      if(txt) actuWeb = '\nACTUALITÉ RÉCENTE :\n' + txt;
-    }catch(e){}
-    zone.textContent = '✨ Rédaction…';
-  }
-
-  const prompts = {
-    valeur:    blocsPersonnalisation+'\n\nMATIÈRE :\n'+matiere+actuWeb+'\n\nGénère un script story VALEUR. Sujet : "'+s.sujet+'". 3 slides : titre accrocheur / astuce concrète issue du secteur / CTA doux. Ancré dans les verbatims et prises de position du profil.',
-    vente:     blocsPersonnalisation+'\n\nMATIÈRE :\n'+matiere+'\n\nGénère un script story VENTE. Sujet : "'+s.sujet+'". Structure : contexte du jour (1-2 phrases personnelles) → lien avec la douleur cible (verbatims du profil) → CTA doux avec mot-clé. Max 5 phrases.',
-    lifestyle: blocsPersonnalisation+'\n\nMATIÈRE :\n'+matiere+'\n\nGénère un script story LIFESTYLE. Sujet : "'+s.sujet+'". Scène réelle du quotidien, montre sans démontrer. Puise dans anecdotes et habitudes du profil. Max 3-4 phrases.'
+  // Génération via Apps Script — profil lu depuis Sheets
+  const body = {
+    action:     'generer_post',
+    ia:         CFG.ia || 'claude',
+    cle_ia:     CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+    reseau:     'Instagram',
+    format:     'Stories',
+    pilier:     s.typo === 'vente' ? 'autorite' : s.typo === 'valeur' ? 'expertise' : 'visibilite',
+    sujet:      '[STORY ' + s.typo.toUpperCase() + '] ' + s.sujet,
+    matiere:    matiere,
+    story_type: s.typo
   };
 
   try{
-    const texte = await appelIA(prompts[s.typo] || prompts.lifestyle);
+    if(!CFG.as) throw new Error('URL Apps Script manquante — configure Mon Compte');
+    const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
+    const j = await r.json();
+    if(j.erreur) throw new Error(j.erreur);
+    const texte = j.texte || '';
     zone.textContent = texte;
-    // Persister le script généré pour cette date
     localStorage.setItem('roze_story_script_'+dateStr, texte);
     toast('✅ Script généré !','ok');
-  }catch(e){ zone.textContent = 'Erreur.'; toast(traduireErreurIA(e),'err'); }
+  }catch(e){ zone.textContent = 'Erreur.'; toast('❌ ' + e.message,'err'); }
 }
 
 function copierScript(idx, dateStr){
@@ -4403,98 +4784,33 @@ async function genStoryTexte(){
 
   const s    = STORIES_CFG[storyModalIndex];
   const zone = document.getElementById('story-modal-exemple-txt');
-  zone.textContent = '⏳ Génération en cours…';
+  zone.textContent = '⏳ Ton IA rédige ta story…';
 
-  // ── 1. Récupérer le profil .md ──
-  const profil = await lireMd();
-
-  // Extraire verbatims et prises de position du .md (sections dédiées)
-  // On les passe en intégralité — Claude sait les repérer dans le markdown
-  const blocsPersonnalisation = profil
-    ? `PROFIL COMPLET :\n${profil}`
-    : '';
-
-  // ── 2. Matière de la semaine (8 questions) ──
   const matiere = matiereSemaine();
 
-  // ── 3. Recherche web — uniquement pour stories Valeur ──
-  let actuWeb = '';
-  if(s.typo === 'valeur'){
-    zone.textContent = '🔍 Recherche web sur ton secteur…';
-    const refs    = lsJ('roze_references') || [];
-    const secteur = CFG.prenom || 'mon secteur';
-    const query   = refs.length
-      ? `actualités récentes ${refs[0]} ${new Date().getFullYear()}`
-      : `actualités tendances ${secteur} réseaux sociaux ${new Date().getFullYear()}`;
-    try{
-      const r = await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({
-          model:'claude-sonnet-4-20250514',
-          max_tokens:400,
-          tools:[{type:'web_search_20250305',name:'web_search'}],
-          messages:[{role:'user',content:`Recherche web : "${query}". Résume en 2-3 phrases les infos les plus récentes et concrètes. Réponds uniquement avec ce résumé, sans préambule.`}]
-        })
-      });
-      const d = await r.json();
-      const txt = (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
-      if(txt) actuWeb = `\nACTUALITÉ RÉCENTE DU SECTEUR (à intégrer naturellement) :\n${txt}`;
-    } catch(e){ /* recherche échouée, on continue sans */ }
-    zone.textContent = '✨ Rédaction du script…';
-  }
-
-  // ── 4. Construire le prompt selon la typologie ──
-  const prompts = {
-
-    valeur: `${blocsPersonnalisation}\n\nMATIÈRE DE LA SEMAINE :\n${matiere}${actuWeb}\n\n
-Tu génères un script de story Instagram de type VALEUR.
-Sujet : "${s.sujet}"
-
-Règles :
-- 1 astuce = 1 slide = 1 idée ultra-concrète
-- L'astuce doit être directement utile à la cible maintenant (pas "en général")
-- Appuie-toi sur l'actualité du secteur si elle est pertinente
-- Puise dans les verbatims clients et prises de position du profil pour ancrer dans le réel
-- Ton : direct, sans jargon, voix du profil
-- Maximum 3 slides : Titre accrocheur / Astuce en 1-2 phrases / CTA doux
-
-Génère les 3 slides avec leur texte.`,
-
-    vente: `${blocsPersonnalisation}\n\nMATIÈRE DE LA SEMAINE :\n${matiere}\n\n
-Tu génères un script de story Instagram de type VENTE.
-Sujet : "${s.sujet}"
-
-Structure obligatoire en 3 temps :
-1. CONTEXTE DU JOUR (1-2 phrases personnelles ancrées dans un moment réel du quotidien)
-2. LIEN avec le problème ou la douleur de la cible (faire le pont entre le contexte et ce que vit la cible — s'appuyer sur les verbatims et freins clients du profil)
-3. APPEL À ACTION doux et concret (pas agressif — invitation naturelle vers l'offre prioritaire de la semaine avec un mot-clé de réponse ou un DM)
-
-Ton : naturel, authentique, jamais commercial. Utilise la voix du profil.
-Maximum 5 phrases au total.`,
-
-    lifestyle: `${blocsPersonnalisation}\n\nMATIÈRE DE LA SEMAINE :\n${matiere}\n\n
-Tu génères un script de story Instagram de type LIFESTYLE / STORYTELLING.
-Sujet : "${s.sujet}"
-
-Règles :
-- Montre une scène réelle du quotidien pro ou perso qui révèle qui est cette personne
-- Ce n'est pas une leçon, c'est une fenêtre ouverte sur sa vie — l'audience doit se reconnaître ou être touchée
-- Puise dans les anecdotes, habitudes et valeurs du profil
-- Pas de morale explicite — la valeur se ressent, elle ne se déclare pas
-- Ton : intime, spontané, voix du profil
-Maximum 3-4 phrases.`
+  // Génération via Apps Script — profil lu depuis Sheets
+  const body = {
+    action:     'generer_post',
+    ia:         CFG.ia || 'claude',
+    cle_ia:     CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+    reseau:     'Instagram',
+    format:     'Stories',
+    pilier:     s.typo === 'vente' ? 'autorite' : s.typo === 'valeur' ? 'expertise' : 'visibilite',
+    sujet:      '[STORY ' + s.typo.toUpperCase() + '] ' + s.sujet,
+    matiere:    matiere,
+    story_type: s.typo
   };
 
-  const prompt = prompts[s.typo] || prompts.lifestyle;
-
   try{
-    const texte = await appelIA(prompt);
-    zone.textContent = texte;
+    if(!CFG.as) throw new Error('URL Apps Script manquante — configure Mon Compte');
+    const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
+    const j = await r.json();
+    if(j.erreur) throw new Error(j.erreur);
+    zone.textContent = j.texte || '';
     toast('✅ Script généré !','ok');
   } catch(e){
     zone.textContent = 'Erreur de génération.';
-    toast('❌ Erreur','err');
+    toast('❌ ' + e.message,'err');
   }
 }
 

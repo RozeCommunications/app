@@ -2832,6 +2832,7 @@ function afficherCarrousel(slides, legende, reseau, containerId){
         ${reseau === 'Instagram'
           ? `<button class="btn btn-ghost" onclick="exporterPNG()">⬇️ Télécharger PNG (slide par slide)</button>`
           : `<button class="btn btn-ghost" onclick="exporterPDF()">⬇️ Télécharger PDF</button>`}
+        <button class="btn btn-rose" onclick="ouvrirCanva()" style="gap:.4rem;">✏️ Modifier dans Canva</button>
         <button class="btn btn-outline" onclick="copierLegendeCv()">Copier la légende</button>
       </div>
       <div style="padding:.6rem 1rem;border-top:1px solid var(--gris-border);font-size:.78rem;color:#aaa;line-height:1.55;"
@@ -2903,6 +2904,30 @@ function ouvrirCarrouselFullscreen(){
     cvSlideActive = Math.max(0, Math.min(slides.length-1, cvSlideActive + dir));
     document.getElementById('cv-fs-content').innerHTML = rendreFSSlide(cvSlideActive);
   };
+}
+
+function ouvrirCanva(){
+  if(!carrouselCourant) return;
+  const { slides, legende, reseau } = carrouselCourant;
+
+  // Construire un texte récapitulatif des slides pour le presse-papier
+  const recap = slides.map((s,i) =>
+    `SLIDE ${s.num} — ${(s.type||'').toUpperCase()}\n` +
+    (s.titre    ? `Titre : ${s.titre}\n`     : '') +
+    (s.sousTitre? `Sous-titre : ${s.sousTitre}\n` : '') +
+    (s.corps    ? `Corps : ${s.corps}\n`     : '')
+  ).join('\n') + (legende ? `\nLÉGENDE :\n${legende}` : '');
+
+  navigator.clipboard.writeText(recap).then(() => {
+    toast('📋 Textes copiés — colle-les dans Canva après l\'ouverture','ok');
+  }).catch(()=>{});
+
+  // Ouvrir Canva avec un format Instagram (ratio 3:4 = 1080×1440)
+  // L'utilisateur choisit son template et colle les textes
+  const url = reseau === 'LinkedIn'
+    ? 'https://www.canva.com/create/linkedin-posts/'
+    : 'https://www.canva.com/create/instagram-posts/';
+  window.open(url, '_blank');
 }
 
 function copierLegendeCv(){
@@ -3659,11 +3684,14 @@ async function sauvegarderGenPanel(){
   let slides = null;
 
   if(isCarrousel){
-    // Pour les carrousels : récupérer les slides depuis le dataset
+    // Récupérer les slides depuis le dataset ou depuis le viewer inline
     try{ slides = JSON.parse(result.dataset.slides||'null'); }catch(e){}
-    // Reconstruire le JSON comme texte de sauvegarde
+    // Fallback : récupérer depuis carrouselCourant si dataset vide
+    if(!slides && typeof carrouselCourant !== 'undefined' && carrouselCourant){
+      slides = carrouselCourant.slides;
+    }
     if(slides) texte = JSON.stringify({slides, legende});
-    else texte = result.textContent.trim(); // fallback
+    else texte = result.textContent.trim();
   } else {
     texte = result.textContent.trim();
   }

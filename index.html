@@ -78,7 +78,7 @@
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
     html{height:100%;}
-    body{font-family:'DM Sans',sans-serif;background:var(--noir);color:var(--blanc);height:100%;overflow:hidden;display:flex;flex-direction:column;padding-top:var(--safe-top);}
+    body{font-family:'DM Sans',sans-serif;background:var(--anthracite);color:var(--blanc);height:100%;overflow:hidden;display:flex;flex-direction:column;padding-top:var(--safe-top);}
 
     /* ─ HEADER ─ */
     header{background:var(--anthracite);border-bottom:1px solid var(--gris-border);padding:0 1.2rem;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:50;}
@@ -98,7 +98,7 @@
     @keyframes fi{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
     /* ─ TAB BAR ─ */
-    .tabs{position:fixed;bottom:0;left:0;right:0;background:var(--anthracite);border-top:1px solid var(--gris-border);display:flex;padding-bottom:var(--safe-bottom);z-index:100;}
+    .tabs{position:fixed;bottom:0;left:0;right:0;background:var(--anthracite);border-top:1px solid var(--gris-border);display:flex;padding-bottom:max(var(--safe-bottom),16px);z-index:100;}
     .tab{flex:1;background:none;border:none;color:var(--gris-clair);font-family:'DM Sans',sans-serif;font-size:.72rem;font-weight:500;padding:10px 2px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:56px;transition:color .2s;}
     .tab i{font-size:1.25rem;line-height:1;font-style:normal;}
     .tab.on{color:var(--rose);}
@@ -1755,16 +1755,21 @@
     </div>
 
     <!-- Texte principal -->
-    <div style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Texte du post</div>
+    <div id="edit-texte-hd" style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Texte du post</div>
     <textarea class="edit-zone" id="edit-texte" placeholder="Texte du post…"></textarea>
+    <!-- Zone carrousel (visible uniquement pour les posts carrousel) -->
+    <div id="edit-carrousel-zone" style="display:none;">
+      <div style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Aperçu carrousel</div>
+      <div id="edit-carrousel-wrap"></div>
+    </div>
     <div class="regen-row">
       <button class="btn btn-ghost btn-sm" onclick="regenPost()">🔄 Régénérer le sujet</button>
       <button class="btn btn-ghost btn-sm" onclick="regenManuel()">✏️ Saisir un sujet</button>
     </div>
     <div class="mini-loader" id="loader-regen"><div class="mini-ring"></div><span>Régénération en cours…</span></div>
 
-    <!-- Légende -->
-    <div style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Légende (Instagram / hashtags)</div>
+    <!-- Légende (masquée pour les carrousels — déjà dans le viewer) -->
+    <div id="edit-legende-hd" style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Légende & hashtags</div>
     <textarea class="legende-zone" id="edit-legende" placeholder="Légende + hashtags…"></textarea>
     <div class="regen-row">
       <button class="btn btn-ghost btn-sm" onclick="regenLegende()">🔄 Régénérer la légende</button>
@@ -2643,11 +2648,21 @@ function toggleActu(){
 }
 
 async function rechercherActu(){
-  const refs = lsJ('roze_references') || [];
-  const secteur = lsJ('roze_secteur') || CFG.prenom || 'mon secteur';
-  const query = refs.length
-    ? `actualités récentes ${refs[0]} ${new Date().getFullYear()}`
-    : `actualités ${secteur} ${new Date().getFullYear()}`;
+  // Priorité 1 : sujet saisi par l'utilisateur
+  // Priorité 2 : secteur configuré dans le profil
+  // Priorité 3 : prénom (fallback)
+  const sujetSaisi = (document.getElementById('gen-sujet')||{}).value?.trim() || '';
+  const refs       = lsJ('roze_references') || [];
+  const metier     = (lsJ('roze_cfg') && lsJ('roze_cfg').metier) || CFG.metier || '';
+  const secteur    = metier || (refs.length ? refs[0] : '') || 'marketing digital';
+
+  let query;
+  if(sujetSaisi){
+    // Recherche ciblée sur le sujet exact
+    query = `${sujetSaisi} ${new Date().getFullYear()} actualités tendances`;
+  } else {
+    query = `actualités récentes ${secteur} ${new Date().getFullYear()}`;
+  }
 
   const wl = document.getElementById('web-loader'); wl.classList.add('on');
   document.getElementById('actu-result').classList.remove('on');
@@ -2661,7 +2676,10 @@ async function rechercherActu(){
         model:'claude-sonnet-4-20250514',
         max_tokens:600,
         tools:[{type:'web_search_20250305',name:'web_search'}],
-        messages:[{role:'user',content:`Fais une recherche web sur : "${query}". Résume en 3-4 phrases les actualités les plus récentes et pertinentes. Réponds uniquement avec ce résumé factuel, sans préambule.`}]
+        messages:[{role:'user',content:`Recherche web : "${query}".
+Trouve des informations récentes et pertinentes UNIQUEMENT sur ce sujet précis.
+Résume en 3-4 phrases factuelles et concrètes. Ne parle que du sujet demandé.
+Réponds uniquement avec le résumé, sans préambule ni explication.`}]
       })
     });
     const d = await r.json();
@@ -4079,9 +4097,42 @@ function ouvrirEdit(id){
   document.getElementById('opt-ig').className='reseau-opt'+(it.reseau==='Instagram'?' on-ig':'');
   // Date
   document.getElementById('edit-date').value=it.date||dateAujourdhui();
-  // Texte
-  document.getElementById('edit-texte').value=it.texte||'';
+  // Texte — carrousel ou post standard
+  const editCarrousel = it.typeContenu === 'Carrousel';
+  const editZoneWrap  = document.getElementById('edit-carrousel-zone');
+  const editTextArea  = document.getElementById('edit-texte');
+  const editTexteHd   = document.getElementById('edit-texte-hd');
+
+  if(editCarrousel){
+    // Afficher le viewer carrousel + bouton téléchargement
+    let slides = null;
+    try{ slides = JSON.parse(it.texte); if(slides && slides.slides) slides = slides.slides; }catch(e){}
+    if(slides && Array.isArray(slides)){
+      if(editZoneWrap) editZoneWrap.style.display = 'block';
+      if(editTextArea) editTextArea.style.display = 'none';
+      if(editTexteHd)  editTexteHd.style.display  = 'none';
+      afficherCarrousel(slides, it.legende||'', it.reseau||'Instagram', 'edit-carrousel-wrap');
+    } else {
+      // JSON mal formé — afficher en texte brut
+      if(editZoneWrap) editZoneWrap.style.display = 'none';
+      if(editTextArea){ editTextArea.style.display='block'; editTextArea.value = it.texte||''; }
+    }
+  } else {
+    if(editZoneWrap) editZoneWrap.style.display = 'none';
+    if(editTextArea){ editTextArea.style.display = 'block'; editTextArea.value = it.texte||''; }
+    if(editTexteHd)  editTexteHd.style.display   = 'block';
+  }
   document.getElementById('edit-legende').value=it.legende||'';
+  // Masquer le textarea légende pour les carrousels (légende déjà dans le viewer)
+  const legHd = document.getElementById('edit-legende-hd');
+  const legTa = document.getElementById('edit-legende');
+  if(editCarrousel){
+    if(legHd) legHd.style.display = 'none';
+    if(legTa) legTa.style.display = 'none';
+  } else {
+    if(legHd) legHd.style.display = 'block';
+    if(legTa) legTa.style.display = 'block';
+  }
   // Statut
   const btnSt=document.getElementById('btn-st-toggle');
   if(it.statut==='Publié'){ btnSt.textContent='↩️ Remettre à relire'; btnSt.style.background='rgba(232,24,109,.12)'; btnSt.style.color='var(--rose)'; }

@@ -225,7 +225,7 @@
     [data-theme="light"] .gen-bigbtn.primaire .gb-titre{color:#fff;}
     [data-theme="light"] .gen-bigbtn.primaire .gb-desc{color:rgba(255,255,255,.85);}
     /* Panneau "1 post" */
-    .gen-panel{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:14px;padding:1.2rem;margin-bottom:1rem;display:none;}
+    .gen-panel{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:14px;padding:1.2rem;margin-bottom:1rem;display:none;overflow:hidden;}
     .gen-panel.on{display:block;animation:fi .2s ease;}
     .gen-panel h4{font-size:.85rem;font-weight:700;margin-bottom:.9rem;color:var(--blanc);}
     .sel-row{display:flex;gap:.6rem;margin-bottom:.8rem;}
@@ -582,9 +582,10 @@
     .acc.open 
 
     /* ─ PILIERS DE CONTENU ─ */
-    .piliers-row{display:flex;gap:.4rem;margin-bottom:.7rem;flex-wrap:wrap;}
-    .pilier-chip{flex:1;min-width:calc(50% - .4rem);background:var(--gris-carte);border:2px solid var(--gris-border);border-radius:12px;padding:.55rem .7rem;cursor:pointer;transition:all .18s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;}
+    .piliers-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.7rem;}
+    .pilier-chip{background:var(--gris-carte);border:2px solid var(--gris-border);border-radius:12px;padding:.7rem .5rem;cursor:pointer;transition:all .18s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.3rem;}
     .pilier-chip:active{transform:scale(.97);}
+    #gen-piliers,#creer-piliers{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
     .pilier-chip .pi{font-size:1.1rem;}
     .pilier-chip .pn{font-size:.72rem;font-weight:700;color:var(--blanc-doux);}
     .pilier-chip.on-vis{border-color:#5bb8ff;background:rgba(0,119,181,.12);}
@@ -1251,7 +1252,7 @@
 
       <!-- Date de publication -->
       <span class="creer-lbl">📅 Date de publication</span>
-      <input type="date" id="gen-date" style="margin-bottom:.2rem;font-size:16px;"/>
+      <input type="date" id="gen-date" style="margin-bottom:.2rem;font-size:16px;width:100%;max-width:100%;box-sizing:border-box;display:block;"/>
 
       <!-- Réseau social — en premier -->
       <span class="creer-lbl">Réseau social</span>

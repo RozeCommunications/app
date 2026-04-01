@@ -1016,9 +1016,76 @@
     .csb-chevron{font-size:1rem;color:rgba(255,255,255,.55);flex-shrink:0;margin-left:auto;}
     .cal-stories-btn:active 
     
+
+    /* ══ ÉCRAN LOGIN ══ */
+    #login-screen{
+      position:fixed;inset:0;z-index:9999;
+      background:var(--noir);
+      display:flex;align-items:center;justify-content:center;
+      padding:1.5rem;
+    }
+    .login-wrap{
+      width:100%;max-width:400px;
+      display:flex;flex-direction:column;
+      align-items:center;gap:2rem;
+    }
+    .login-logo{text-align:center;}
+    .login-badge{
+      display:inline-block;
+      font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--rose);border:1px solid rgba(232,24,109,.3);
+      border-radius:999px;padding:.3rem .9rem;margin-bottom:1rem;
+    }
+    .login-titre{
+      font-family:'Playfair Display',serif;
+      font-size:2.2rem;font-weight:700;
+      color:var(--blanc);line-height:1.2;margin:0 0 .6rem;
+    }
+    .login-titre em{color:var(--rose);font-style:italic;}
+    .login-sous{font-size:.88rem;color:var(--gris-clair);line-height:1.5;margin:0;}
+    .login-card{
+      width:100%;background:var(--gris-carte);
+      border:1px solid var(--gris-border);border-radius:20px;
+      padding:1.8rem 1.4rem;
+      display:flex;flex-direction:column;align-items:center;gap:1.2rem;
+    }
+    .login-status{
+      width:100%;padding:.75rem 1rem;border-radius:10px;
+      font-size:.82rem;text-align:center;line-height:1.4;
+    }
+    .login-status.err{background:rgba(232,24,109,.1);color:var(--rose-clair);border:1px solid rgba(232,24,109,.2);}
+    .login-status.wait{background:rgba(255,255,255,.05);color:var(--gris-clair);}
+    #google-btn-wrap{
+      width:100%;display:flex;justify-content:center;
+    }
+    .login-note{
+      font-size:.72rem;color:var(--gris-clair);text-align:center;line-height:1.5;margin:0;
+    }
+    [data-theme="light"] #login-screen{background:var(--noir);}
+    [data-theme="light"] .login-card{background:#fff;border-color:var(--gris-border);}
+
   </style>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
+
+<!-- ══ ÉCRAN DE LOGIN ══ -->
+<div id="login-screen" style="display:none;">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <div class="login-badge">✦ Roze Communications</div>
+      <h1 class="login-titre">Ton assistante<br/><em>réseaux sociaux</em></h1>
+      <p class="login-sous">Connecte-toi avec ton compte Google pour accéder à ton espace.</p>
+    </div>
+    <div class="login-card">
+      <div id="login-status" class="login-status" style="display:none;"></div>
+      <div id="google-btn-wrap">
+        <div id="google-signin-btn"></div>
+      </div>
+      <p class="login-note">Accès réservé aux stagiaires Roze Communications.<br/>Problème d'accès ? <a href="mailto:contact@roze-communications.com" style="color:var(--rose);">Contacte-moi</a></p>
+    </div>
+  </div>
+</div>
 
 <header>
   <div class="logo">
@@ -1540,6 +1607,7 @@
 
     <div style="margin-top:1.6rem;">
       <button class="btn btn-rose btn-full" onclick="sauvegarderCompte()" style="padding:1rem;font-size:.95rem;letter-spacing:.02em;">💾 Sauvegarder Mon Compte</button>
+      <button class="btn btn-ghost" style="width:100%;margin-top:.5rem;font-size:.78rem;color:var(--gris-clair);" onclick="seDeconnecter()">↩️ Se déconnecter</button>
     </div>
     <div class="note">⚠️ Ces données sont enregistrées uniquement sur ton appareil — aucune donnée n’est envoyée à Roze Communications.</div>
     <!-- Guide PWA -->
@@ -1958,6 +2026,8 @@ let CAL = { vue:'mois', annee:new Date().getFullYear(), mois:new Date().getMonth
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded',()=>{
   initTheme(); initUI(); chargerCompte(); affDate(); construireStoriesUI(); majGenFormats(getGenReseau()); majRythme();
+  syncConfigDepuisSheets(); // Sync multi-appareils au démarrage
+  initAuth(); // Contrôle d'accès Google Sign-In
   majSemMini(); majKPIs();
   // Afficher le badge sync si posts en attente
   const qInit = getQueueSync();
@@ -3186,6 +3256,214 @@ function driveRetour(){
 // ══════════════════════════════════════════
 // LECTURE FICHIER ROZE_MODELES
 // ══════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// AUTHENTIFICATION GOOGLE SIGN-IN
+// ══════════════════════════════════════════════════════════
+const GOOGLE_CLIENT_ID = '467619618320-vf33rsticsngcoomhsg9u66l6spvv6gh.apps.googleusercontent.com';
+
+// Clé session — on stocke l'email autorisé en sessionStorage
+// (sessionStorage = effacé à la fermeture du navigateur,
+//  mais persiste pendant la session → pas de reconnexion à chaque page)
+const SESSION_KEY = 'roze_auth_email';
+const SESSION_NOM = 'roze_auth_nom';
+
+function getSessionEmail(){ return sessionStorage.getItem(SESSION_KEY) || ''; }
+function getSessionNom(){   return sessionStorage.getItem(SESSION_NOM)  || ''; }
+
+function initAuth(){
+  const emailSession = getSessionEmail();
+  if(emailSession){
+    // Session active → afficher l'app directement
+    afficherApp();
+    return;
+  }
+  // Pas de session → afficher l'écran login
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-screen').style.removeProperty('display');
+  // Cacher l'app pendant le login
+  document.querySelector('header').style.display = 'none';
+  document.querySelector('.scroll').style.display = 'none';
+  document.querySelector('.tabs').style.display   = 'none';
+
+  // Initialiser Google Sign-In
+  if(window.google && window.google.accounts){
+    lancerGSI();
+  } else {
+    // Script GSI pas encore chargé — attendre
+    window.addEventListener('load', lancerGSI);
+  }
+}
+
+function lancerGSI(){
+  if(!window.google || !window.google.accounts) return;
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback:  onGoogleSignIn,
+    auto_select: false,
+    cancel_on_tap_outside: false,
+  });
+  google.accounts.id.renderButton(
+    document.getElementById('google-signin-btn'),
+    { theme:'filled_black', size:'large', text:'signin_with', shape:'pill', width:280 }
+  );
+}
+
+async function onGoogleSignIn(response){
+  afficherLoginStatus('⏳ Vérification en cours…', 'wait');
+
+  // Décoder le JWT pour extraire l'email
+  const payload = JSON.parse(atob(response.credential.split('.')[1]));
+  const email   = payload.email || '';
+  const nom     = payload.name  || payload.given_name || '';
+
+  if(!email){
+    afficherLoginStatus('❌ Impossible de récupérer ton email Google.', 'err');
+    return;
+  }
+
+  // Vérifier l'accès via Apps Script
+  const asUrl = CFG.as || localStorage.getItem('roze_as') || '';
+  if(!asUrl){
+    // Pas d'URL AS encore — accepter provisoirement (première config)
+    // L'admin (Roze) peut toujours accéder pour configurer
+    sessionStorage.setItem(SESSION_KEY, email);
+    sessionStorage.setItem(SESSION_NOM, nom);
+    afficherApp();
+    return;
+  }
+
+  try{
+    const r = await fetch(asUrl, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'verifier_acces', email })
+    });
+    const j = await r.json();
+    if(j.autorise){
+      sessionStorage.setItem(SESSION_KEY, email);
+      sessionStorage.setItem(SESSION_NOM, j.nom || nom);
+      afficherApp();
+    } else {
+      afficherLoginStatus('🚫 ' + (j.message || 'Accès non autorisé.'), 'err');
+    }
+  } catch(e){
+    afficherLoginStatus('❌ Erreur de connexion. Vérifie ta connexion internet.', 'err');
+  }
+}
+
+function afficherLoginStatus(msg, type){
+  const el = document.getElementById('login-status');
+  if(!el) return;
+  el.textContent = msg;
+  el.className   = 'login-status ' + type;
+  el.style.display = 'block';
+}
+
+function afficherApp(){
+  // Cacher l'écran login, afficher l'app
+  const ls = document.getElementById('login-screen');
+  if(ls) ls.style.display = 'none';
+  document.querySelector('header').style.display = '';
+  document.querySelector('.scroll').style.display = '';
+  document.querySelector('.tabs').style.display   = '';
+  majAccueil();
+  afficherStreak();
+  affDate();
+}
+
+function seDeconnecter(){
+  sessionStorage.removeItem(SESSION_KEY);
+  sessionStorage.removeItem(SESSION_NOM);
+  if(window.google && window.google.accounts){
+    google.accounts.id.disableAutoSelect();
+  }
+  location.reload();
+}
+
+// ══════════════════════════════════════════════════════════
+// CONFIG SHEETS — sync multi-appareils
+// ══════════════════════════════════════════════════════════
+
+// Construire l'objet config à envoyer au Sheets
+function buildConfigPayload(){
+  return {
+    prenom:       CFG.prenom       || '',
+    nom:          CFG.nom          || '',
+    entreprise:   CFG.entreprise   || '',
+    metier:       CFG.metier       || '',
+    as:           CFG.as           || '',
+    api:          CFG.api          || '',
+    api_gemini:   CFG.apiGemini    || '',
+    ia:           CFG.ia           || 'claude',
+    drive_photos: CFG.drivePhotos  || '',
+    logo_url:     CFG.logoUrl      || '',
+    couleur1:     CFG.couleur1     || '#E8186D',
+    couleur2:     CFG.couleur2     || '#111111',
+    couleur3:     CFG.couleur3     || '',
+    couleur4:     CFG.couleur4     || '',
+    couleur_texte:CFG.couleurTexte || '#111111',
+    police_titre: CFG.policeTitre  || 'Playfair Display',
+    police_corps: CFG.policeCorps  || 'DM Sans',
+  };
+}
+
+// Appliquer un objet config reçu du Sheets → CFG + localStorage
+function appliquerConfig(config){
+  if(!config) return;
+  const map = {
+    prenom:       ['prenom',      'roze_prenom'],
+    nom:          ['nom',         'roze_nom'],
+    entreprise:   ['entreprise',  'roze_entreprise'],
+    metier:       ['metier',      'roze_metier'],
+    as:           ['as',          'roze_as'],
+    api:          ['api',         'roze_api'],
+    api_gemini:   ['apiGemini',   'roze_api_gemini'],
+    ia:           ['ia',          'roze_ia'],
+    drive_photos: ['drivePhotos', 'roze_drive_photos'],
+    logo_url:     ['logoUrl',     'roze_logo_url'],
+    couleur1:     ['couleur1',    'roze_couleur1'],
+    couleur2:     ['couleur2',    'roze_couleur2'],
+    couleur3:     ['couleur3',    'roze_couleur3'],
+    couleur4:     ['couleur4',    'roze_couleur4'],
+    couleur_texte:['couleurTexte','roze_couleur_texte'],
+    police_titre: ['policeTitre', 'roze_police_titre'],
+    police_corps: ['policeCorps', 'roze_police_corps'],
+  };
+  Object.entries(map).forEach(([sheetKey, [cfgKey, lsKey]]) => {
+    const val = config[sheetKey];
+    if(val !== undefined && val !== null && val !== ''){
+      CFG[cfgKey] = val;
+      localStorage.setItem(lsKey, val);
+    }
+  });
+}
+
+// Lire la config depuis le Sheets (au démarrage si CFG.as connu)
+async function syncConfigDepuisSheets(){
+  if(!CFG.as) return; // pas encore configuré
+  try{
+    const r = await fetch(CFG.as, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'lire_config' })
+    });
+    const j = await r.json();
+    if(j.config && Object.keys(j.config).length > 0){
+      appliquerConfig(j.config);
+      chargerCompte(); // Rafraîchir les champs du DOM
+    }
+  } catch(e){ /* silencieux — on garde le localStorage */ }
+}
+
+// Sauvegarder la config vers le Sheets
+async function syncConfigVersSheets(){
+  if(!CFG.as) return;
+  try{
+    await fetch(CFG.as, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'sauvegarder_config', config: buildConfigPayload() })
+    });
+  } catch(e){ /* silencieux */ }
+}
+
 // lireMd et lireFichierModeles supprimés — profil lu depuis Sheets via Apps Script
 
 function matiereSemaine(){
@@ -4562,6 +4840,11 @@ function chargerCompte(){
   setV2('cfg-metier',       CFG.metier);
   setV2('cfg-as',           CFG.as);
   setV2('cfg-api',          CFG.api);
+  setV2('cfg-api-gemini',   CFG.apiGemini);
+  setV2('cfg-drive-photos', CFG.drivePhotos);
+  setV2('cfg-logo-url',     CFG.logoUrl);
+  setV2('cfg-police-titre', CFG.policeTitre);
+  setV2('cfg-police-corps', CFG.policeCorps);
   setV2('cfg-couleur1',     CFG.couleur1);
   setV2('cfg-couleur2',     CFG.couleur2);
   setV2('cfg-couleur3',     CFG.couleur3);
@@ -4630,6 +4913,7 @@ function sauvegarderCompte(){
   syncStories();
   construireStoriesUI();
   const nomAffiche = [CFG.prenom, CFG.nom].filter(Boolean).join(' '); const el_nc = document.getElementById('nom-client'); if(el_nc && !el_nc.onclick) el_nc.textContent = nomAffiche || 'Se repérer ›';
+  syncConfigVersSheets(); // Sync vers Sheets
   toast('✅ Compte sauvegardé !','ok');
 }
 

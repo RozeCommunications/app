@@ -1017,6 +1017,32 @@
     .cal-stories-btn:active 
     
 
+    /* ── Tooltip Canva ── */
+    .cv-tip-inner{
+      background:var(--gris-carte);
+      border:1px solid var(--gris-border);
+      border-radius:20px 20px 0 0;
+      padding:1.4rem 1.2rem 1.8rem;
+      width:100%;max-width:480px;
+      position:relative;
+    }
+    .cv-tip-close{
+      position:absolute;top:.8rem;right:.8rem;
+      background:none;border:none;cursor:pointer;
+      color:var(--gris-clair);font-size:1rem;padding:.3rem;
+    }
+    .cv-tip-titre{
+      font-size:.95rem;font-weight:700;
+      color:var(--blanc);margin-bottom:.8rem;
+    }
+    .cv-tip-steps{
+      margin:0;padding-left:1.3rem;
+      display:flex;flex-direction:column;gap:.4rem;
+    }
+    .cv-tip-steps li{
+      font-size:.82rem;color:var(--blanc-doux);line-height:1.4;
+    }
+    .cv-tip-steps strong{color:var(--blanc);}
     /* ══ ÉCRAN LOGIN ══ */
     #login-screen{
       position:fixed;inset:0;z-index:9999;
@@ -2921,7 +2947,7 @@ function afficherCarrousel(slides, legende, reseau, containerId){
         ${reseau === 'Instagram'
           ? `<button class="btn btn-ghost" onclick="exporterPNG()">⬇️ Télécharger PNG (slide par slide)</button>`
           : `<button class="btn btn-ghost" onclick="exporterPDF()">⬇️ Télécharger PDF</button>`}
-        <button class="btn btn-rose" onclick="ouvrirCanva()" style="gap:.4rem;">✏️ Modifier dans Canva</button>
+        <button class="btn btn-outline" onclick="ouvrirCanva()" title="Télécharge tes slides puis importe-les dans Canva pour les personnaliser">🎨 Importer dans Canva</button>
         <button class="btn btn-outline" onclick="copierLegendeCv()">Copier la légende</button>
       </div>
       <div style="padding:.6rem 1rem;border-top:1px solid var(--gris-border);font-size:.78rem;color:#aaa;line-height:1.55;"
@@ -2997,26 +3023,48 @@ function ouvrirCarrouselFullscreen(){
 
 function ouvrirCanva(){
   if(!carrouselCourant) return;
-  const { slides, legende, reseau } = carrouselCourant;
+  const { reseau } = carrouselCourant;
 
-  // Construire un texte récapitulatif des slides pour le presse-papier
-  const recap = slides.map((s,i) =>
-    `SLIDE ${s.num} — ${(s.type||'').toUpperCase()}\n` +
-    (s.titre    ? `Titre : ${s.titre}\n`     : '') +
-    (s.sousTitre? `Sous-titre : ${s.sousTitre}\n` : '') +
-    (s.corps    ? `Corps : ${s.corps}\n`     : '')
-  ).join('\n') + (legende ? `\nLÉGENDE :\n${legende}` : '');
+  // Afficher le tooltip d'instruction
+  afficherTooltipCanva(reseau);
+}
 
-  navigator.clipboard.writeText(recap).then(() => {
-    toast('📋 Textes copiés — colle-les dans Canva après l\'ouverture','ok');
-  }).catch(()=>{});
+function afficherTooltipCanva(reseau){
+  // Supprimer un tooltip existant
+  const old = document.getElementById('canva-tooltip');
+  if(old) old.remove();
 
-  // Ouvrir Canva avec un format Instagram (ratio 3:4 = 1080×1440)
-  // L'utilisateur choisit son template et colle les textes
-  const url = reseau === 'LinkedIn'
-    ? 'https://www.canva.com/create/linkedin-posts/'
-    : 'https://www.canva.com/create/instagram-posts/';
-  window.open(url, '_blank');
+  const isIG = reseau !== 'LinkedIn';
+  const url  = isIG
+    ? 'https://www.canva.com/design?create&type=instagram-post'
+    : 'https://www.canva.com/design?create&type=presentation';
+
+  const tip = document.createElement('div');
+  tip.id = 'canva-tooltip';
+  tip.innerHTML = `
+    <div class="cv-tip-inner">
+      <button class="cv-tip-close" onclick="document.getElementById('canva-tooltip').remove()">✕</button>
+      <div class="cv-tip-titre">🎨 Importer dans Canva</div>
+      <ol class="cv-tip-steps">
+        <li>Télécharge tes slides en PNG&nbsp;👇</li>
+        <li>Ouvre Canva (bouton ci-dessous)</li>
+        <li>Crée un design <strong>${isIG ? 'Instagram (1080×1350)' : 'LinkedIn (1080×1350)'}</strong></li>
+        <li>Importe tes PNG via <strong>Importer un fichier</strong></li>
+        <li>Modifie textes &amp; graphismes librement</li>
+      </ol>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.8rem;">
+        <button class="btn btn-ghost btn-sm" onclick="exporterPNG();document.getElementById('canva-tooltip').remove();">
+          ⬇️ Télécharger les PNG d'abord
+        </button>
+        <a href="${url}" target="_blank" class="btn btn-rose btn-sm" style="text-decoration:none;"
+           onclick="document.getElementById('canva-tooltip').remove()">
+          Ouvrir Canva →
+        </a>
+      </div>
+    </div>`;
+  tip.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;padding:1rem;';
+  tip.addEventListener('click', e=>{ if(e.target===tip) tip.remove(); });
+  document.body.appendChild(tip);
 }
 
 function copierLegendeCv(){

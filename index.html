@@ -249,7 +249,67 @@
     .loader p{font-size:.85rem;color:var(--gris-clair);}
     .loader p em{color:var(--rose);font-style:normal;}
     #zone-res{margin-top:1rem;}
-    .res-post{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:14px;overflow:hidden;margin-bottom:.8rem;animation:fi .3s ease;}
+        /* ── Résultats semaine — 3 encarts ── */
+    .res-encart{
+      background:var(--gris-carte);
+      border:1px solid var(--gris-border);
+      border-radius:14px;
+      overflow:hidden;
+      margin-bottom:.8rem;
+      animation:fi .3s ease;
+    }
+    .res-encart-hd{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:.9rem 1rem;
+      cursor:pointer;
+      background:var(--gris-moyen);
+      user-select:none;
+    }
+    .res-encart-hd:hover{background:var(--gris-input);}
+    .res-encart-left{display:flex;align-items:center;gap:.5rem;}
+    .res-encart-ic{font-size:1.1rem;}
+    .res-encart-titre{font-size:.85rem;font-weight:700;color:var(--blanc);}
+    .res-encart-badge{
+      font-size:.7rem;font-weight:700;
+      background:var(--rose);color:#fff;
+      border-radius:999px;padding:.15rem .5rem;
+    }
+    .res-encart-chevron{
+      font-size:.65rem;color:var(--gris-clair);
+      transition:transform .2s;flex-shrink:0;
+    }
+    .res-encart-body{padding:.6rem .8rem .8rem;}
+    .res-item{
+      background:var(--gris-input);
+      border:1px solid var(--gris-border);
+      border-radius:10px;
+      padding:.8rem;
+      margin-bottom:.6rem;
+    }
+    .res-item:last-child{margin-bottom:0;}
+    .res-item-meta{
+      display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;
+      margin-bottom:.5rem;
+    }
+    .res-item-type{
+      font-size:.72rem;font-weight:700;
+      color:var(--rose-clair);
+      background:rgba(232,24,109,.1);
+      border-radius:999px;padding:.15rem .55rem;
+    }
+    .res-item-date{
+      font-size:.72rem;color:var(--gris-clair);
+    }
+    .res-item-texte{
+      font-size:.82rem;color:var(--blanc-doux);
+      line-height:1.6;white-space:pre-wrap;
+    }
+    .res-item-legende{
+      font-size:.75rem;color:var(--gris-clair);
+      font-style:italic;
+    }
+    [data-theme="light"] .res-encart-hd{background:#f0ede9;}
+    [data-theme="light"] .res-item{background:#f8f6f3;}
     .res-hd{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1rem;background:var(--gris-moyen);border-bottom:1px solid var(--gris-border);}
     .res-hd .tag{font-size:.72rem;font-weight:700;color:var(--rose);text-transform:uppercase;letter-spacing:.06em;}
     .res-body{padding:1rem;}
@@ -1487,6 +1547,9 @@
           <input type="text" id="cfg-entreprise" placeholder="Ex : Roze Communications" style="font-size:16px;"/>
           <label class="lbl">Métier</label>
           <input type="text" id="cfg-metier" placeholder="Ex : Formatrice réseaux sociaux" style="font-size:16px;"/>
+          <label class="lbl" style="margin-top:.6rem;">Sources de veille <span style="font-weight:400;color:var(--gris-clair);font-size:.75rem;">(médias, blogs, sites de référence)</span></label>
+          <input type="text" id="cfg-references" placeholder="Ex : Le Blog du Modérateur, Hootsuite Blog, leparisien.fr" style="font-size:16px;"/>
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.3rem;line-height:1.4;">L'IA puise dans ces sources pour enrichir tes posts avec des infos récentes. Sépare par des virgules.</div>
         </div>
       </div>
       <div class="duo-tab" id="tab-charte">
@@ -2023,14 +2086,20 @@ let CFG = {
   logoUrl:      ls('roze_logo_url')      || '',
   nom:          ls('roze_nom')           || '',
   entreprise:   ls('roze_entreprise')    || '',
-  metier:       ls('roze_metier')        || ''
+  metier:       ls('roze_metier')        || '',
+  references:   ls('roze_references')    || ''
 };
 
 // Rythme par défaut
 let RYTHME = lsJ('roze_rythme') || {
-  li: { actif:true, formats:{'Post texte':1,'Carrousel':1,'Vidéo':0,'Photo':0} },
-  ig: { actif:true, formats:{'Photo':2,'Carrousel':1,'Réel':0} }
+  li: { actif:true, formats:{'Post texte':1,'Carrousel':1,'Vidéo':0,'Photo':0},
+        jours:[2,4] },   // 2=mardi, 4=jeudi (0=lundi…6=dimanche)
+  ig: { actif:true, formats:{'Photo':2,'Carrousel':1,'Réel':0},
+        jours:[4] }      // 4=vendredi
 };
+// Assurer la rétro-compatibilité
+if(!RYTHME.li.jours) RYTHME.li.jours = [2,4];
+if(!RYTHME.ig.jours) RYTHME.ig.jours = [4];
 
 // Stories config (7 jours)
 const STORIES_DEF = [
@@ -2735,59 +2804,81 @@ let actuTexte = '';
 
 function toggleActu(){
   const cb = document.getElementById('cb-actu');
-  // sync le toggle visuel si appelé depuis le div parent
   if(event && event.target !== cb) cb.checked = !cb.checked;
-  if(cb.checked) rechercherActu();
-  else{
+  if(!cb.checked){
     document.getElementById('actu-result').classList.remove('on');
     actuTexte = '';
   }
+  // Pas de recherche ici — elle se déclenche au clic sur Générer
 }
 
 async function rechercherActu(){
-  // Priorité 1 : sujet saisi par l'utilisateur
-  // Priorité 2 : secteur configuré dans le profil
-  // Priorité 3 : prénom (fallback)
-  const sujetSaisi = (document.getElementById('gen-sujet')||{}).value?.trim() || '';
-  const refs       = lsJ('roze_references') || [];
-  const metier     = (lsJ('roze_cfg') && lsJ('roze_cfg').metier) || CFG.metier || '';
-  const secteur    = metier || (refs.length ? refs[0] : '') || 'marketing digital';
+  // Ne se déclenche QUE depuis genUnPost (au clic sur Générer)
+  // si le toggle actu est activé
 
-  let query;
-  if(sujetSaisi){
-    // Recherche ciblée sur le sujet exact
-    query = `${sujetSaisi} ${new Date().getFullYear()} actualités tendances`;
+  const sujetSaisi = (document.getElementById('gen-sujet')||{}).value?.trim() || '';
+  const metier     = CFG.metier || '';
+  const refsRaw    = CFG.references || '';
+
+  // Construire la liste des sources de veille
+  const sources = refsRaw
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  // Construire la requête de recherche
+  let query, instructionSource;
+
+  if(sujetSaisi && sources.length){
+    // Sujet précis + sources définies → chercher sur le sujet dans ces sources
+    const srcList = sources.join(', ');
+    query = `"${sujetSaisi}" site:${sources[0].replace(/https?:\/\//,'')} OR ${sujetSaisi} ${new Date().getFullYear()}`;
+    instructionSource = `Cherche en priorité sur ces sources : ${srcList}. Si pas de résultat pertinent sur ces sources, cherche sur le web.`;
+  } else if(sujetSaisi){
+    // Sujet précis sans sources → recherche web ciblée sur le sujet
+    query = `${sujetSaisi} tendances actualités ${new Date().getFullYear()}`;
+    instructionSource = `Cherche des articles ou données récentes sur ce sujet exact.`;
+  } else if(sources.length){
+    // Pas de sujet mais sources définies → chercher les derniers contenus de ces sources en lien avec le métier
+    const srcList = sources.join(', ');
+    query = `${metier} tendances ${new Date().getFullYear()} ${sources[0]}`;
+    instructionSource = `Cherche en priorité sur ces sources : ${srcList}. Trouve les articles ou données les plus récents en lien avec le métier : ${metier}.`;
   } else {
-    query = `actualités récentes ${secteur} ${new Date().getFullYear()}`;
+    // Fallback : tendances du secteur
+    query = `tendances ${metier || 'réseaux sociaux'} ${new Date().getFullYear()}`;
+    instructionSource = `Cherche des données et tendances récentes sur le secteur.`;
   }
 
   const wl = document.getElementById('web-loader'); wl.classList.add('on');
   document.getElementById('actu-result').classList.remove('on');
 
   try{
-    // Appel à Claude avec web_search tool
     const r = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body: JSON.stringify({
         model:'claude-sonnet-4-20250514',
-        max_tokens:600,
+        max_tokens:700,
         tools:[{type:'web_search_20250305',name:'web_search'}],
-        messages:[{role:'user',content:`Recherche web : "${query}".
-Trouve des informations récentes et pertinentes UNIQUEMENT sur ce sujet précis.
-Résume en 3-4 phrases factuelles et concrètes. Ne parle que du sujet demandé.
-Réponds uniquement avec le résumé, sans préambule ni explication.`}]
+        messages:[{role:'user',content:`${instructionSource}
+
+Requête : "${query}"
+
+RÈGLES STRICTES :
+- Cherche des CONTENUS (articles, données, chiffres, tendances) — pas des personnes ou prestataires
+- Ne mentionne JAMAIS d'autres formateurs, consultants ou concurrents
+- Résume en 2-3 phrases les informations les plus récentes et utiles
+- Cite la source à la fin entre parenthèses : (Source : nom du média, date)
+- Réponds uniquement avec le résumé + source, sans préambule`}]
       })
     });
     const d = await r.json();
-    // Extraire le texte de la réponse (peut contenir tool_use + text)
     const textBlocks = (d.content||[]).filter(b=>b.type==='text');
     actuTexte = textBlocks.map(b=>b.text).join(' ').trim() || 'Aucune actu trouvée.';
     document.getElementById('actu-txt').textContent = actuTexte;
     document.getElementById('actu-result').classList.add('on');
   }catch(e){
     actuTexte = '';
-    document.getElementById('cb-actu').checked = false;
     toast('❌ Recherche web échouée','err');
   }
   wl.classList.remove('on');
@@ -3438,6 +3529,7 @@ function buildConfigPayload(){
     nom:          CFG.nom          || '',
     entreprise:   CFG.entreprise   || '',
     metier:       CFG.metier       || '',
+    references:   CFG.references   || '',
     as:           CFG.as           || '',
     api:          CFG.api          || '',
     api_gemini:   CFG.apiGemini    || '',
@@ -3462,6 +3554,7 @@ function appliquerConfig(config){
     nom:          ['nom',         'roze_nom'],
     entreprise:   ['entreprise',  'roze_entreprise'],
     metier:       ['metier',      'roze_metier'],
+    references:   ['references',  'roze_references'],
     as:           ['as',          'roze_as'],
     api:          ['api',         'roze_api'],
     api_gemini:   ['apiGemini',   'roze_api_gemini'],
@@ -3877,33 +3970,66 @@ function splitTexteLegende(texte){
 
 function lireRythme(){
   const posts=[];
-  // Piliers par défaut selon le format (pour genSemaine en 1 clic)
   const pilierDefaut = {
-    'Post texte': ['autorite','expertise','visibilite'], // rotation
+    'Post texte': ['autorite','expertise','visibilite'],
     'Carrousel':  'expertise',
     'Photo':      'autorite',
     'Vidéo':      'visibilite',
     'Réel':       'visibilite',
   };
+
+  // Calculer les dates de la semaine pour chaque réseau
+  // Trouver le prochain jour de publication à partir de lundi
+  const lundi = lundiSem(new Date());
+
+  function datesPourJours(jours, n){
+    // Retourne n dates correspondant aux jours configurés (avec rotation si n > nb jours)
+    const dates = [];
+    const joursTries = [...(jours||[4])].sort((a,b)=>a-b);
+    for(let i=0;i<n;i++){
+      const j = joursTries[i % joursTries.length];
+      const d = new Date(lundi.getTime() + j * 86400000);
+      dates.push(d.toISOString().split('T')[0]);
+    }
+    return dates;
+  }
+
   let idx = 0;
-  if(RYTHME.li.actif) Object.entries(RYTHME.li.formats).forEach(([fmt,n])=>{
-    for(let i=0;i<n;i++){
-      const pd = pilierDefaut[fmt];
-      const pilier = Array.isArray(pd) ? pd[idx % pd.length] : (pd||'autorite');
-      posts.push({reseau:'LinkedIn',typeContenu:fmt,pilier});
-      idx++;
-    }
-  });
-  if(RYTHME.ig.actif) Object.entries(RYTHME.ig.formats).forEach(([fmt,n])=>{
-    for(let i=0;i<n;i++){
-      const pd = pilierDefaut[fmt];
-      const pilier = Array.isArray(pd) ? pd[idx % pd.length] : (pd||'autorite');
-      posts.push({reseau:'Instagram',typeContenu:fmt,pilier});
-      idx++;
-    }
-  });
-  // Ajouter les Stories si Instagram actif
-  if(RYTHME.ig.actif) posts.push({reseau:'Instagram',typeContenu:'Stories',pilier:'autorite'});
+
+  // LinkedIn
+  if(RYTHME.li.actif){
+    const totalLi = Object.values(RYTHME.li.formats).reduce((s,n)=>s+n,0);
+    const datesLi = datesPourJours(RYTHME.li.jours, totalLi);
+    let di = 0;
+    Object.entries(RYTHME.li.formats).forEach(([fmt,n])=>{
+      for(let i=0;i<n;i++){
+        const pd = pilierDefaut[fmt];
+        const pilier = Array.isArray(pd) ? pd[idx % pd.length] : (pd||'autorite');
+        posts.push({reseau:'LinkedIn', typeContenu:fmt, pilier, date:datesLi[di]});
+        idx++; di++;
+      }
+    });
+  }
+
+  // Instagram
+  if(RYTHME.ig.actif){
+    const totalIg = Object.values(RYTHME.ig.formats).reduce((s,n)=>s+n,0);
+    const datesIg = datesPourJours(RYTHME.ig.jours, totalIg);
+    let di = 0;
+    Object.entries(RYTHME.ig.formats).forEach(([fmt,n])=>{
+      for(let i=0;i<n;i++){
+        const pd = pilierDefaut[fmt];
+        const pilier = Array.isArray(pd) ? pd[idx % pd.length] : (pd||'autorite');
+        posts.push({reseau:'Instagram', typeContenu:fmt, pilier, date:datesIg[di]});
+        idx++; di++;
+      }
+    });
+    // Stories — même jour que le dernier post Instagram
+    const dernierJourIg = RYTHME.ig.jours ? RYTHME.ig.jours[RYTHME.ig.jours.length-1] : 4;
+    const dateStory = new Date(lundi.getTime() + dernierJourIg * 86400000).toISOString().split('T')[0];
+    posts.push({reseau:'Instagram', typeContenu:'Stories', pilier:'autorite', date:dateStory});
+  }
+
   return posts;
 }
 
@@ -3933,6 +4059,13 @@ async function genUnPost(){
   try{
     const mat = matiereSemaine();
 
+    // Si toggle actu activé → lancer la recherche web maintenant
+    const cbActu = document.getElementById('cb-actu');
+    if(cbActu && cbActu.checked){
+      inlineLoaderTxt.textContent = '🔍 Recherche une actu de ton secteur…';
+      await rechercherActu();
+    }
+
     // Envoi vers Apps Script — la génération se fait côté serveur
     const body = {
       action:  'generer_post',
@@ -3943,6 +4076,7 @@ async function genUnPost(){
       pilier:  genPilier || 'autorite',
       sujet,
       matiere: mat,
+      actu:    actuTexte || '',
     };
 
     const r = await fetch(CFG.as, {
@@ -4101,7 +4235,7 @@ async function genSemaine(){
       const parsed = splitTexteLegende(res.texte||'');
       const {legende:l} = parsed;
       const t = parsed.isCarrousel ? res.texte : parsed.texte;
-      const date = jours[i % jours.length];
+      const date = res.date || posts[i]?.date || jours[i % jours.length];
       const id = Date.now()+i;
       await sauvegarderEtSyncPost({id, reseau:res.reseau, typeContenu:res.typeContenu, texte:t, legende:l, date,
         dateAffiche:new Date(date+'T12:00:00').toLocaleDateString('fr-FR'), statut:'À relire'});
@@ -4122,24 +4256,78 @@ async function genSemaine(){
 
 
 function afficherRes(resultats){
-  const zone = document.getElementById('zone-res'); zone.innerHTML='';
-  resultats.forEach((r,idx)=>{
-    // Cas carrousel avec slides parsées
-    if(r.isCarrousel && r.slides){
-      const wrapperId = 'cv-wrapper-'+Date.now()+'-'+idx;
-      const div = document.createElement('div');
-      div.id = wrapperId;
-      zone.appendChild(div);
-      afficherCarrousel(r.slides, r.legende||'', r.reseau||'Instagram', wrapperId);
-      return;
-    }
-    // Texte classique
-    const div=document.createElement('div'); div.className='res-post';
-    div.innerHTML=`
-      <div class="res-hd"><span class="tag">✦ ${escapeHtml(r.label)}</span><button class="btn btn-sm btn-ghost" onclick="ouvrirEdit(${r.id})" style="margin-top:0;">Éditer</button></div>
-      <div class="res-body"><p>${r.texte.replace(/\n/g,'<br/>')}${r.legende?`<br/><br/><em style="color:var(--gris-clair);font-size:.82rem;">${r.legende.replace(/\n/g,'<br/>')}</em>`:''}</p></div>`;
-    zone.appendChild(div);
+  const zone = document.getElementById('zone-res');
+  zone.innerHTML = '';
+
+  // Grouper par réseau
+  const groupes = {
+    'LinkedIn':          resultats.filter(r => r.reseau === 'LinkedIn'),
+    'Instagram':         resultats.filter(r => r.reseau === 'Instagram' && r.typeContenu !== 'Stories'),
+    'Stories Instagram': resultats.filter(r => r.typeContenu === 'Stories'),
+  };
+  const icones = { 'LinkedIn':'💼', 'Instagram':'📸', 'Stories Instagram':'📱' };
+
+  Object.entries(groupes).forEach(([label, items]) => {
+    if(!items.length) return;
+    const encartId = 'encart-' + label.replace(/\s+/g,'-').toLowerCase();
+    const encart = document.createElement('div');
+    encart.className = 'res-encart';
+    encart.innerHTML = `
+      <div class="res-encart-hd" onclick="toggleEncart('${encartId}')">
+        <div class="res-encart-left">
+          <span class="res-encart-ic">${icones[label]||'✦'}</span>
+          <span class="res-encart-titre">${label}</span>
+          <span class="res-encart-badge">${items.length} contenu${items.length>1?'s':''}</span>
+        </div>
+        <span class="res-encart-chevron" id="chev-${encartId}">▼</span>
+      </div>
+      <div class="res-encart-body" id="${encartId}" style="display:none;"></div>`;
+    zone.appendChild(encart);
+
+    const body = document.getElementById(encartId);
+    items.forEach((r, idx) => {
+      const dateAff = r.dateAffiche || (r.date ? new Date(r.date+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}) : '');
+      const jourAff = r.date ? new Date(r.date+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long'}) : '';
+
+      if(r.isCarrousel && r.slides){
+        const wrapperId = 'cv-wrapper-'+Date.now()+'-'+idx;
+        const wrap = document.createElement('div');
+        wrap.className = 'res-item';
+        wrap.innerHTML = `<div class="res-item-meta"><span class="res-item-type">${r.typeContenu}</span>${dateAff?`<span class="res-item-date">📅 ${dateAff}</span>`:''}</div>`;
+        const cvDiv = document.createElement('div');
+        cvDiv.id = wrapperId;
+        wrap.appendChild(cvDiv);
+        body.appendChild(wrap);
+        afficherCarrousel(r.slides, r.legende||'', r.reseau||'Instagram', wrapperId);
+        return;
+      }
+
+      const item = document.createElement('div');
+      item.className = 'res-item';
+      item.innerHTML = `
+        <div class="res-item-meta">
+          <span class="res-item-type">${r.typeContenu}</span>
+          ${dateAff ? `<span class="res-item-date">📅 ${dateAff}</span>` : ''}
+          <button class="btn btn-sm btn-ghost" onclick="ouvrirEdit(${r.id})" style="margin:0;padding:.25rem .6rem;font-size:.72rem;">✏️ Éditer</button>
+        </div>
+        <div class="res-item-texte">${escapeHtml(r.texte||'').replace(/\n/g,'<br/>')}${r.legende?`<br/><br/><span class="res-item-legende">${escapeHtml(r.legende)}</span>`:''}</div>`;
+      body.appendChild(item);
+    });
   });
+
+  // Ouvrir le premier encart par défaut
+  const premiers = document.querySelectorAll('.res-encart-body');
+  if(premiers[0]){ premiers[0].style.display='block'; }
+  const chevs = document.querySelectorAll('.res-encart-chevron');
+  if(chevs[0]){ chevs[0].style.transform='rotate(180deg)'; }
+}
+
+function toggleEncart(id){
+  const body = document.getElementById(id);
+  const chev = document.getElementById('chev-'+id);
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  if(chev) chev.style.transform = open ? '' : 'rotate(180deg)';
 }
 
 // ══════════════════════════════════════════
@@ -4886,6 +5074,7 @@ function chargerCompte(){
   setV2('cfg-nom',          CFG.nom);
   setV2('cfg-entreprise',   CFG.entreprise);
   setV2('cfg-metier',       CFG.metier);
+  setV2('cfg-references',   CFG.references);
   setV2('cfg-as',           CFG.as);
   setV2('cfg-api',          CFG.api);
   setV2('cfg-api-gemini',   CFG.apiGemini);
@@ -4947,6 +5136,8 @@ function sauvegarderCompte(){
   localStorage.setItem('roze_nom',          CFG.nom);
   localStorage.setItem('roze_entreprise',   CFG.entreprise);
   localStorage.setItem('roze_metier',       CFG.metier);
+  CFG.references = (document.getElementById('cfg-references')||{}).value?.trim()||'';
+  localStorage.setItem('roze_references',   CFG.references);
   // Rythme
   majRythme();
   localStorage.setItem('roze_secteur', JSON.stringify(CFG.prenom));

@@ -1079,7 +1079,7 @@
 
     /* ── Tooltip Canva ── */
     .cv-tip-inner{
-      background:var(--gris-carte);
+      background:#111111;
       border:1px solid var(--gris-border);
       border-radius:20px 20px 0 0;
       padding:1.4rem 1.2rem 1.8rem;
@@ -3121,14 +3121,10 @@ function ouvrirCanva(){
 }
 
 function afficherTooltipCanva(reseau){
-  // Supprimer un tooltip existant
   const old = document.getElementById('canva-tooltip');
   if(old) old.remove();
 
   const isIG = reseau !== 'LinkedIn';
-  const url  = isIG
-    ? 'https://www.canva.com/design?create&type=instagram-post'
-    : 'https://www.canva.com/design?create&type=presentation';
 
   const tip = document.createElement('div');
   tip.id = 'canva-tooltip';
@@ -3137,23 +3133,23 @@ function afficherTooltipCanva(reseau){
       <button class="cv-tip-close" onclick="document.getElementById('canva-tooltip').remove()">✕</button>
       <div class="cv-tip-titre">🎨 Importer dans Canva</div>
       <ol class="cv-tip-steps">
-        <li>Télécharge tes slides en PNG&nbsp;👇</li>
-        <li>Ouvre Canva (bouton ci-dessous)</li>
-        <li>Crée un design <strong>${isIG ? 'Instagram (1080×1350)' : 'LinkedIn (1080×1350)'}</strong></li>
-        <li>Importe tes PNG via <strong>Importer un fichier</strong></li>
+        <li>Télécharge tes slides en PNG ci-dessous 👇</li>
+        <li>Va sur <strong>canva.com</strong> et connecte-toi</li>
+        <li>Crée un nouveau design <strong>${isIG ? 'Instagram (1080×1350)' : 'LinkedIn (1080×1350)'}</strong></li>
+        <li>Clique sur <strong>Importer un fichier</strong> et sélectionne tes PNG</li>
         <li>Modifie textes &amp; graphismes librement</li>
       </ol>
       <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.8rem;">
         <button class="btn btn-ghost btn-sm" onclick="exporterPNG();document.getElementById('canva-tooltip').remove();">
           ⬇️ Télécharger les PNG d'abord
         </button>
-        <a href="${url}" target="_blank" class="btn btn-rose btn-sm" style="text-decoration:none;"
+        <a href="https://www.canva.com" target="_blank" class="btn btn-rose btn-sm" style="text-decoration:none;"
            onclick="document.getElementById('canva-tooltip').remove()">
-          Ouvrir Canva →
+          Ouvrir canva.com →
         </a>
       </div>
     </div>`;
-  tip.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center;padding:1rem;';
+  tip.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);display:flex;align-items:flex-end;justify-content:center;padding:1rem;';
   tip.addEventListener('click', e=>{ if(e.target===tip) tip.remove(); });
   document.body.appendChild(tip);
 }

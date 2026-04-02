@@ -2322,7 +2322,7 @@ async function sqpGenerer(){
     const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
-    const texte = j.texte || '';
+    const texte = nettoyerIntroIA(j.texte || '');
     loader.classList.remove('on');
     result.textContent = texte;
     result.classList.add('on');
@@ -3251,7 +3251,7 @@ function afficherTooltipCanva(reseau){
       <ol class="cv-tip-steps">
         <li>Télécharge tes slides en PNG ci-dessous 👇</li>
         <li>Va sur <strong>canva.com</strong> et connecte-toi</li>
-        <li>Crée un nouveau design <strong>${isIG ? 'Instagram (1080×1350)' : 'LinkedIn (1080×1350)'}</strong></li>
+        <li>Crée un nouveau design <strong>${isIG ? 'Instagram (1080×1440, ratio 3:4)' : 'LinkedIn (1080×1440, ratio 3:4)'}</strong></li>
         <li>Clique sur <strong>Importer un fichier</strong> et sélectionne tes PNG</li>
         <li>Modifie textes &amp; graphismes librement</li>
       </ol>
@@ -3275,26 +3275,52 @@ function setStyleFond(btn, style){
   overridesSlide = {}; // Appliquer à toutes = effacer les overrides
   document.querySelectorAll('.cv-fond-opt').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
-  rafraichirCarrousel();
+  majFondsSlides();
 }
 
 function setStyleSlide(slideIdx, btn, style){
   overridesSlide[slideIdx] = style;
-  rafraichirCarrousel();
+  majFondsSlides();
 }
 
 function resetOverrides(){
   overridesSlide = {};
-  rafraichirCarrousel();
+  document.querySelectorAll('.cv-fond-opt').forEach(b => b.classList.remove('on'));
+  const uni = document.getElementById('cvf-uni');
+  if(uni) uni.classList.add('on');
+  majFondsSlides();
 }
 
-function rafraichirCarrousel(){
+// Mise à jour des fonds directement en DOM — sans recréer le viewer
+function majFondsSlides(){
   if(!carrouselCourant) return;
-  const { slides, legende, reseau } = carrouselCourant;
-  // Trouver le containerId actif
-  const viewer = document.querySelector('.carrousel-viewer');
-  const containerId = viewer?.parentElement?.id || 'gen-cv-inline';
-  if(containerId) afficherCarrousel(slides, legende, reseau, containerId);
+  const { slides } = carrouselCourant;
+  const c1 = CFG.couleur1 || '#E8186D';
+  const c2 = CFG.couleur2 || '#111111';
+
+  slides.forEach((s, i) => {
+    const slideEl = document.getElementById('cv-slide-' + i);
+    if(!slideEl) return;
+    // Calculer le style pour cette slide
+    const styleCSS = styleFondSlide(s.num, slides.length, c1, c2);
+    // Parser le cssText généré et l'appliquer
+    const tmp = document.createElement('div');
+    tmp.style.cssText = styleCSS;
+    // Appliquer chaque propriété
+    ['background', 'backgroundImage', 'backgroundSize'].forEach(prop => {
+      if(tmp.style[prop]) slideEl.style[prop] = tmp.style[prop];
+    });
+    // Mettre à jour la couleur du texte
+    const inner = slideEl.querySelector('.cv-slide-inner');
+    if(inner){
+      const fond = fondSlide(s.num, slides.length, c1, c2);
+      const style = overridesSlide[i] || styleFondActif || 'uni';
+      // Pour dégradé/matière, on utilise toujours blanc
+      const useDark = style === 'uni' || style === 'uni2';
+      const fond2 = style === 'uni2' ? (c2 || '#222222') : fond;
+      inner.style.color = useDark ? texteSlide(fond2) : '#ffffff';
+    }
+  });
 }
 
 function copierLegendeCv(){
@@ -4059,6 +4085,54 @@ async function appelClaude(prompt){
   return d.content?.[0]?.text||'';
 }
 
+// Supprime les lignes d'intro méta générées par l'IA avant le contenu réel
+// Ex : "Okay Rozenn, voici un script..." ou "**SCRIPT REEL INSTAGRAM**"
+function nettoyerIntroIA(texte){
+  if(!texte) return texte;
+
+  const lignes = texte.split('\n');
+  let debut = 0;
+
+  for(let i = 0; i < Math.min(lignes.length, 6); i++){
+    const l = lignes[i].trim();
+    if(!l){ debut = i + 1; continue; } // ligne vide → skip
+
+    // Détecteurs d'intro méta IA
+    const estIntroMeta = (
+      // Apostrophe + prénom : "Okay, Rozenn !", "Voilà Rozenn,"
+      /^(ok(ay)?|voici|voilà|bien sûr|parfait|super|génial|avec plaisir|je vais|alors|donc|bonjour)[,!\s]/i.test(l) ||
+      // Titre de section en markdown gras : "**SCRIPT REEL INSTAGRAM**"
+      /^\*\*[A-ZÉÈÀÙ\s]+\*\*$/.test(l) ||
+      // Phrase purement descriptive du contenu (heuristique)
+      /^(voici|ci-dessous|j'ai (créé|rédigé|préparé|conçu)|en voici|je te (propose|présente))/i.test(l) ||
+      // Ligne contenant uniquement des tirets ou étoiles (séparateur)
+      /^[-—=*]{3,}$/.test(l)
+    );
+
+    if(estIntroMeta){
+      debut = i + 1;
+    } else {
+      // Première ligne non-intro → on s'arrête
+      break;
+    }
+  }
+
+  return lignes.slice(debut).join('\n').trimStart();
+}
+
+function limiterHashtags(texte, max=5){
+  if(!texte) return texte;
+  // Extraire tous les hashtags
+  const tags = texte.match(/#[a-zA-Z0-9À-ɏ_]+/g) || [];
+  if(tags.length <= max) return texte;
+  // Garder uniquement les 5 premiers, supprimer les suivants
+  let result = texte;
+  tags.slice(max).forEach(tag => {
+    result = result.replace(new RegExp('(?:^|\\s)' + tag.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '(?=\\s|$)', 'g'), ' ');
+  });
+  return result.trim().replace(/\s{2,}/g, ' ');
+}
+
 function splitTexteLegende(texte){
   if(!texte) return {texte:'', legende:''};
 
@@ -4105,7 +4179,8 @@ function splitTexteLegende(texte){
   // Légende séparée par marqueur
   const idx = t.indexOf('LÉGENDE:');
   if(idx===-1) return {texte:t, legende:''};
-  return {texte:t.slice(0,idx).trim(), legende:t.slice(idx+8).trim()};
+  const legendeBrute = t.slice(idx+8).trim();
+  return {texte:t.slice(0,idx).trim(), legende:limiterHashtags(legendeBrute, 5)};
 }
 
 function lireRythme(){
@@ -4225,7 +4300,7 @@ async function genUnPost(){
     });
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
-    const texte = j.texte || '';
+    const texte = nettoyerIntroIA(j.texte || '');
 
     inlineLoader.classList.remove('on');
     if(btnGen) btnGen.disabled=false;
@@ -4244,7 +4319,7 @@ async function genUnPost(){
       if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv, result.nextSibling); }
       afficherCarrousel(parsed.slides, l, reseau, cvId);
       document.getElementById('gen-legende').value = l;
-      legZone.classList.add('on');
+      if(format !== 'Stories') legZone.classList.add('on');
       actions.style.display='flex';
     } else {
       result.textContent = t;
@@ -4252,7 +4327,7 @@ async function genUnPost(){
       document.getElementById('lbl-gen-texte').style.display='block';
       document.getElementById('lbl-gen-texte').textContent='Texte du post';
       document.getElementById('gen-legende').value = l;
-      legZone.classList.add('on');
+      if(format !== 'Stories') legZone.classList.add('on');
       actions.style.display='flex';
     }
 
@@ -4284,7 +4359,7 @@ async function regenLegendePaneau(){
   try{
     const prompt = `Voici un post ${reseau} :\n\n${texte}\n\nGénère uniquement la légende optimisée pour ${reseau} avec les hashtags les plus pertinents. Réponds uniquement avec la légende, sans préambule.`;
     const leg = await appelIA(prompt);
-    document.getElementById('gen-legende').value = leg.trim();
+    document.getElementById('gen-legende').value = limiterHashtags(leg.trim(), 5);
     toast('✅ Légende régénérée !','ok');
   }catch(e){ toast('❌ Erreur','err'); }
   loader.classList.remove('on');
@@ -5420,7 +5495,7 @@ async function genScriptPanel(idx, dateStr){
     const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
-    const texte = j.texte || '';
+    const texte = nettoyerIntroIA(j.texte || '');
     zone.textContent = texte;
     localStorage.setItem('roze_story_script_'+dateStr, texte);
     toast('✅ Script généré !','ok');
@@ -5563,7 +5638,7 @@ async function genStoryTexte(){
     const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
-    zone.textContent = j.texte || '';
+    zone.textContent = nettoyerIntroIA(j.texte || '');
     toast('✅ Script généré !','ok');
   } catch(e){
     zone.textContent = 'Erreur de génération.';

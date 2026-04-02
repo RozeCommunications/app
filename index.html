@@ -1517,6 +1517,11 @@
         <span class="gb-titre">1 post</span>
         <span class="gb-desc">Choisir réseau + format</span>
       </div>
+      <div class="gen-bigbtn" onclick="toggleStoryPanel()">
+        <span class="gb-ic">📱</span>
+        <span class="gb-titre">1 story</span>
+        <span class="gb-desc">Script interactif sur mesure</span>
+      </div>
     </div>
 
     <!-- Panneau "1 post" — même modèle que création depuis calendrier -->
@@ -1599,6 +1604,71 @@
     </div>
 
     <div class="loader" id="loader"><div class="ring"></div><p>Ton IA génère tes contenus<br/><em>dans ta voix…</em></p></div>
+
+    <!-- ══ PANEL 1 STORY ══ -->
+    <div class="gen-panel" id="gen-story-panel" style="display:none;">
+      <h4>📱 Générer 1 story</h4>
+
+      <!-- Date de publication -->
+      <span class="creer-lbl">📅 Date de publication</span>
+      <input type="date" id="gsp-date" style="margin-bottom:.2rem;font-size:16px;width:100%;max-width:100%;box-sizing:border-box;display:block;"/>
+
+      <!-- Type de story = pilier -->
+      <span class="creer-lbl">Type de story</span>
+      <div class="piliers-row" id="gsp-types">
+        <div class="pilier-chip on" data-type="vente" onclick="setGspType(this,'vente')">
+          <span class="pi">💰</span><span class="pn">Vente</span>
+          <div class="pilier-detail">Contextualisation → douleur client → appel à action vers ton offre</div>
+        </div>
+        <div class="pilier-chip" data-type="valeur" onclick="setGspType(this,'valeur')">
+          <span class="pi">💡</span><span class="pn">Valeur</span>
+          <div class="pilier-detail">1 astuce concrète et actionnable pour ta cible</div>
+        </div>
+        <div class="pilier-chip" data-type="lifestyle" onclick="setGspType(this,'lifestyle')">
+          <span class="pi">🌿</span><span class="pn">Lifestyle</span>
+          <div class="pilier-detail">Scène du quotidien pro ou perso qui révèle qui tu es</div>
+        </div>
+      </div>
+
+      <!-- Sujet libre -->
+      <span class="creer-lbl" style="margin-top:.5rem;">Sujet <span style="font-weight:400;color:var(--gris-clair);font-size:.75rem;">(optionnel — sinon l'IA choisit)</span></span>
+      <input type="text" id="gsp-sujet" placeholder="Ex : Mon retour sur le dernier salon pro…" style="font-size:16px;"/>
+
+      <!-- Actu web -->
+      <div class="actu-toggle-row" onclick="gspToggleActu(event)" style="margin-top:.5rem;">
+        <div>
+          <div class="actu-toggle-lbl">🔍 Inclure une actu du secteur</div>
+          <span style="font-size:.7rem;color:var(--gris-clair);">Recherche web sur tes références</span>
+        </div>
+        <label class="toggle-sw" onclick="event.stopPropagation()">
+          <input type="checkbox" id="gsp-cb-actu"/>
+          <span class="toggle-thumb"></span>
+        </label>
+      </div>
+
+      <!-- Bouton générer -->
+      <button class="btn btn-rose" id="gsp-btn-gen" onclick="genererStoryPanel()" style="width:100%;margin-top:1rem;padding:1rem;font-size:.95rem;">
+        ✨ Générer cette story
+      </button>
+
+      <!-- Loader -->
+      <div class="inline-loader" id="gsp-loader" style="display:none;">
+        <div class="il-dot"></div><div class="il-dot"></div><div class="il-dot"></div>
+        <span id="gsp-loader-txt">Génération en cours…</span>
+      </div>
+
+      <!-- Résultat -->
+      <div id="gsp-result-zone" style="display:none;margin-top:1rem;">
+        <span class="creer-lbl">Script story</span>
+        <div class="res-body" id="gsp-result" style="white-space:pre-wrap;font-size:.82rem;line-height:1.7;padding:1rem;background:var(--gris-input);border-radius:10px;border:1px solid var(--gris-border);min-height:80px;"></div>
+        <div class="gen-post-actions" id="gsp-actions" style="margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="gspCopier()">📋 Copier</button>
+          <button class="btn btn-ghost btn-sm" onclick="gspRegenerer()">🔄 Régénérer</button>
+          <button class="btn btn-ghost btn-sm" onclick="gspSauvegarder()">💾 Sauvegarder</button>
+        </div>
+      </div>
+    </div>
+
     <div id="zone-res"></div>
   </section>
 
@@ -4656,6 +4726,126 @@ function toggleEncart(id){
 // ══════════════════════════════════════════════════
 // BROUILLONS / IDÉES
 // ══════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// PANEL "1 STORY" — génération story depuis p-generer
+// ══════════════════════════════════════════════════
+let gspTypeActif = 'vente';
+let gspActuTexte = '';
+
+function toggleStoryPanel(){
+  const panel = document.getElementById('gen-story-panel');
+  const postPanel = document.getElementById('gen-panel');
+  // Fermer "1 post" si ouvert
+  if(postPanel && postPanel.style.display !== 'none') postPanel.style.display = 'none';
+  const open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  if(!open){
+    // Init date à aujourd'hui
+    document.getElementById('gsp-date').value = dateAujourdhui();
+    // Réinitialiser le résultat
+    document.getElementById('gsp-result-zone').style.display = 'none';
+    gspActuTexte = '';
+  }
+}
+
+function setGspType(btn, type){
+  gspTypeActif = type;
+  document.querySelectorAll('#gsp-types .pilier-chip').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+function gspToggleActu(event){
+  const cb = document.getElementById('gsp-cb-actu');
+  if(event && event.target !== cb) cb.checked = !cb.checked;
+}
+
+async function genererStoryPanel(){
+  if(!verifierCleIA()) return;
+
+  const loader = document.getElementById('gsp-loader');
+  const loaderTxt = document.getElementById('gsp-loader-txt');
+  const btnGen = document.getElementById('gsp-btn-gen');
+  const resultZone = document.getElementById('gsp-result-zone');
+  const resultEl = document.getElementById('gsp-result');
+
+  loader.style.display = 'flex';
+  btnGen.disabled = true;
+  resultZone.style.display = 'none';
+  gspActuTexte = '';
+
+  try{
+    // Recherche web si activée
+    const cbActu = document.getElementById('gsp-cb-actu');
+    if(cbActu && cbActu.checked){
+      loaderTxt.textContent = '🔍 Recherche une actu de ton secteur…';
+      await rechercherActu();
+      gspActuTexte = actuTexte || '';
+    }
+
+    loaderTxt.textContent = '📱 Génération du script story…';
+    const sujet = (document.getElementById('gsp-sujet').value || '').trim();
+    const datePub = document.getElementById('gsp-date').value || dateAujourdhui();
+    const mat = matiereSemaine();
+
+    const body = {
+      action:     'generer_post',
+      ia:         CFG.ia || 'claude',
+      cle_ia:     CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+      reseau:     'Instagram',
+      format:     'Stories',
+      pilier:     gspTypeActif,
+      sujet:      sujet || '[STORY ' + gspTypeActif.toUpperCase() + '] ' + (
+        gspTypeActif === 'vente'     ? "Contextualisation → Problème / douleur du client → Appel à action vers l’offre" :
+        gspTypeActif === 'valeur'    ? "1 astuce concrète et actionnable pour ta cible" :
+        "Scène du quotidien pro ou perso qui révèle qui tu es"
+      ),
+      matiere:    mat,
+      actu:       gspActuTexte,
+      story_type: gspTypeActif,
+    };
+
+    const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
+    const j = await r.json();
+    if(j.erreur) throw new Error(j.erreur);
+
+    const texte = nettoyerIntroIA(j.texte || '');
+
+    resultEl.textContent = texte;
+    resultZone.style.display = 'block';
+
+    // Sauvegarder automatiquement
+    const id = Date.now();
+    await sauvegarderEtSyncPost({
+      id, reseau:'Instagram', typeContenu:'Stories',
+      texte, legende:'', date:datePub,
+      dateAffiche: new Date(datePub+'T12:00:00').toLocaleDateString('fr-FR'),
+      statut:'À relire'
+    });
+    toast('✅ Story générée et sauvegardée !','ok');
+
+  } catch(e){
+    toast('❌ Erreur : ' + e.message,'err');
+  } finally {
+    loader.style.display = 'none';
+    btnGen.disabled = false;
+  }
+}
+
+function gspCopier(){
+  const texte = document.getElementById('gsp-result').textContent;
+  navigator.clipboard.writeText(texte).then(() => toast('📋 Script copié !','ok'));
+}
+
+function gspRegenerer(){
+  genererStoryPanel();
+}
+
+function gspSauvegarder(){
+  // Déjà sauvegardé à la génération — proposer d'aller au calendrier
+  toast('✅ Story déjà sauvegardée dans le calendrier','ok');
+  setTimeout(() => go('p-calendrier'), 1200);
+}
+
 function getBrouillons(){ return lsJ('roze_brouillons') || []; }
 function setBrouillons(b){ localStorage.setItem('roze_brouillons', JSON.stringify(b)); }
 

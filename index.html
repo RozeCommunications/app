@@ -489,11 +489,18 @@
     .reseau-bloc{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:14px;padding:1.1rem;margin-bottom:.8rem;}
     .reseau-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;}
     .reseau-hd .rn{display:flex;align-items:center;gap:.6rem;font-size:.95rem;font-weight:600;}
+    .pilier-chip.on-vente{border-color:#f4a340;background:rgba(244,163,64,.13);}
+    .pilier-chip.on-vente .pn{color:#f4a340;}
+    .pilier-chip.on-valeur{border-color:#3ddc84;background:rgba(61,220,132,.12);}
+    .pilier-chip.on-valeur .pn{color:#3ddc84;}
+    .pilier-chip.on-lifestyle{border-color:#5bb8ff;background:rgba(0,119,181,.12);}
+    .pilier-chip.on-lifestyle .pn{color:#5bb8ff;}
     .toggle-sw{position:relative;width:44px;height:24px;cursor:pointer;flex-shrink:0;}
     .toggle-sw input{opacity:0;width:0;height:0;}
     .toggle-sw .sw{position:absolute;inset:0;background:var(--gris-moyen);border-radius:24px;transition:.3s;}
     .toggle-sw .sw::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.3s;}
     .toggle-sw input:checked+.sw{background:var(--rose);}
+#gsp-cb-actu:checked+.sw{background:#1D9E75;}
     .toggle-sw input:checked+.sw::before{transform:translateX(20px);}
     .format-ligne{display:flex;align-items:center;justify-content:space-between;padding:.65rem 0;border-bottom:1px solid rgba(255,255,255,.06);}
     .format-ligne:last-child{border-bottom:none;padding-bottom:0;}
@@ -1615,7 +1622,7 @@
 
       <!-- Type de story = pilier -->
       <span class="creer-lbl">Type de story</span>
-      <div class="piliers-row" id="gsp-types" style="flex-direction:column;gap:.6rem;">
+      <div class="piliers-row" id="gsp-types" style="flex-direction:column;gap:.8rem;">
         <div class="pilier-chip on" data-type="vente" onclick="setGspType(this,'vente')">
           <span class="pi">💰</span><span class="pn">Vente</span>
           <div class="pilier-detail">Contextualisation → douleur client → appel à action vers ton offre</div>
@@ -4735,23 +4742,28 @@ let gspActuTexte = '';
 function toggleStoryPanel(){
   const panel = document.getElementById('gen-story-panel');
   const postPanel = document.getElementById('gen-panel');
-  // Fermer "1 post" si ouvert
   if(postPanel && postPanel.style.display !== 'none') postPanel.style.display = 'none';
   const open = panel.style.display !== 'none';
   panel.style.display = open ? 'none' : 'block';
   if(!open){
-    // Init date à aujourd'hui
     document.getElementById('gsp-date').value = dateAujourdhui();
-    // Réinitialiser le résultat
     document.getElementById('gsp-result-zone').style.display = 'none';
     gspActuTexte = '';
+    // Activer visuellement le premier pilier (Vente) par défaut
+    const chips = document.querySelectorAll('#gsp-types .pilier-chip');
+    chips.forEach(b => b.classList.remove('on','on-vente','on-valeur','on-lifestyle'));
+    if(chips[0]) chips[0].classList.add('on-vente');
+    gspTypeActif = 'vente';
   }
 }
 
 function setGspType(btn, type){
   gspTypeActif = type;
-  document.querySelectorAll('#gsp-types .pilier-chip').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
+  document.querySelectorAll('#gsp-types .pilier-chip').forEach(b => {
+    b.classList.remove('on','on-vente','on-valeur','on-lifestyle');
+  });
+  const classeType = { vente:'on-vente', valeur:'on-valeur', lifestyle:'on-lifestyle' };
+  btn.classList.add(classeType[type] || 'on');
 }
 
 function gspToggleActu(event){

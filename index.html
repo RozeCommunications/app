@@ -315,6 +315,66 @@
     .res-body{padding:1rem;}
     .res-body p{font-size:.88rem;line-height:1.75;color:var(--blanc-doux);white-space:pre-wrap;}
 
+    /* ── Boutons Stories + Brouillons côte à côte ── */
+    .cal-panels-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem;}
+    /* ── Formulaire brouillon ── */
+    .brouillon-form{
+      padding:.8rem;
+      background:var(--gris-input);
+      border-radius:10px;
+      margin-bottom:.8rem;
+    }
+    .brouillon-input{
+      width:100%;box-sizing:border-box;
+      background:var(--gris-carte);
+      border:1px solid var(--gris-border);
+      border-radius:8px;
+      color:var(--blanc);
+      font-family:'DM Sans',sans-serif;
+      font-size:.82rem;
+      padding:.6rem .8rem;
+      resize:none;
+      margin-bottom:.5rem;
+    }
+    .brouillon-form-row{
+      display:flex;gap:.5rem;align-items:center;
+    }
+    .brouillon-select{
+      flex:1;
+      background:var(--gris-carte);
+      border:1px solid var(--gris-border);
+      border-radius:8px;
+      color:var(--blanc);
+      font-size:.78rem;
+      padding:.45rem .6rem;
+    }
+    .brouillon-item{
+      background:var(--gris-carte);
+      border:1px solid var(--gris-border);
+      border-radius:10px;
+      padding:.7rem .9rem;
+      margin-bottom:.5rem;
+      position:relative;
+    }
+    .brouillon-item-texte{
+      font-size:.82rem;color:var(--blanc-doux);
+      line-height:1.5;white-space:pre-wrap;
+      margin-bottom:.4rem;
+    }
+    .brouillon-item-meta{
+      display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;
+    }
+    .brouillon-reseau-badge{
+      font-size:.68rem;color:var(--rose-clair);
+      background:rgba(232,24,109,.1);
+      border-radius:999px;padding:.1rem .5rem;
+    }
+    .brouillon-date{font-size:.68rem;color:var(--gris-clair);}
+    .brouillon-actions{
+      display:flex;gap:.4rem;margin-top:.5rem;
+    }
+    [data-theme="light"] .brouillon-input{color:var(--blanc);}
+    [data-theme="light"] .brouillon-select{color:var(--blanc);}
     /* ── Sélecteur style de fond carrousel ── */
     .cv-fond-selector{
       display:flex;align-items:center;flex-wrap:wrap;
@@ -1557,22 +1617,55 @@
       </div>
     </div>
 
-    <!-- Bouton "Voir les stories" -->
-    <button class="cal-stories-btn" onclick="toggleStoriesPanel()">
+    <!-- Boutons Stories + Brouillons -->
+    <div class="cal-panels-row">
+      <button class="cal-stories-btn" onclick="toggleStoriesPanel()">
         <span class="csb-icon">📱</span>
         <div class="csb-text">
-          <span class="csb-titre">Stories de la semaine</span>
+          <span class="csb-titre">Stories</span>
           <span class="csb-sub" id="csb-txt">0/7 publiées</span>
         </div>
         <span class="csb-chevron">›</span>
-    </button>
-    <!-- Panneau coulissant -->
+      </button>
+      <button class="cal-stories-btn" onclick="toggleBrouillonsPanel()" id="btn-brouillons">
+        <span class="csb-icon">💡</span>
+        <div class="csb-text">
+          <span class="csb-titre">Idées</span>
+          <span class="csb-sub" id="brouillons-count">0 idée</span>
+        </div>
+        <span class="csb-chevron">›</span>
+      </button>
+    </div>
+
+    <!-- Panneau Stories -->
     <div class="stories-panel" id="stories-panel">
       <div class="sp-header">
         <h4>📱 Stories — semaine en cours</h4>
         <button class="sp-close" onclick="toggleStoriesPanel()">✕</button>
       </div>
       <div id="sp-liste"><!-- rempli par JS --></div>
+    </div>
+
+    <!-- Panneau Brouillons / Idées -->
+    <div class="stories-panel" id="brouillons-panel">
+      <div class="sp-header">
+        <h4>💡 Mes idées de posts</h4>
+        <button class="sp-close" onclick="toggleBrouillonsPanel()">✕</button>
+      </div>
+      <!-- Formulaire ajout rapide -->
+      <div class="brouillon-form">
+        <textarea id="brouillon-texte" class="brouillon-input" placeholder="Note ton idée ici… un angle, une phrase d'accroche, une observation du moment." rows="3"></textarea>
+        <div class="brouillon-form-row">
+          <select id="brouillon-reseau" class="brouillon-select">
+            <option value="">Réseau ?</option>
+            <option value="LinkedIn">💼 LinkedIn</option>
+            <option value="Instagram">📸 Instagram</option>
+            <option value="Story">📱 Story</option>
+          </select>
+          <button class="btn btn-rose btn-sm" onclick="ajouterBrouillon()">+ Sauvegarder</button>
+        </div>
+      </div>
+      <div id="brouillons-liste"><!-- rempli par JS --></div>
     </div>
     <div class="cal-hd" id="cal-hd">
       <div class="cal-dn">L</div><div class="cal-dn">M</div><div class="cal-dn">M</div>
@@ -2182,6 +2275,7 @@ let CAL = { vue:'mois', annee:new Date().getFullYear(), mois:new Date().getMonth
 document.addEventListener('DOMContentLoaded',()=>{
   initTheme(); initUI(); chargerCompte(); affDate(); construireStoriesUI(); majGenFormats(getGenReseau()); majRythme();
   syncConfigDepuisSheets(); // Sync multi-appareils au démarrage
+  majCompteurBrouillons(); // Init compteur idées
   initAuth(); // Contrôle d'accès Google Sign-In
   majSemMini(); majKPIs();
   // Afficher le badge sync si posts en attente
@@ -3709,6 +3803,7 @@ function buildConfigPayload(){
     couleur_texte:CFG.couleurTexte || '#111111',
     police_titre: CFG.policeTitre  || 'Playfair Display',
     police_corps: CFG.policeCorps  || 'DM Sans',
+    brouillons:   JSON.stringify(getBrouillons()),
   };
 }
 
@@ -3742,6 +3837,16 @@ function appliquerConfig(config){
       localStorage.setItem(lsKey, val);
     }
   });
+  // Restaurer les brouillons depuis Sheets
+  if(config.brouillons){
+    try{
+      const b = JSON.parse(config.brouillons);
+      if(Array.isArray(b)){
+        localStorage.setItem('roze_brouillons', JSON.stringify(b));
+        majCompteurBrouillons();
+      }
+    }catch(e){}
+  }
 }
 
 // Lire la config depuis le Sheets (au démarrage si CFG.as connu)
@@ -4548,6 +4653,100 @@ function toggleEncart(id){
 // ══════════════════════════════════════════
 // STOCKAGE
 // ══════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// BROUILLONS / IDÉES
+// ══════════════════════════════════════════════════
+function getBrouillons(){ return lsJ('roze_brouillons') || []; }
+function setBrouillons(b){ localStorage.setItem('roze_brouillons', JSON.stringify(b)); }
+
+function toggleBrouillonsPanel(){
+  const panel = document.getElementById('brouillons-panel');
+  const stories = document.getElementById('stories-panel');
+  // Fermer les stories si ouvertes
+  if(stories.style.display !== 'none') stories.style.display = 'none';
+  const open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  if(!open) rendreBrouillons();
+}
+
+function majCompteurBrouillons(){
+  const n = getBrouillons().length;
+  const el = document.getElementById('brouillons-count');
+  if(el) el.textContent = n + (n <= 1 ? ' idée' : ' idées');
+}
+
+function ajouterBrouillon(){
+  const texte = (document.getElementById('brouillon-texte').value || '').trim();
+  if(!texte){ toast('⚠️ Saisis ton idée avant de sauvegarder','err'); return; }
+  const reseau = document.getElementById('brouillon-reseau').value;
+  const b = getBrouillons();
+  b.unshift({
+    id: Date.now(),
+    texte,
+    reseau,
+    date: new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),
+    statut: 'idée'
+  });
+  setBrouillons(b);
+  document.getElementById('brouillon-texte').value = '';
+  document.getElementById('brouillon-reseau').value = '';
+  majCompteurBrouillons();
+  rendreBrouillons();
+  syncConfigVersSheets(); // Sync brouillons vers Sheets
+  toast('💡 Idée sauvegardée !','ok');
+}
+
+function supprimerBrouillon(id){
+  setBrouillons(getBrouillons().filter(b => b.id !== id));
+  majCompteurBrouillons();
+  rendreBrouillons();
+  syncConfigVersSheets(); // Sync brouillons vers Sheets
+}
+
+function convertirBrouillon(id){
+  const b = getBrouillons().find(b => b.id === id);
+  if(!b) return;
+  // Pré-remplir la modale de création de post
+  go('p-calendrier');
+  setTimeout(()=>{
+    ouvrirCreer(dateAujourdhui());
+    setTimeout(()=>{
+      const texteEl = document.getElementById('creer-texte');
+      if(texteEl) texteEl.value = b.texte;
+      if(b.reseau === 'LinkedIn'){
+        const opt = document.getElementById('creer-opt-li');
+        if(opt) setCreerReseau(opt, 'LinkedIn');
+      } else if(b.reseau === 'Instagram' || b.reseau === 'Story'){
+        const opt = document.getElementById('creer-opt-ig');
+        if(opt) setCreerReseau(opt, 'Instagram');
+      }
+    }, 200);
+  }, 100);
+  toggleBrouillonsPanel();
+}
+
+function rendreBrouillons(){
+  const liste = document.getElementById('brouillons-liste');
+  if(!liste) return;
+  const brouillons = getBrouillons();
+  if(!brouillons.length){
+    liste.innerHTML = `<div style="text-align:center;padding:1.5rem;color:var(--gris-clair);font-size:.82rem;">Aucune idée pour l’instant.<br/>Note ta prochaine inspiration ici ✨</div>`;
+    return;
+  }
+  liste.innerHTML = brouillons.map(b => `
+    <div class="brouillon-item">
+      <div class="brouillon-item-texte">${escapeHtml(b.texte)}</div>
+      <div class="brouillon-item-meta">
+        ${b.reseau ? `<span class="brouillon-reseau-badge">${b.reseau}</span>` : ''}
+        <span class="brouillon-date">${b.date || ''}</span>
+      </div>
+      <div class="brouillon-actions">
+        <button class="btn btn-sm btn-ghost" onclick="convertirBrouillon(${b.id})" style="font-size:.72rem;padding:.3rem .6rem;">✏️ Créer un post</button>
+        <button class="btn btn-sm" onclick="supprimerBrouillon(${b.id})" style="font-size:.72rem;padding:.3rem .6rem;background:none;border:1px solid var(--gris-border);color:var(--gris-clair);">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
 function getBiblio(){ return lsJ('roze_biblio')||[]; }
 function setBiblio(b){ localStorage.setItem('roze_biblio',JSON.stringify(b)); }
 

@@ -315,6 +315,66 @@
     .res-body{padding:1rem;}
     .res-body p{font-size:.88rem;line-height:1.75;color:var(--blanc-doux);white-space:pre-wrap;}
 
+    /* ── Sélecteur style de fond carrousel ── */
+    .cv-fond-selector{
+      display:flex;align-items:center;flex-wrap:wrap;
+      gap:.5rem;padding:.7rem 1rem;
+      border-top:1px solid var(--gris-border);
+      background:var(--gris-fonce);
+    }
+    .cv-fond-label{
+      font-size:.72rem;color:var(--gris-clair);
+      font-weight:600;flex-shrink:0;
+    }
+    .cv-fond-opt{
+      display:flex;align-items:center;gap:.35rem;
+      background:var(--gris-carte);
+      border:1.5px solid var(--gris-border);
+      border-radius:8px;
+      padding:.35rem .7rem;
+      font-size:.72rem;color:var(--gris-clair);
+      cursor:pointer;transition:all .18s;
+    }
+    .cv-fond-opt.on{
+      border-color:var(--rose);
+      color:var(--blanc);
+      background:rgba(232,24,109,.1);
+    }
+    .cv-fond-dot{
+      width:14px;height:14px;
+      border-radius:50%;
+      display:inline-block;
+      flex-shrink:0;
+    }
+    /* ── Mini sélecteur par slide ── */
+    .cv-slide-style-picker{
+      position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+      display:flex;gap:4px;background:rgba(0,0,0,.45);
+      border-radius:999px;padding:4px 8px;
+      opacity:0;transition:opacity .2s;pointer-events:none;
+    }
+    .cv-slide:hover .cv-slide-style-picker,
+    .cv-slide.active .cv-slide-style-picker{
+      opacity:1;pointer-events:auto;
+    }
+    .cv-slide-style-btn{
+      width:10px;height:10px;border-radius:50%;
+      border:1.5px solid rgba(255,255,255,.4);
+      background:rgba(255,255,255,.25);
+      cursor:pointer;padding:0;transition:all .15s;
+    }
+    .cv-slide-style-btn.on{
+      border-color:#fff;
+      background:#fff;
+      transform:scale(1.2);
+    }
+    .cv-fond-reset{
+      font-size:.68rem;color:var(--gris-clair);
+      background:none;border:1px solid var(--gris-border);
+      border-radius:6px;padding:.25rem .5rem;
+      cursor:pointer;margin-left:auto;flex-shrink:0;
+    }
+    .cv-fond-reset:hover{color:var(--rose);border-color:var(--rose);}
     /* ─ CALENDRIER ─ */
     .cal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;gap:.6rem;}
     .cal-nav{display:flex;align-items:center;gap:.5rem;}
@@ -2971,14 +3031,51 @@ function fondSlide(numSlide, totalSlides, couleur1, couleur2){
   const c4 = CFG.couleur4 || null;
   if(numSlide === 1) return couleur1;
   if(numSlide === totalSlides) return couleur2 || '#222222';
-  // Slides intermédiaires : alterner c3/c4 si définies
   if(c3 && c4) return numSlide % 2 === 0 ? c3 : c4;
   if(c3) return c3;
   if(c4) return c4;
-  // Fallback selon luminosité de la couleur principale
   const clair = estCouleurClaire(couleur1);
   if(clair) return '#FFFFFF';
   return '#F8F8F6';
+}
+
+// Retourne le style CSS complet d'une slide selon le style de fond actif
+function styleFondSlide(numSlide, totalSlides, c1, c2){
+  const fond = fondSlide(numSlide, totalSlides, c1, c2);
+  // Override par slide prioritaire sur le style global
+  const style = overridesSlide[numSlide-1] || styleFondActif || 'uni';
+
+  if(style === 'uni2'){
+    // Fond uni couleur secondaire
+    return `background:${c2 || '#222222'};`;
+  }
+  if(style === 'grain'){
+    // Grain subtil CSS — fond de couleur + bruit simulé via radial-gradient
+    return `background:${fond};background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E"),linear-gradient(160deg,${fond}ee 0%,${fond}cc 50%,${ajusterLum(fond,-15)}dd 100%);background-size:256px 256px,100% 100%;`;
+  }
+  if(style === 'beton'){
+    // Béton/matière — dégradé radial foncé
+    const foncé = ajusterLum(fond, -20);
+    return `background:radial-gradient(ellipse at 30% 20%, ${fond} 0%, ${foncé} 60%, ${ajusterLum(fond,-35)} 100%);`;
+  }
+  if(style === 'degrade'){
+    // Dégradé diagonal entre fond et version plus sombre
+    const foncé = ajusterLum(fond, -25);
+    return `background:linear-gradient(135deg, ${fond} 0%, ${foncé} 100%);`;
+  }
+  // uni (défaut)
+  return `background:${fond};`;
+}
+
+// Assombrir/éclaircir une couleur hex
+function ajusterLum(hex, pct){
+  if(!hex || !hex.startsWith('#')) return hex;
+  const h = hex.replace('#','');
+  const num = parseInt(h.length===3 ? h.split('').map(c=>c+c).join('') : h, 16);
+  const r = Math.min(255, Math.max(0, (num>>16) + Math.round(255*pct/100)));
+  const g = Math.min(255, Math.max(0, ((num>>8)&0xff) + Math.round(255*pct/100)));
+  const b = Math.min(255, Math.max(0, (num&0xff) + Math.round(255*pct/100)));
+  return '#' + [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
 }
 
 function texteSlide(fond){
@@ -2988,7 +3085,9 @@ function texteSlide(fond){
 // ══════════════════════════════════════════
 // RENDU CARROUSEL
 // ══════════════════════════════════════════
-let carrouselCourant = null; // { slides, legende, reseau }
+let carrouselCourant = null;
+let styleFondActif = 'uni'; // 'uni' | 'uni2' | 'degrade' | 'grain' | 'beton'
+let overridesSlide = {};  // { slideIndex: style } — surcharge par slide
 let cvSlideActive = 0;
 
 function afficherCarrousel(slides, legende, reseau, containerId){
@@ -3023,7 +3122,15 @@ function afficherCarrousel(slides, legende, reseau, containerId){
         ${slides.map((s,i) => `
           <div class="cv-slide${i===0?' active':''}" id="cv-slide-${i}"
                onclick="cvSelectSlide(${i})"
-               style="background:${fondSlide(s.num, slides.length, c1, c2)};">
+               style="${styleFondSlide(s.num, slides.length, c1, c2)}">
+            <!-- Mini sélecteur par slide -->
+            <div class="cv-slide-style-picker" onclick="event.stopPropagation()">
+              <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'uni')"     title="Uni 1" style="background:${c1}"></button>
+              <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'uni2')"    title="Uni 2" style="background:${c2}"></button>
+              <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'degrade')" title="Dégradé" style="background:linear-gradient(135deg,${c1},${c2})"></button>
+              <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'grain')"   title="Grain" style="background:${c1};opacity:.7"></button>
+              <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'beton')"   title="Matière" style="background:${c2};opacity:.7"></button>
+            </div>
             <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${texteSlide(fondSlide(s.num, slides.length, c1, c2))};">
               <div class="cv-slide-num" style="color:${texteSlide(fondSlide(s.num, slides.length, c1, c2))};opacity:.35;">${s.num}/${slides.length}</div>
               <div class="cv-slide-type" style="color:${c1};">${s.type === 'hook' ? 'Hook' : s.type === 'cta' ? 'CTA' : 'Contenu'}</div>
@@ -3035,10 +3142,19 @@ function afficherCarrousel(slides, legende, reseau, containerId){
           </div>`).join('')}
       </div>
       <div class="cv-export-bar">
+      <div class="cv-fond-selector">
+        <span class="cv-fond-label">Toutes les slides&nbsp;:</span>
+        <button class="cv-fond-opt on" id="cvf-uni"     onclick="setStyleFond(this,'uni')"     title="Uni couleur principale"><span class="cv-fond-dot" style="background:${c1}"></span>Uni 1</button>
+        <button class="cv-fond-opt"    id="cvf-uni2"    onclick="setStyleFond(this,'uni2')"    title="Uni couleur secondaire"><span class="cv-fond-dot" style="background:${c2}"></span>Uni 2</button>
+        <button class="cv-fond-opt"    id="cvf-degrade" onclick="setStyleFond(this,'degrade')" title="Dégradé"><span class="cv-fond-dot" style="background:linear-gradient(135deg,${c1},${c2})"></span>Dégradé</button>
+        <button class="cv-fond-opt"    id="cvf-grain"   onclick="setStyleFond(this,'grain')"   title="Grain"><span class="cv-fond-dot" style="background:${c1};opacity:.9"></span>Grain</button>
+        <button class="cv-fond-opt"    id="cvf-beton"   onclick="setStyleFond(this,'beton')"   title="Matière"><span class="cv-fond-dot" style="background:radial-gradient(ellipse at 30% 20%,${c1},${c2})"></span>Matière</button>
+        <button class="cv-fond-reset"  onclick="resetOverrides()" title="Annuler les overrides par slide">↺ Tout réinitialiser</button>
+      </div>
         ${reseau === 'Instagram'
-          ? `<button class="btn btn-ghost" onclick="exporterPNG()">⬇️ Télécharger PNG (slide par slide)</button>`
-          : `<button class="btn btn-ghost" onclick="exporterPDF()">⬇️ Télécharger PDF</button>`}
-        <button class="btn btn-outline" onclick="ouvrirCanva()" title="Télécharge tes slides puis importe-les dans Canva pour les personnaliser">🎨 Importer dans Canva</button>
+          ? `<button class="btn btn-ghost" onclick="exporterPNG()">⬇️ PNG 1080×1440</button>`
+          : `<button class="btn btn-ghost" onclick="exporterPDF()">⬇️ PDF LinkedIn</button>`}
+        <button class="btn btn-rose" onclick="ouvrirCanva()" title="Importer dans Canva">🎨 Importer dans Canva</button>
         <button class="btn btn-outline" onclick="copierLegendeCv()">Copier la légende</button>
       </div>
       <div style="padding:.6rem 1rem;border-top:1px solid var(--gris-border);font-size:.78rem;color:#aaa;line-height:1.55;"
@@ -3154,6 +3270,33 @@ function afficherTooltipCanva(reseau){
   document.body.appendChild(tip);
 }
 
+function setStyleFond(btn, style){
+  styleFondActif = style;
+  overridesSlide = {}; // Appliquer à toutes = effacer les overrides
+  document.querySelectorAll('.cv-fond-opt').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  rafraichirCarrousel();
+}
+
+function setStyleSlide(slideIdx, btn, style){
+  overridesSlide[slideIdx] = style;
+  rafraichirCarrousel();
+}
+
+function resetOverrides(){
+  overridesSlide = {};
+  rafraichirCarrousel();
+}
+
+function rafraichirCarrousel(){
+  if(!carrouselCourant) return;
+  const { slides, legende, reseau } = carrouselCourant;
+  // Trouver le containerId actif
+  const viewer = document.querySelector('.carrousel-viewer');
+  const containerId = viewer?.parentElement?.id || 'gen-cv-inline';
+  if(containerId) afficherCarrousel(slides, legende, reseau, containerId);
+}
+
 function copierLegendeCv(){
   if(!carrouselCourant) return;
   navigator.clipboard.writeText(carrouselCourant.legende).then(()=>toast('✅ Légende copiée !','ok'));
@@ -3182,7 +3325,7 @@ async function exporterPNG(){
 
     // Créer un div offscreen 1080x1440
     const div = document.createElement('div');
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;background:${fond};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:80px 72px;box-sizing:border-box;display:flex;flex-direction:column;`;
+    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;${styleFondSlide(s.num, slides.length, c1, c2)}font-family:'${pcorp}',sans-serif;color:${tcoul};padding:80px 72px;box-sizing:border-box;display:flex;flex-direction:column;`;
 
     div.innerHTML = `
       <div style="font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:${c1};margin-bottom:24px;">${s.type==='hook'?'':s.type==='cta'?'':''}</div>
@@ -3190,6 +3333,7 @@ async function exporterPNG(){
       ${s.sousTitre?`<div style="font-size:32px;opacity:.7;margin-bottom:24px;">${s.sousTitre}</div>`:''}
       <div style="font-size:${s.type==='hook'?36:32}px;line-height:1.65;flex:1;">${s.corps||''}</div>
       ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="max-width:160px;max-height:60px;object-fit:contain;opacity:.8;margin-top:auto;"/>` : ''}
+      ${(s.type==='hook'||s.type==='cta')&&drivePhotoSelectionnee?.thumbnailUrl?`<img src="${drivePhotoSelectionnee.thumbnailUrl}" alt="photo" crossOrigin="anonymous" style="position:absolute;bottom:0;right:0;width:240px;height:320px;object-fit:cover;object-position:top;opacity:.22;border-radius:8px 0 0 0;"/>` : ''}
       <div style="position:absolute;top:40px;right:60px;font-size:24px;opacity:.3;">${s.num}/${slides.length}</div>`;
 
     document.body.appendChild(div);

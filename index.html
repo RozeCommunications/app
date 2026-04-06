@@ -1477,7 +1477,7 @@
     <div class="bq"><div class="ql"><div class="qn">4</div><span class="qc">Observation</span></div><p class="qt">Quelque chose qui t'interpelle dans ton secteur en ce moment.</p><textarea id="q4" oninput="autosaveDraft()" placeholder="Je remarque que de plus en plus de professionnels…"></textarea></div>
     <div class="bq"><div class="ql"><div class="qn">5</div><span class="qc">Fierté</span></div><p class="qt">Un résultat qui mérite d'être noté cette semaine.</p><textarea id="q5" oninput="autosaveDraft()" placeholder="Cette semaine, je suis fière d'avoir…"></textarea></div>
     <div class="sep"><span>La semaine à venir</span></div>
-    <div class="bq"><div class="ql"><div class="qn">6</div><span class="qc">Offre à mettre en avant</span></div><p class="qt">Quelle offre veux-tu valoriser dans tes contenus cette semaine ?</p><input type="text" id="q6" oninput="autosaveDraft()" placeholder="Ex : Formation individuelle…"/></div>
+    <div class="bq"><div class="ql"><div class="qn">6</div><span class="qc">Offre à mettre en avant</span></div><p class="qt">Quelle offre veux-tu valoriser dans tes contenus cette semaine ?</p><input type="text" id="q6" oninput="autosaveDraft()" placeholder="Ex : Mon offre phare, ma prestation signature…"/></div>
     <div class="bq" id="bq-photo"><div class="ql"><div class="qn">7</div><span class="qc">Photo disponible</span></div>
       <p class="qt">Dépose ta photo dans le bon dossier Drive, puis décris-la ici — l'IA l'intègre dans ton post photo ou carrousel.</p>
       <input type="text" id="q7" oninput="autosaveDraft()" placeholder="Ex : portrait studio fond blanc, dans Portraits-Action…"/>
@@ -1609,7 +1609,8 @@
       <div class="edit-actions" id="gen-post-actions" style="display:none;">
         <button class="btn btn-rose" onclick="sauvegarderGenPanel()">💾 Sauvegarder</button>
         <button class="btn btn-ghost" onclick="genUnPost()">🔄 Regénérer</button>
-        <button class="btn btn-outline" onclick="copierGenPanel()">Copier</button>
+        <button class="btn btn-outline" onclick="copierGenPanel()">📋 Copier</button>
+        <button class="btn btn-ghost" id="btn-publier-gen" onclick="publierSurReseau()" style="font-size:.78rem;">🚀 Publier →</button>
       </div>
     </div>
 
@@ -1779,12 +1780,53 @@
           <label class="lbl">Entreprise</label>
           <input type="text" id="cfg-entreprise" placeholder="Ex : Roze Communications" style="font-size:16px;"/>
           <label class="lbl">Métier</label>
-          <input type="text" id="cfg-metier" placeholder="Ex : Formatrice réseaux sociaux" style="font-size:16px;"/>
-          <label class="lbl" style="margin-top:.6rem;">Sources de veille <span style="font-weight:400;color:var(--gris-clair);font-size:.75rem;">(médias, blogs, sites de référence)</span></label>
-          <input type="text" id="cfg-references" placeholder="Ex : Le Blog du Modérateur, Hootsuite Blog, leparisien.fr" style="font-size:16px;"/>
-          <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.3rem;line-height:1.4;">L'IA puise dans ces sources pour enrichir tes posts avec des infos récentes. Sépare par des virgules.</div>
+          <input type="text" id="cfg-metier" placeholder="Ex : Plombier, Avocat, Coach sportif, Boulangers…" style="font-size:16px;"/>
+          <label class="lbl" style="margin-top:.6rem;">
+            Sources de veille
+            <span style="font-weight:400;color:var(--gris-clair);font-size:.75rem;">— URLs uniquement</span>
+            <span id="refs-compteur" style="font-size:.72rem;color:var(--rose-clair);margin-left:.4rem;font-weight:700;">0/10</span>
+          </label>
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.5rem;line-height:1.5;">
+            Une URL par ligne, 10 max. Ex&nbsp;: <code style="font-size:.7rem;background:var(--gris-input);padding:1px 5px;border-radius:4px;">https://www.blogdumoderateur.com/social/</code>
+          </div>
+          <textarea id="cfg-references"
+            rows="5"
+            placeholder="https://www.blogdumoderateur.com/social/&#10;https://later.com/blog/&#10;https://sproutsocial.com/insights/"
+            style="font-size:13px;width:100%;box-sizing:border-box;resize:vertical;font-family:monospace;line-height:1.6;"
+            oninput="validerURLsSources(this)"></textarea>
+          <div id="refs-erreur" style="font-size:.72rem;color:var(--rose);margin-top:.3rem;display:none;"></div>
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.3rem;line-height:1.4;">
+            L'IA lit ces pages directement — 3 sources par génération, en rotation automatique.
+          </div>
         </div>
       </div>
+      <!-- Onglet Réseaux sociaux -->
+      <div class="duo-tab" id="tab-reseaux">
+        <div class="duo-tab-hd" onclick="toggleDuoTab('tab-reseaux')">
+          <div class="duo-tab-titre"><span>📲</span><span>Mes réseaux sociaux</span></div>
+          <span class="duo-tab-chevron">▼</span>
+        </div>
+        <div class="duo-tab-body">
+          <label class="lbl">Nom d'utilisateur Instagram</label>
+          <div style="display:flex;gap:.5rem;align-items:center;">
+            <input type="text" id="cfg-insta-user" placeholder="Ex : roze.communications" style="font-size:16px;flex:1;" oninput="majLiensReseaux()"/>
+            <a id="btn-open-insta" href="https://www.instagram.com/" target="_blank"
+               class="btn btn-ghost btn-sm" style="flex-shrink:0;text-decoration:none;white-space:nowrap;">
+              📸 Ouvrir Instagram
+            </a>
+          </div>
+          <label class="lbl" style="margin-top:.6rem;">URL de ton profil LinkedIn</label>
+          <div style="display:flex;gap:.5rem;align-items:center;">
+            <input type="text" id="cfg-linkedin-url" placeholder="Ex : https://www.linkedin.com/in/ton-prenom-nom" style="font-size:16px;flex:1;" oninput="majLiensReseaux()"/>
+            <a id="btn-open-linkedin" href="https://www.linkedin.com/feed/" target="_blank"
+               class="btn btn-ghost btn-sm" style="flex-shrink:0;text-decoration:none;white-space:nowrap;">
+              💼 Ouvrir LinkedIn
+            </a>
+          </div>
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.5rem;line-height:1.4;">Ces liens s'ouvriront directement dans l'app ou le site. Tu peux copier ton post puis publier depuis ton réseau.</div>
+        </div>
+      </div>
+
       <div class="duo-tab" id="tab-charte">
         <div class="duo-tab-hd" onclick="toggleDuoTab('tab-charte')">
           <div class="duo-tab-titre"><span>🎨</span><span>Identité visuelle</span></div>
@@ -2320,7 +2362,9 @@ let CFG = {
   nom:          ls('roze_nom')           || '',
   entreprise:   ls('roze_entreprise')    || '',
   metier:       ls('roze_metier')        || '',
-  references:   ls('roze_references')    || ''
+  references:   ls('roze_references')    || '',
+  instaUser:    ls('roze_insta_user')    || '',
+  linkedinUrl:  ls('roze_linkedin_url')  || ''
 };
 
 // Rythme par défaut
@@ -2708,7 +2752,7 @@ const STREAK_MESSAGES = {
   24: { ic:'⭐', badge:'6 mois',   titre:'6 mois — mi-parcours !',
         msg:'Une demi-année de régularité. Tu n’es plus en train d’essayer — tu es quelqu’un qui publie, point.' },
   36: { ic:'👑', badge:'9 mois',   titre:'9 mois — Top of Mind !',
-        msg:'Presque un an. Les gens dans ton secteur savent qui tu es. C’est ça, le vrai résultat des réseaux sociaux.' },
+        msg:'Presque un an. Les gens dans ton secteur savent qui tu es. C’est ça, le vrai résultat d’une présence régulière.' },
   48: { ic:'🌟', badge:'1 an !!!', titre:'1 AN de régularité !',
         msg:'365 jours à tenir ta promesse éditoriale. Peu de professionnels peuvent en dire autant. Félicitations.' },
 };
@@ -3058,70 +3102,91 @@ function toggleActu(){
 }
 
 async function rechercherActu(){
-  // Ne se déclenche QUE depuis genUnPost (au clic sur Générer)
-  // si le toggle actu est activé
+  // Déclenché uniquement au clic sur Générer si le toggle actu est activé
 
   const sujetSaisi = (document.getElementById('gen-sujet')||{}).value?.trim() || '';
   const metier     = CFG.metier || '';
   const refsRaw    = CFG.references || '';
 
-  // Construire la liste des sources de veille
-  const sources = refsRaw
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean);
-
-  // Construire la requête de recherche
-  let query, instructionSource;
-
-  if(sujetSaisi && sources.length){
-    // Sujet précis + sources définies → chercher sur le sujet dans ces sources
-    const srcList = sources.join(', ');
-    query = `"${sujetSaisi}" site:${sources[0].replace(/https?:\/\//,'')} OR ${sujetSaisi} ${new Date().getFullYear()}`;
-    instructionSource = `Cherche en priorité sur ces sources : ${srcList}. Si pas de résultat pertinent sur ces sources, cherche sur le web.`;
-  } else if(sujetSaisi){
-    // Sujet précis sans sources → recherche web ciblée sur le sujet
-    query = `${sujetSaisi} tendances actualités ${new Date().getFullYear()}`;
-    instructionSource = `Cherche des articles ou données récentes sur ce sujet exact.`;
-  } else if(sources.length){
-    // Pas de sujet mais sources définies → chercher les derniers contenus de ces sources en lien avec le métier
-    const srcList = sources.join(', ');
-    query = `${metier} tendances ${new Date().getFullYear()} ${sources[0]}`;
-    instructionSource = `Cherche en priorité sur ces sources : ${srcList}. Trouve les articles ou données les plus récents en lien avec le métier : ${metier}.`;
-  } else {
-    // Fallback : tendances du secteur
-    query = `tendances ${metier || 'réseaux sociaux'} ${new Date().getFullYear()}`;
-    instructionSource = `Cherche des données et tendances récentes sur le secteur.`;
-  }
+  // Lire les URLs (une par ligne, max 10)
+  const urlSources = lireURLsSources();
+  // Rotation : utiliser 3 URLs différentes à chaque appel
+  // Le seed est basé sur l'heure pour varier au fil de la journée
+  const seed = Math.floor(Date.now() / 60000) % Math.max(urlSources.length, 1);
+  const urlsActives = urlSources.length
+    ? [...urlSources.slice(seed), ...urlSources.slice(0, seed)].slice(0, 3)
+    : [];
 
   const wl = document.getElementById('web-loader'); wl.classList.add('on');
   document.getElementById('actu-result').classList.remove('on');
 
   try{
-    const r = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body: JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:700,
-        tools:[{type:'web_search_20250305',name:'web_search'}],
-        messages:[{role:'user',content:`${instructionSource}
+    let actuBrut = '';
+
+    // ── Étape 1 : web_fetch sur les URLs déclarées ──
+    // Si l'utilisateur a saisi des URLs, on les lit directement
+    if(urlsActives.length){
+      const fetchPromises = urlsActives.map(async url => {
+        try{
+          const rf = await fetch('https://api.anthropic.com/v1/messages',{
+            method:'POST',
+            headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+            body: JSON.stringify({
+              model:'claude-sonnet-4-20250514',
+              max_tokens:400,
+              tools:[{type:'web_search_20250305',name:'web_search'}],
+              messages:[{role:'user',content:`Lis cette page et extrais le titre + résumé (2 phrases max) de l'article le plus récent et le plus pertinent pour un professionnel dont le métier est : ${metier}${sujetSaisi ? ' et le sujet du post est : '+sujetSaisi : ''}.
+URL : ${url}
+Cite la source et la date entre parenthèses. Réponds uniquement avec le résumé, sans préambule.`}]
+            })
+          });
+          const d = await rf.json();
+          return (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
+        }catch(e){ return ''; }
+      });
+      const resultats = await Promise.all(fetchPromises);
+      actuBrut = resultats.filter(Boolean).join(' ');
+    }
+
+    // ── Étape 2 : web_search si noms de sources ou si URLs n'ont rien donné ──
+    if(!actuBrut || actuBrut.length < 30){
+      let query, instruction;
+
+      if(sujetSaisi){
+        query = `${sujetSaisi} actualités tendances ${new Date().getFullYear()}`;
+        instruction = `Cherche des données récentes sur ce sujet exact.`;
+      } else {
+        query = `tendances ${metier || 'secteur professionnel'} ${new Date().getFullYear()}`;
+        instruction = `Cherche des données et tendances récentes sur ce secteur.`;
+      }
+
+      const rs = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body: JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:500,
+          tools:[{type:'web_search_20250305',name:'web_search'}],
+          messages:[{role:'user',content:`${instruction}
 
 Requête : "${query}"
 
-RÈGLES STRICTES :
-- Cherche des CONTENUS (articles, données, chiffres, tendances) — pas des personnes ou prestataires
-- Ne mentionne JAMAIS d'autres formateurs, consultants ou concurrents
-- Résume en 2-3 phrases les informations les plus récentes et utiles
-- Cite la source à la fin entre parenthèses : (Source : nom du média, date)
-- Réponds uniquement avec le résumé + source, sans préambule`}]
-      })
-    });
-    const d = await r.json();
-    const textBlocks = (d.content||[]).filter(b=>b.type==='text');
-    actuTexte = textBlocks.map(b=>b.text).join(' ').trim() || 'Aucune actu trouvée.';
+RÈGLES :
+- Cherche des CONTENUS (articles, chiffres, tendances) — pas des personnes ou concurrents
+- 2-3 phrases factuelles et récentes
+- Cite la source : (Source : nom du média, date)
+- Sans préambule`}]
+        })
+      });
+      const ds = await rs.json();
+      const complement = (ds.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
+      actuBrut = actuBrut ? actuBrut + ' ' + complement : complement;
+    }
+
+    actuTexte = actuBrut || 'Aucune actu trouvée.';
     document.getElementById('actu-txt').textContent = actuTexte;
     document.getElementById('actu-result').classList.add('on');
+
   }catch(e){
     actuTexte = '';
     toast('❌ Recherche web échouée','err');
@@ -3873,6 +3938,9 @@ function afficherApp(){
   afficherStreak();
   affDate();
 
+  // Restaurer les posts depuis Sheets si nouveaux (multi-appareils)
+  setTimeout(() => syncPostsDepuisSheets(), 800);
+
   setTimeout(() => {
     const hero = document.querySelector('.hero');
     if(hero) hero.classList.add('masque');
@@ -3900,6 +3968,8 @@ function buildConfigPayload(){
     entreprise:   CFG.entreprise   || '',
     metier:       CFG.metier       || '',
     references:   CFG.references   || '',
+    insta_user:   CFG.instaUser    || '',
+    linkedin_url: CFG.linkedinUrl  || '',
     as:           CFG.as           || '',
     api:          CFG.api          || '',
     api_gemini:   CFG.apiGemini    || '',
@@ -3926,6 +3996,8 @@ function appliquerConfig(config){
     entreprise:   ['entreprise',  'roze_entreprise'],
     metier:       ['metier',      'roze_metier'],
     references:   ['references',  'roze_references'],
+    insta_user:   ['instaUser',   'roze_insta_user'],
+    linkedin_url: ['linkedinUrl', 'roze_linkedin_url'],
     as:           ['as',          'roze_as'],
     api:          ['api',         'roze_api'],
     api_gemini:   ['apiGemini',   'roze_api_gemini'],
@@ -3960,6 +4032,48 @@ function appliquerConfig(config){
 }
 
 // Lire la config depuis le Sheets (au démarrage si CFG.as connu)
+async function syncPostsDepuisSheets(){
+  if(!CFG.as) return;
+  try{
+    const r = await fetch(CFG.as, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'lire_posts', limite: 300 })
+    });
+    const j = await r.json();
+    if(!j.posts || !j.posts.length) return;
+
+    const local = getBiblio();
+    const idsLocaux = new Set(local.map(p => String(p.id)));
+    let ajouts = 0;
+
+    j.posts.forEach(p => {
+      if(!p.texte) return;
+      if(idsLocaux.has(String(p.id))) return; // déjà présent en local
+      // Reconstituer un post compatible avec le format localStorage
+      local.push({
+        id:          parseInt(p.id) || Date.now(),
+        reseau:      p.reseau      || '',
+        typeContenu: p.typeContenu || 'Post texte',
+        texte:       p.texte       || '',
+        legende:     p.legende     || '',
+        date:        p.date        || dateAujourdhui(),
+        dateAffiche: p.dateAffiche || p.date || '',
+        statut:      p.statut      || 'À relire',
+      });
+      idsLocaux.add(String(p.id));
+      ajouts++;
+    });
+
+    if(ajouts > 0){
+      setBiblio(local);
+      majCal(); majSemMini(); majKPIs();
+      console.log(ajouts + ' posts restaurés depuis Sheets');
+    }
+  } catch(e){
+    console.warn('Sync posts Sheets échouée:', e.message);
+  }
+}
+
 async function syncConfigDepuisSheets(){
   if(!CFG.as) return; // pas encore configuré
   try{
@@ -3971,6 +4085,8 @@ async function syncConfigDepuisSheets(){
     if(j.config && Object.keys(j.config).length > 0){
       appliquerConfig(j.config);
       chargerCompte(); // Rafraîchir les champs du DOM
+      // Restaurer les posts depuis Sheets
+      setTimeout(() => syncPostsDepuisSheets(), 500);
     }
   } catch(e){ /* silencieux — on garde le localStorage */ }
 }
@@ -4314,7 +4430,7 @@ function nettoyerIntroIA(texte){
 
     // Détecteurs d'intro méta IA
     const estIntroMeta = (
-      // Apostrophe + prénom : "Okay, Rozenn !", "Voilà Rozenn,"
+      // Apostrophe + prénom : "Okay, [prénom] !", "Voilà [prénom],"
       /^(ok(ay)?|voici|voilà|bien sûr|parfait|super|génial|avec plaisir|je vais|alors|donc|bonjour)[,!\s]/i.test(l) ||
       // Titre de section en markdown gras : "**SCRIPT REEL INSTAGRAM**"
       /^\*\*[A-ZÉÈÀÙ\s]+\*\*$/.test(l) ||
@@ -4799,6 +4915,72 @@ function toggleStoryPanel(){
 
   // Ancre — scroll immédiat vers le panel
   setTimeout(() => panel.scrollIntoView({ behavior:'smooth', block:'start' }), 50);
+}
+
+// ── Validation URLs sources de veille ──
+function validerURLsSources(el){
+  const lignes = el.value.split('\n').map(l => l.trim()).filter(Boolean);
+  const errEl  = document.getElementById('refs-erreur');
+  const comptEl = document.getElementById('refs-compteur');
+
+  const nonURL = lignes.filter(l => !/^https?:\/\//i.test(l));
+  const trop   = lignes.length > 10;
+
+  if(comptEl) comptEl.textContent = Math.min(lignes.length, 10) + '/10';
+
+  if(nonURL.length){
+    if(errEl){ errEl.textContent = '⚠️ Ligne(s) invalide(s) — chaque ligne doit commencer par https://'; errEl.style.display='block'; }
+    el.style.borderColor = 'var(--rose)';
+  } else if(trop){
+    if(errEl){ errEl.textContent = '⚠️ Maximum 10 URLs — les lignes suivantes seront ignorées.'; errEl.style.display='block'; }
+    el.style.borderColor = 'var(--rose)';
+  } else {
+    if(errEl) errEl.style.display='none';
+    el.style.borderColor = '';
+  }
+}
+
+// ── Lire les URLs depuis le textarea (newlines → array) ──
+function lireURLsSources(){
+  const val = (document.getElementById('cfg-references')||{}).value || CFG.references || '';
+  return val.split('\n').map(l => l.trim()).filter(l => /^https?:\/\//i.test(l)).slice(0,10);
+}
+
+function majLiensReseaux(){
+  const insta   = (document.getElementById('cfg-insta-user')  || {}).value?.trim() || CFG.instaUser || '';
+  const linkedin = (document.getElementById('cfg-linkedin-url') || {}).value?.trim() || CFG.linkedinUrl || '';
+  const btnInsta = document.getElementById('btn-open-insta');
+  const btnLi    = document.getElementById('btn-open-linkedin');
+  if(btnInsta)    btnInsta.href    = insta    ? 'https://www.instagram.com/' + insta.replace('@','') + '/' : 'https://www.instagram.com/';
+  if(btnLi)       btnLi.href       = linkedin || 'https://www.linkedin.com/feed/';
+}
+
+// Copier le post ET ouvrir le réseau social en 1 clic
+function publierSurReseau(){
+  // Détecte le réseau du post en cours
+  const reseau = getGenReseau() || 'LinkedIn';
+  publierSur(reseau);
+}
+
+function publierSur(reseau){
+  const texte  = document.getElementById('gen-result')?.textContent || '';
+  const legende = document.getElementById('gen-legende')?.value || '';
+  const tout = texte + (legende ? '\n\n' + legende : '');
+  navigator.clipboard.writeText(tout).then(() => {
+    toast('✅ Post copié dans le presse-papier — colle-le directement sur ' + reseau + ' !', 'ok');
+    setTimeout(() => {
+      if(reseau === 'Instagram'){
+        const url = CFG.instaUser
+          ? 'https://www.instagram.com/' + CFG.instaUser.replace('@','') + '/'
+          : 'https://www.instagram.com/';
+        window.open(url, '_blank');
+      } else {
+        // Ouvrir le compositeur de post LinkedIn directement
+        // Sur mobile : ouvre l'app LinkedIn au compositeur
+        window.open('https://www.linkedin.com/feed/?shareActive=true', '_blank');
+      }
+    }, 400);
+  });
 }
 
 function setGspType(btn, type){
@@ -5734,6 +5916,9 @@ function chargerCompte(){
   setV2('cfg-nom',          CFG.nom);
   setV2('cfg-entreprise',   CFG.entreprise);
   setV2('cfg-metier',       CFG.metier);
+  setV2('cfg-insta-user',   CFG.instaUser);
+  setV2('cfg-linkedin-url', CFG.linkedinUrl);
+  majLiensReseaux();
   setV2('cfg-references',   CFG.references);
   setV2('cfg-as',           CFG.as);
   setV2('cfg-api',          CFG.api);
@@ -5796,6 +5981,10 @@ function sauvegarderCompte(){
   localStorage.setItem('roze_nom',          CFG.nom);
   localStorage.setItem('roze_entreprise',   CFG.entreprise);
   localStorage.setItem('roze_metier',       CFG.metier);
+  CFG.instaUser   = (document.getElementById('cfg-insta-user')||{}).value?.trim()||'';
+  CFG.linkedinUrl = (document.getElementById('cfg-linkedin-url')||{}).value?.trim()||'';
+  localStorage.setItem('roze_insta_user',   CFG.instaUser);
+  localStorage.setItem('roze_linkedin_url', CFG.linkedinUrl);
   CFG.references = (document.getElementById('cfg-references')||{}).value?.trim()||'';
   localStorage.setItem('roze_references',   CFG.references);
   // Rythme
@@ -5828,7 +6017,7 @@ function sauvegarderCompte(){
 const EXEMPLES_STORY = {
   lifestyle: (sujet) => `🎬 Montre une scène de ton quotidien (bureau, déplacement, moment perso)\n\n👉 Contexte : "${sujet}"\n\nEx: "Aujourd'hui j'étais [contexte]… et ça m'a fait penser à quelque chose d'important pour vous…"`,
   valeur:    (sujet) => `💡 1 astuce = 1 slide\n\n👉 Sujet : "${sujet}"\n\nEx: "Le truc que personne ne te dit sur [sujet]…\n→ [La réponse en une phrase]\n→ Swipe si tu veux en savoir plus"`,
-  vente:     (sujet) => `🎯 Structure en 3 temps :\n\n1. CONTEXTE DU JOUR\n   Ex: "J'étais au [lieu] aujourd'hui… et je me demandais si j'allais y arriver, comme quand on débute."\n\n2. LIEN AVEC TA CIBLE\n   Ex: "C'est un peu comme sur les réseaux sociaux — on se met nos propres barrières. La peur de parler de soi, d'être jugé."\n\n3. APPEL À ACTION DOUX\n   Ex: "Si toi aussi tu es prêt à lever tes barrières et devenir régulier sur Instagram pour être le Top of Mind de ton secteur — réponds \"TOM\" à cette story, on en parle en privé 👇"`
+  vente:     (sujet) => `🎯 Structure en 3 temps :\n\n1. CONTEXTE DU JOUR\n   Ex: "J'étais au [lieu] aujourd'hui… et je me demandais si j'allais y arriver, comme quand on débute."\n\n2. LIEN AVEC TA CIBLE\n   Ex: "C'est un peu comme dans ton activité — on se met nos propres barrières. La peur d'oser, de se montrer."\n\n3. APPEL À ACTION DOUX\n   Ex: "Si toi aussi tu es prêt à lever tes barrières et devenir régulier sur Instagram pour être le Top of Mind de ton secteur — réponds \"TOM\" à cette story, on en parle en privé 👇"`
 };
 
 let storyModalIndex = null; // index dans STORIES_CFG

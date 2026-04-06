@@ -1801,32 +1801,6 @@
         </div>
       </div>
       <!-- Onglet Réseaux sociaux -->
-      <div class="duo-tab" id="tab-reseaux">
-        <div class="duo-tab-hd" onclick="toggleDuoTab('tab-reseaux')">
-          <div class="duo-tab-titre"><span>📲</span><span>Mes réseaux sociaux</span></div>
-          <span class="duo-tab-chevron">▼</span>
-        </div>
-        <div class="duo-tab-body">
-          <label class="lbl">Nom d'utilisateur Instagram</label>
-          <div style="display:flex;gap:.5rem;align-items:center;">
-            <input type="text" id="cfg-insta-user" placeholder="Ex : roze.communications" style="font-size:16px;flex:1;" oninput="majLiensReseaux()"/>
-            <a id="btn-open-insta" href="https://www.instagram.com/" target="_blank"
-               class="btn btn-ghost btn-sm" style="flex-shrink:0;text-decoration:none;white-space:nowrap;">
-              📸 Ouvrir Instagram
-            </a>
-          </div>
-          <label class="lbl" style="margin-top:.6rem;">URL de ton profil LinkedIn</label>
-          <div style="display:flex;gap:.5rem;align-items:center;">
-            <input type="text" id="cfg-linkedin-url" placeholder="Ex : https://www.linkedin.com/in/ton-prenom-nom" style="font-size:16px;flex:1;" oninput="majLiensReseaux()"/>
-            <a id="btn-open-linkedin" href="https://www.linkedin.com/feed/" target="_blank"
-               class="btn btn-ghost btn-sm" style="flex-shrink:0;text-decoration:none;white-space:nowrap;">
-              💼 Ouvrir LinkedIn
-            </a>
-          </div>
-          <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.5rem;line-height:1.4;">Ces liens s'ouvriront directement dans l'app ou le site. Tu peux copier ton post puis publier depuis ton réseau.</div>
-        </div>
-      </div>
-
       <div class="duo-tab" id="tab-charte">
         <div class="duo-tab-hd" onclick="toggleDuoTab('tab-charte')">
           <div class="duo-tab-titre"><span>🎨</span><span>Identité visuelle</span></div>
@@ -1866,7 +1840,33 @@
           <input type="url" id="cfg-logo-url" placeholder="https://drive.google.com/uc?id=…" style="font-size:16px;"/>
           <div class="opt" style="margin-top:.3rem;">Logo sur la dernière slide uniquement</div>
         </div>
+      </div><div class="duo-tab" id="tab-reseaux">
+        <div class="duo-tab-hd" onclick="toggleDuoTab('tab-reseaux')">
+          <div class="duo-tab-titre"><span>📲</span><span>Mes réseaux sociaux</span></div>
+          <span class="duo-tab-chevron">▼</span>
+        </div>
+        <div class="duo-tab-body">
+          <label class="lbl">Nom d'utilisateur Instagram</label>
+          <div style="display:flex;gap:.5rem;align-items:center;">
+            <input type="text" id="cfg-insta-user" placeholder="Ex : roze.communications" style="font-size:16px;flex:1;" oninput="majLiensReseaux()"/>
+            <a id="btn-open-insta" href="https://www.instagram.com/" target="_blank"
+               class="btn btn-ghost btn-sm" style="flex-shrink:0;text-decoration:none;white-space:nowrap;">
+              📸 Ouvrir Instagram
+            </a>
+          </div>
+          <label class="lbl" style="margin-top:.6rem;">URL de ton profil LinkedIn</label>
+          <div style="display:flex;gap:.5rem;align-items:center;">
+            <input type="text" id="cfg-linkedin-url" placeholder="Ex : https://www.linkedin.com/in/ton-prenom-nom" style="font-size:16px;flex:1;" oninput="majLiensReseaux()"/>
+            <a id="btn-open-linkedin" href="https://www.linkedin.com/feed/" target="_blank"
+               class="btn btn-ghost btn-sm" style="flex-shrink:0;text-decoration:none;white-space:nowrap;">
+              💼 Ouvrir LinkedIn
+            </a>
+          </div>
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.5rem;line-height:1.4;">Ces liens s'ouvriront directement dans l'app ou le site. Tu peux copier ton post puis publier depuis ton réseau.</div>
+        </div>
       </div>
+
+      
     </div>
 
     <!-- Séparateur section -->

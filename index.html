@@ -134,7 +134,8 @@
     .st-publie{font-size:.75rem;font-weight:600;padding:2px 9px;border-radius:20px;background:rgba(46,204,113,.12);color:var(--succes);border:1px solid rgba(46,204,113,.25);}
 
     /* ─ ACCUEIL ─ */
-    .hero{text-align:center;padding:1.2rem 0 1rem;}
+    .hero{text-align:center;padding:1.2rem 0 1rem;transition:opacity .5s ease, max-height .5s ease, padding .5s ease, margin .5s ease;overflow:hidden;}
+    .hero.masque{opacity:0;max-height:0;padding:0;margin:0;pointer-events:none;}
     .hero-badge{display:inline-block;background:linear-gradient(135deg,var(--rose-sombre),var(--rose));color:#fff;font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:1rem;}
     .hero h1{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,7vw,2.4rem);font-weight:900;line-height:1.15;margin-bottom:.8rem;;color:var(--blanc);text-shadow:0 2px 24px rgba(232,24,109,.2),0 1px 0 rgba(0,0,0,.5);}
     .hero h1 em{color:inherit;font-style:italic;display:block;}
@@ -227,6 +228,8 @@
     /* Panneau "1 post" */
     .gen-panel{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:14px;padding:1.2rem;margin-bottom:1rem;display:none;overflow:hidden;}
     .gen-panel.on{display:block;animation:fi .2s ease;}
+    #gen-story-panel{display:none;}
+    #gen-story-panel.on{display:block;animation:fi .2s ease;}
     .gen-panel h4{font-size:.85rem;font-weight:700;margin-bottom:.9rem;color:var(--blanc);}
     .sel-row{display:flex;gap:.6rem;margin-bottom:.8rem;}
     .sel-row select{flex:1;}
@@ -1613,7 +1616,7 @@
     <div class="loader" id="loader"><div class="ring"></div><p>Ton IA génère tes contenus<br/><em>dans ta voix…</em></p></div>
 
     <!-- ══ PANEL 1 STORY ══ -->
-    <div class="gen-panel" id="gen-story-panel" style="display:none;">
+    <div class="gen-panel" id="gen-story-panel">
       <h4>📱 Générer 1 story</h4>
 
       <!-- Date de publication -->
@@ -1642,10 +1645,10 @@
       <input type="text" id="gsp-sujet" placeholder="Ex : Mon retour sur le dernier salon pro…" style="font-size:16px;"/>
 
       <!-- Actu web -->
-      <div class="actu-toggle-row" onclick="gspToggleActu(event)" style="margin-top:.5rem;">
-        <div>
-          <div class="actu-toggle-lbl">🔍 Inclure une actu du secteur</div>
-          <span style="font-size:.7rem;color:var(--gris-clair);">Recherche web sur tes références</span>
+      <div class="actu-row" style="margin-top:.7rem;" onclick="gspToggleActu(event)">
+        <div class="actu-lbl">
+          🔍 Inclure une actu du secteur
+          <span>Recherche web sur tes références</span>
         </div>
         <label class="toggle-sw" onclick="event.stopPropagation()">
           <input type="checkbox" id="gsp-cb-actu"/>
@@ -3015,19 +3018,30 @@ function getGenFormat(){
 }
 
 function togglePanel(){
-  const p = document.getElementById('gen-panel');
-  p.classList.toggle('on');
-  if(p.classList.contains('on')){
-    // Init date = aujourd'hui
-    document.getElementById('gen-date').value = dateAujourdhui();
-    majGenFormats('LinkedIn');
-    // Reset résultat
-    document.getElementById('gen-result').textContent='';
-    document.getElementById('gen-result').classList.remove('on');
-    document.getElementById('gen-legende-zone').classList.remove('on');
-    document.getElementById('gen-post-actions').style.display='none';
-    document.getElementById('lbl-gen-texte').style.display='none';
+  const p      = document.getElementById('gen-panel');
+  const pStory = document.getElementById('gen-story-panel');
+  const ouvert = p.classList.contains('on');
+
+  // Fermer story panel si ouvert
+  pStory.classList.remove('on');
+
+  if(ouvert){
+    p.classList.remove('on');
+    return;
   }
+
+  // Ouvrir 1 post
+  p.classList.add('on');
+  document.getElementById('gen-date').value = dateAujourdhui();
+  majGenFormats('LinkedIn');
+  document.getElementById('gen-result').textContent='';
+  document.getElementById('gen-result').classList.remove('on');
+  document.getElementById('gen-legende-zone').classList.remove('on');
+  document.getElementById('gen-post-actions').style.display='none';
+  document.getElementById('lbl-gen-texte').style.display='none';
+
+  // Ancre — scroll immédiat vers le panel
+  setTimeout(() => p.scrollIntoView({ behavior:'smooth', block:'start' }), 50);
 }
 
 // ─── ACTU WEB ───
@@ -3737,35 +3751,53 @@ function driveRetour(){
 // ══════════════════════════════════════════════════════════
 const GOOGLE_CLIENT_ID = '467619618320-vf33rsticsngcoomhsg9u66l6spvv6gh.apps.googleusercontent.com';
 
-// Clé session — on stocke l'email autorisé en sessionStorage
-// (sessionStorage = effacé à la fermeture du navigateur,
-//  mais persiste pendant la session → pas de reconnexion à chaque page)
-const SESSION_KEY = 'roze_auth_email';
-const SESSION_NOM = 'roze_auth_nom';
+// Session persistante dans localStorage — durée 30 jours
+// L'utilisateur n'a pas à se reconnecter à chaque ouverture de l'app
+const AUTH_KEY     = 'roze_auth_email';
+const AUTH_NOM     = 'roze_auth_nom';
+const AUTH_EXPIRY  = 'roze_auth_expiry';
+const AUTH_DUREE   = 30 * 24 * 60 * 60 * 1000; // 30 jours en ms
 
-function getSessionEmail(){ return sessionStorage.getItem(SESSION_KEY) || ''; }
-function getSessionNom(){   return sessionStorage.getItem(SESSION_NOM)  || ''; }
+function sauvegarderSession(email, nom){
+  localStorage.setItem(AUTH_KEY,    email);
+  localStorage.setItem(AUTH_NOM,    nom);
+  localStorage.setItem(AUTH_EXPIRY, String(Date.now() + AUTH_DUREE));
+}
+
+function lireSession(){
+  const email   = localStorage.getItem(AUTH_KEY) || '';
+  const nom     = localStorage.getItem(AUTH_NOM) || '';
+  const expiry  = parseInt(localStorage.getItem(AUTH_EXPIRY) || '0');
+  if(!email || Date.now() > expiry) return null;
+  return { email, nom };
+}
+
+function effacerSession(){
+  localStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem(AUTH_NOM);
+  localStorage.removeItem(AUTH_EXPIRY);
+}
+
+// Rétro-compatibilité — fonctions utilisées ailleurs
+function getSessionEmail(){ return localStorage.getItem(AUTH_KEY) || ''; }
+function getSessionNom(){   return localStorage.getItem(AUTH_NOM)  || ''; }
 
 function initAuth(){
-  const emailSession = getSessionEmail();
-  if(emailSession){
-    // Session active → afficher l'app directement
+  const session = lireSession();
+  if(session){
+    // Session valide → afficher l'app directement, sans écran de login
     afficherApp();
     return;
   }
-  // Pas de session → afficher l'écran login
+  // Session expirée ou absente → écran de connexion
   document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('login-screen').style.removeProperty('display');
-  // Cacher l'app pendant le login
   document.querySelector('header').style.display = 'none';
   document.querySelector('.scroll').style.display = 'none';
   document.querySelector('.tabs').style.display   = 'none';
 
-  // Initialiser Google Sign-In
   if(window.google && window.google.accounts){
     lancerGSI();
   } else {
-    // Script GSI pas encore chargé — attendre
     window.addEventListener('load', lancerGSI);
   }
 }
@@ -3773,21 +3805,22 @@ function initAuth(){
 function lancerGSI(){
   if(!window.google || !window.google.accounts) return;
   google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback:  onGoogleSignIn,
-    auto_select: false,
+    client_id:            GOOGLE_CLIENT_ID,
+    callback:             onGoogleSignIn,
+    auto_select:          true,   // Reconnexion auto si le compte est déjà connu
     cancel_on_tap_outside: false,
   });
   google.accounts.id.renderButton(
     document.getElementById('google-signin-btn'),
     { theme:'filled_black', size:'large', text:'signin_with', shape:'pill', width:280 }
   );
+  // One Tap — propose la reconnexion automatique si le compte est mémorisé
+  google.accounts.id.prompt();
 }
 
 async function onGoogleSignIn(response){
   afficherLoginStatus('⏳ Vérification en cours…', 'wait');
 
-  // Décoder le JWT pour extraire l'email
   const payload = JSON.parse(atob(response.credential.split('.')[1]));
   const email   = payload.email || '';
   const nom     = payload.name  || payload.given_name || '';
@@ -3797,13 +3830,10 @@ async function onGoogleSignIn(response){
     return;
   }
 
-  // Vérifier l'accès via Apps Script
   const asUrl = CFG.as || localStorage.getItem('roze_as') || '';
   if(!asUrl){
-    // Pas d'URL AS encore — accepter provisoirement (première config)
-    // L'admin (Roze) peut toujours accéder pour configurer
-    sessionStorage.setItem(SESSION_KEY, email);
-    sessionStorage.setItem(SESSION_NOM, nom);
+    // Première configuration — pas encore d'URL AS
+    sauvegarderSession(email, nom);
     afficherApp();
     return;
   }
@@ -3815,8 +3845,7 @@ async function onGoogleSignIn(response){
     });
     const j = await r.json();
     if(j.autorise){
-      sessionStorage.setItem(SESSION_KEY, email);
-      sessionStorage.setItem(SESSION_NOM, j.nom || nom);
+      sauvegarderSession(email, j.nom || nom);
       afficherApp();
     } else {
       afficherLoginStatus('🚫 ' + (j.message || 'Accès non autorisé.'), 'err');
@@ -3835,7 +3864,6 @@ function afficherLoginStatus(msg, type){
 }
 
 function afficherApp(){
-  // Cacher l'écran login, afficher l'app
   const ls = document.getElementById('login-screen');
   if(ls) ls.style.display = 'none';
   document.querySelector('header').style.display = '';
@@ -3844,13 +3872,18 @@ function afficherApp(){
   majAccueil();
   afficherStreak();
   affDate();
+
+  setTimeout(() => {
+    const hero = document.querySelector('.hero');
+    if(hero) hero.classList.add('masque');
+  }, 2000);
 }
 
 function seDeconnecter(){
-  sessionStorage.removeItem(SESSION_KEY);
-  sessionStorage.removeItem(SESSION_NOM);
+  effacerSession();
   if(window.google && window.google.accounts){
     google.accounts.id.disableAutoSelect();
+    google.accounts.id.revoke(getSessionEmail(), () => {});
   }
   location.reload();
 }
@@ -4740,21 +4773,32 @@ let gspTypeActif = 'vente';
 let gspActuTexte = '';
 
 function toggleStoryPanel(){
-  const panel = document.getElementById('gen-story-panel');
-  const postPanel = document.getElementById('gen-panel');
-  if(postPanel && postPanel.style.display !== 'none') postPanel.style.display = 'none';
-  const open = panel.style.display !== 'none';
-  panel.style.display = open ? 'none' : 'block';
-  if(!open){
-    document.getElementById('gsp-date').value = dateAujourdhui();
-    document.getElementById('gsp-result-zone').style.display = 'none';
-    gspActuTexte = '';
-    // Activer visuellement le premier pilier (Vente) par défaut
-    const chips = document.querySelectorAll('#gsp-types .pilier-chip');
-    chips.forEach(b => b.classList.remove('on','on-vente','on-valeur','on-lifestyle'));
-    if(chips[0]) chips[0].classList.add('on-vente');
-    gspTypeActif = 'vente';
+  const panel  = document.getElementById('gen-story-panel');
+  const pPost  = document.getElementById('gen-panel');
+  const ouvert = panel.classList.contains('on');
+
+  // Fermer post panel si ouvert
+  pPost.classList.remove('on');
+
+  if(ouvert){
+    panel.classList.remove('on');
+    return;
   }
+
+  // Ouvrir story panel
+  panel.classList.add('on');
+  document.getElementById('gsp-date').value = dateAujourdhui();
+  document.getElementById('gsp-result-zone').style.display = 'none';
+  gspActuTexte = '';
+
+  // Init pilier Vente sélectionné par défaut
+  const chips = document.querySelectorAll('#gsp-types .pilier-chip');
+  chips.forEach(b => b.classList.remove('on','on-vente','on-valeur','on-lifestyle'));
+  if(chips[0]) chips[0].classList.add('on-vente');
+  gspTypeActif = 'vente';
+
+  // Ancre — scroll immédiat vers le panel
+  setTimeout(() => panel.scrollIntoView({ behavior:'smooth', block:'start' }), 50);
 }
 
 function setGspType(btn, type){

@@ -6001,8 +6001,19 @@ function sauvegarderCompte(){
   syncStories();
   construireStoriesUI();
   const nomAffiche = [CFG.prenom, CFG.nom].filter(Boolean).join(' '); const el_nc = document.getElementById('nom-client'); if(el_nc && !el_nc.onclick) el_nc.textContent = nomAffiche || 'Se repérer ›';
-  syncConfigVersSheets(); // Sync vers Sheets
-  toast('✅ Compte sauvegardé !','ok');
+  syncConfigVersSheets(); // Envoie la config locale vers Sheets
+
+  // Si l'URL AS vient d'être saisie ou modifiée → relire le Sheets
+  // pour restaurer les données existantes sur cet appareil
+  if(CFG.as){
+    syncConfigDepuisSheets().then(() => {
+      toast('✅ Compte sauvegardé et données synchronisées !','ok');
+    }).catch(() => {
+      toast('✅ Compte sauvegardé !','ok');
+    });
+  } else {
+    toast('✅ Compte sauvegardé !','ok');
+  }
 }
 
 // ══════════════════════════════════════════

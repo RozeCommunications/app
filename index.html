@@ -4033,15 +4033,20 @@ async function syncPostsDepuisSheets(){
       body: JSON.stringify({ action: 'lire_posts', limite: 300 })
     });
     const j = await r.json();
+    console.log('[Roze Sync] Réponse AS reçue. Posts:', (j.posts||[]).length, 'Debug:', JSON.stringify(j.debug||{}));
     if(!j.posts || !j.posts.length) return;
 
     const local = getBiblio();
-    const idsLocaux = new Set(local.map(p => String(p.id)));
+    // Clé anti-doublon : date + reseau + typeContenu + 50 premiers chars du texte
+    const cleLocaux = new Set(local.map(p =>
+      (p.date||'')+'|'+(p.reseau||'')+'|'+(p.typeContenu||'')+'|'+String(p.texte||'').substring(0,50)
+    ));
     let ajouts = 0;
 
     j.posts.forEach(p => {
       if(!p.texte) return;
-      if(idsLocaux.has(String(p.id))) return; // déjà présent en local
+      const cle = (p.date||'')+'|'+(p.reseau||'')+'|'+(p.typeContenu||'')+'|'+String(p.texte||'').substring(0,50);
+      if(cleLocaux.has(cle)) return; // déjà présent
       // Reconstituer un post compatible avec le format localStorage
       local.push({
         id:          parseInt(p.id) || Date.now(),
@@ -4053,14 +4058,14 @@ async function syncPostsDepuisSheets(){
         dateAffiche: p.dateAffiche || p.date || '',
         statut:      p.statut      || 'À relire',
       });
-      idsLocaux.add(String(p.id));
+      cleLocaux.add(cle);
       ajouts++;
     });
 
     if(ajouts > 0){
       setBiblio(local);
       rendreCal(); majSemMini(); majKPIs();
-      console.log(ajouts + ' posts restaurés depuis Sheets');
+      console.log('[Roze Sync] ' + ajouts + ' posts restaurés. Total local: ' + local.length);
     }
   } catch(e){
     console.warn('Sync posts Sheets échouée:', e.message);

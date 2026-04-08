@@ -2710,16 +2710,9 @@ function goStories(){
 function scrollGuide(){ go('p-compte'); setTimeout(()=>document.getElementById('guide-pwa').scrollIntoView({behavior:'smooth'}),300); }
 
 function toggleDuoTab(id){
-  // Les deux onglets duo sont liés — ils s'ouvrent et se ferment ensemble
-  const tabs = document.querySelectorAll('.duo-tab');
   const clicked = document.getElementById(id);
   if(!clicked) return;
-  const isOpen = clicked.classList.contains('open');
-  if(isOpen){
-    tabs.forEach(t => t.classList.remove('open'));
-  } else {
-    tabs.forEach(t => t.classList.add('open'));
-  }
+  clicked.classList.toggle('open');
 }
 
 function toggleAcc(id){
@@ -4066,7 +4059,7 @@ async function syncPostsDepuisSheets(){
 
     if(ajouts > 0){
       setBiblio(local);
-      majCal(); majSemMini(); majKPIs();
+      rendreCal(); majSemMini(); majKPIs();
       console.log(ajouts + ' posts restaurés depuis Sheets');
     }
   } catch(e){

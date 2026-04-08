@@ -4083,8 +4083,6 @@ async function syncConfigDepuisSheets(){
     if(j.config && Object.keys(j.config).length > 0){
       appliquerConfig(j.config);
       chargerCompte(); // Rafraîchir les champs du DOM
-      // Restaurer les posts depuis Sheets
-      setTimeout(() => syncPostsDepuisSheets(), 500);
     }
   } catch(e){ /* silencieux — on garde le localStorage */ }
 }
@@ -6004,10 +6002,13 @@ function sauvegarderCompte(){
   // Si l'URL AS vient d'être saisie ou modifiée → relire le Sheets
   // pour restaurer les données existantes sur cet appareil
   if(CFG.as){
-    syncConfigDepuisSheets().then(() => {
+    // 1. Sync config (bidirectionnel)
+    // 2. Sync posts TOUJOURS — indépendamment du résultat de la config
+    Promise.all([
+      syncConfigDepuisSheets().catch(()=>{}),
+      syncPostsDepuisSheets().catch(()=>{})
+    ]).then(() => {
       toast('✅ Compte sauvegardé et données synchronisées !','ok');
-    }).catch(() => {
-      toast('✅ Compte sauvegardé !','ok');
     });
   } else {
     toast('✅ Compte sauvegardé !','ok');

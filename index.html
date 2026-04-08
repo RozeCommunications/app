@@ -745,7 +745,7 @@
     .cv-export-bar .btn{margin-top:0;width:auto;flex:1;min-width:120px;font-size:.78rem;padding:9px 14px;}
 
     /* ─ ONGLETS RÉDUCTIBLES CÔTE À CÔTE ─ */
-    .duo-tabs{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1rem;}
+    .duo-tabs{display:flex;flex-direction:column;gap:.7rem;margin-bottom:1rem;}
     .duo-tab{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:14px;overflow:hidden;transition:border-color .2s;}
     .duo-tab.open{border-color:var(--rose);}
     .duo-tab-hd{display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;cursor:pointer;user-select:none;gap:.4rem;}
@@ -1766,7 +1766,7 @@
     <div style="height:.2rem;"></div>
 
     <!-- 1. Duo côte à côte : Carte d'identité + Identité visuelle -->
-    <div class="duo-tabs" style="margin-bottom:.7rem;">
+    <div class="duo-tabs">
       <div class="duo-tab" id="tab-identite">
         <div class="duo-tab-hd" onclick="toggleDuoTab('tab-identite')">
           <div class="duo-tab-titre"><span>👤</span><span>Identité personnelle</span></div>

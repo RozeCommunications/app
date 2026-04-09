@@ -1973,7 +1973,7 @@
       <button class="btn btn-rose btn-full" id="btn-sauvegarder" onclick="sauvegarderCompte()" style="padding:1rem;font-size:.95rem;letter-spacing:.02em;">💾 Sauvegarder Mon Compte</button>
       <button class="btn btn-ghost" style="width:100%;margin-top:.5rem;font-size:.78rem;color:var(--gris-clair);" onclick="seDeconnecter()">↩️ Se déconnecter</button>
     </div>
-    <div class="note">⚠️ Ces données sont enregistrées uniquement sur ton appareil — aucune donnée n’est envoyée à Roze Communications.</div>
+    
     <!-- Guide PWA -->
     <div class="guide-pwa" id="guide-pwa">
       <h3>📲 Installer l'app sur ton téléphone</h3>
@@ -4066,7 +4066,9 @@ async function syncPostsDepuisSheets(){
         typeContenu: p.typeContenu || 'Post texte',
         texte:       p.texte       || '',
         legende:     p.legende     || '',
-        date:        p.date        || dateAujourdhui(),
+        date:        p.date        || dateAujourdhui(),     // date prog → calendrier
+        dateProg:    p.date        || dateAujourdhui(),
+        dateGen:     p.dateGen     || p.date || dateAujourdhui(),
         dateAffiche: p.date        || dateAujourdhui(),
         statut:      p.statut      || 'À relire',
       })),
@@ -4731,7 +4733,10 @@ async function sauvegarderGenPanel(){
   if(!texte && !slides){ toast('⚠️ Aucun contenu à sauvegarder','err'); return; }
 
   await sauvegarderEtSyncPost({
-    id, reseau, typeContenu:format, texte, legende, date,
+    id, reseau, typeContenu:format, texte, legende,
+    date,                    // date de programmation (positionne dans le calendrier)
+    dateProg: date,          // alias explicite
+    dateGen:  dateAujourdhui(), // date de génération du contenu
     dateAffiche: new Date(date+'T12:00:00').toLocaleDateString('fr-FR'),
     statut:'À relire'
   });
@@ -4790,7 +4795,8 @@ async function genSemaine(){
       const t = parsed.isCarrousel ? res.texte : parsed.texte;
       const date = res.date || posts[i]?.date || jours[i % jours.length];
       const id = Date.now()+i;
-      await sauvegarderEtSyncPost({id, reseau:res.reseau, typeContenu:res.typeContenu, texte:t, legende:l, date,
+      await sauvegarderEtSyncPost({id, reseau:res.reseau, typeContenu:res.typeContenu, texte:t, legende:l,
+        date, dateProg:date, dateGen:dateAujourdhui(),
         dateAffiche:new Date(date+'T12:00:00').toLocaleDateString('fr-FR'), statut:'À relire'});
       resultats[i] = {...res, texte:t, legende:l, id,
         label:`${res.reseau} · ${res.typeContenu}`,
@@ -5062,7 +5068,7 @@ async function genererStoryPanel(){
     const id = Date.now();
     await sauvegarderEtSyncPost({
       id, reseau:'Instagram', typeContenu:'Stories',
-      texte, legende:'', date:datePub,
+      texte, legende:'', date:datePub, dateProg:datePub, dateGen:dateAujourdhui(),
       dateAffiche: new Date(datePub+'T12:00:00').toLocaleDateString('fr-FR'),
       statut:'À relire'
     });
@@ -5204,13 +5210,14 @@ async function syncPostVersSheets(post) {
         action:  'enregistrer_posts',
         semaine: getSemaineCourante(),
         posts: [{
-          id:       post.id,
-          date:     post.date || dateAujourdhui(),
-          reseau:   post.reseau,
-          type:     post.typeContenu,
-          contenu:  post.texte,
-          legende:  post.legende || '',
-          statut:   post.statut || 'À relire'
+          id:      post.id,
+          date:    post.dateProg || post.date || dateAujourdhui(), // date de programmation
+          dateGen: post.dateGen  || post.date || dateAujourdhui(), // date de génération
+          reseau:  post.reseau,
+          type:    post.typeContenu,
+          contenu: post.texte,
+          legende: post.legende || '',
+          statut:  post.statut  || 'À relire'
         }]
       })
     });
@@ -5882,7 +5889,8 @@ async function sauvegarderCreer(){
 
   const id = Date.now();
   await sauvegarderEtSyncPost({
-    id, reseau, typeContenu: format, texte, legende, date,
+    id, reseau, typeContenu: format, texte, legende,
+    date, dateProg:date, dateGen:dateAujourdhui(),
     dateAffiche: new Date(date + 'T12:00:00').toLocaleDateString('fr-FR'),
     statut: 'À relire'
   });

@@ -1591,7 +1591,7 @@
       <div class="actu-result" id="actu-result"><strong>🌐 Actu trouvée</strong><span id="actu-txt"></span></div>
 
       <!-- Bouton générer -->
-      <button class="btn btn-rose btn-full" onclick="genUnPost()">✨ Générer ce post</button>
+      <button class="btn btn-rose btn-full" id="btn-gen-post" onclick="genUnPost()">✨ Générer ce post</button>
 
       <!-- Résultat inline -->
       <div class="creer-loader" id="gen-inline-loader" style="margin-top:.6rem;"><div class="creer-mini-ring"></div><span id="gen-inline-loader-txt">Génération en cours…</span></div>
@@ -2668,6 +2668,9 @@ function initTheme(){
 }
 
 function go(id, btn){
+  // Effacer le toast en cours lors d'une navigation
+  if(_toastTimer){ clearTimeout(_toastTimer); _toastTimer=null; }
+  document.getElementById('toast').className='';
   // Toujours fermer les modales et restaurer le scroll avant de naviguer
   document.getElementById('ov-edit').classList.remove('on');
   document.getElementById('ov-story').classList.remove('on');
@@ -4601,7 +4604,7 @@ async function genUnPost(){
   const result          = document.getElementById('gen-result');
   const legZone         = document.getElementById('gen-legende-zone');
   const actions         = document.getElementById('gen-post-actions');
-  const btnGen          = document.querySelector('#gen-panel .btn-rose');
+  const btnGen          = document.getElementById('btn-gen-post');
 
   // Reset
   result.textContent=''; result.classList.remove('on');
@@ -4609,7 +4612,7 @@ async function genUnPost(){
   document.getElementById('lbl-gen-texte').style.display='none';
   inlineLoader.classList.add('on');
   inlineLoaderTxt.textContent='Génération en cours…';
-  if(btnGen) btnGen.disabled=true;
+  if(btnGen){ btnGen.disabled=true; btnGen.textContent='⏳ Génération…'; }
 
   try{
     const mat = matiereSemaine();
@@ -4678,10 +4681,11 @@ async function genUnPost(){
     if(parsed.isCarrousel) result.dataset.slides = JSON.stringify(parsed.slides);
 
     toast('✅ Post généré !','ok');
+    if(btnGen){ btnGen.disabled=false; btnGen.textContent='✨ Générer ce post'; }
 
   }catch(e){
     inlineLoader.classList.remove('on');
-    if(btnGen) btnGen.disabled=false;
+    if(btnGen){ btnGen.disabled=false; btnGen.textContent='✨ Générer ce post'; }
     toast('❌ Erreur : ' + e.message,'err');
     return;
   }
@@ -6327,10 +6331,13 @@ function switchAideTab(btn, tabId){
   if(content) content.classList.add('on');
 }
 
+let _toastTimer = null;
 function toast(msg,type='ok'){
   const t=document.getElementById('toast');
+  // Annuler le timer précédent pour éviter qu'un ancien toast efface le nouveau
+  if(_toastTimer){ clearTimeout(_toastTimer); _toastTimer=null; }
   t.textContent=msg; t.className=`on ${type}`;
-  setTimeout(()=>t.className='',2000);
+  _toastTimer = setTimeout(()=>{ t.className=''; _toastTimer=null; }, 2000);
 }
 </script>
 </body>

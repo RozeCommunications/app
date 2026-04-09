@@ -2686,11 +2686,12 @@ function go(id, btn){
   if(btn){ btn.classList.add('on'); }
   else{ const ordre=['p-accueil','p-semaine','p-generer','p-calendrier','p-compte']; const i=ordre.indexOf(id); const tabs=document.querySelectorAll('.tab'); if(i>-1&&tabs[i]) tabs[i].classList.add('on'); }
   if(id==='p-calendrier'){
-    rendreCal();
     if(document.getElementById('stories-panel').classList.contains('on')) majStoriesPanel();
-    // Sync au premier accès ou si localStorage vide
+    // Si localStorage vide → sync d'abord, puis rendreCal
     if(CFG.as && getBiblio().length === 0){
-      syncPostsDepuisSheets();
+      syncPostsDepuisSheets().then(() => rendreCal());
+    } else {
+      rendreCal();
     }
   }
   if(id==='p-accueil') majAccueil();
@@ -3938,8 +3939,9 @@ function afficherApp(){
   afficherStreak();
   affDate();
 
-  // Restaurer les posts depuis Sheets si nouveaux (multi-appareils)
-  setTimeout(() => syncPostsDepuisSheets(), 800);
+  // Sync immédiate au démarrage — sans délai arbitraire
+  // rendreCal() sera appelé dans syncPostsDepuisSheets après setBiblio()
+  syncPostsDepuisSheets();
 
   setTimeout(() => {
     const hero = document.querySelector('.hero');
@@ -4068,15 +4070,11 @@ async function syncPostsDepuisSheets(){
       ajouts++;
     });
 
-    if(ajouts > 0){
-      setBiblio(local);
-      majSemMini(); majKPIs();
-      // Rafraîchir le calendrier si visible, sinon il se rafraîchira au prochain go('p-calendrier')
-      const calPage = document.getElementById('p-calendrier');
-      if(calPage && calPage.classList.contains('on')){
-        rendreCal();
-      }
-    }
+    // Mettre à jour le localStorage et rafraîchir le calendrier
+    // Même si ajouts=0, on force rendreCal pour garantir l'affichage correct
+    setBiblio(local);
+    majSemMini(); majKPIs();
+    rendreCal();
   } catch(e){
     console.warn('Sync posts Sheets échouée:', e.message);
   }

@@ -1298,7 +1298,7 @@
       <div id="google-btn-wrap">
         <div id="google-signin-btn"></div>
       </div>
-      <p class="login-note">Accès réservé aux stagiaires Roze Communications.<br/>Problème d'accès ? <a href="mailto:contact@roze-communications.com" style="color:var(--rose);">Contacte-moi</a></p>
+      <p class="login-note">Accès réservé aux stagiaires Roze Communications.<br/>Problème d'accès ? <a href="/cdn-cgi/l/email-protection#e1828e8f95808295a1938e9b84cc828e8c8c948f88828095888e8f92cf828e8c" style="color:var(--rose);">Contacte-moi</a></p>
     </div>
   </div>
 </div>
@@ -2338,7 +2338,7 @@
 
 <div id="toast"></div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 function escapeHtml(str){ if(!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 // ══════════════════════════════════════════
@@ -2685,7 +2685,14 @@ function go(id, btn){
   document.querySelector('.scroll').scrollTop=0;
   if(btn){ btn.classList.add('on'); }
   else{ const ordre=['p-accueil','p-semaine','p-generer','p-calendrier','p-compte']; const i=ordre.indexOf(id); const tabs=document.querySelectorAll('.tab'); if(i>-1&&tabs[i]) tabs[i].classList.add('on'); }
-  if(id==='p-calendrier'){ rendreCal(); if(document.getElementById('stories-panel').classList.contains('on')) majStoriesPanel(); }
+  if(id==='p-calendrier'){
+    rendreCal();
+    if(document.getElementById('stories-panel').classList.contains('on')) majStoriesPanel();
+    // Sync au premier accès ou si localStorage vide
+    if(CFG.as && getBiblio().length === 0){
+      syncPostsDepuisSheets();
+    }
+  }
   if(id==='p-accueil') majAccueil();
   if(id==='p-generer') majGenFormats(getGenReseau());
 }
@@ -4033,7 +4040,6 @@ async function syncPostsDepuisSheets(){
       body: JSON.stringify({ action: 'lire_posts', limite: 300 })
     });
     const j = await r.json();
-    console.log('[Roze Sync] Réponse AS reçue. Posts:', (j.posts||[]).length, 'Debug:', JSON.stringify(j.debug||{}));
     if(!j.posts || !j.posts.length) return;
 
     const local = getBiblio();
@@ -4064,8 +4070,12 @@ async function syncPostsDepuisSheets(){
 
     if(ajouts > 0){
       setBiblio(local);
-      rendreCal(); majSemMini(); majKPIs();
-      console.log('[Roze Sync] ' + ajouts + ' posts restaurés. Total local: ' + local.length);
+      majSemMini(); majKPIs();
+      // Rafraîchir le calendrier si visible, sinon il se rafraîchira au prochain go('p-calendrier')
+      const calPage = document.getElementById('p-calendrier');
+      if(calPage && calPage.classList.contains('on')){
+        rendreCal();
+      }
     }
   } catch(e){
     console.warn('Sync posts Sheets échouée:', e.message);
@@ -6310,6 +6320,5 @@ function toast(msg,type='ok'){
   setTimeout(()=>t.className='',3500);
 }
 </script>
-<script>if('serviceWorker'in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));</script>
 </body>
 </html>

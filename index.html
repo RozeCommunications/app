@@ -1970,7 +1970,7 @@
     </div>
 
     <div style="margin-top:1.6rem;">
-      <button class="btn btn-rose btn-full" onclick="sauvegarderCompte()" style="padding:1rem;font-size:.95rem;letter-spacing:.02em;">💾 Sauvegarder Mon Compte</button>
+      <button class="btn btn-rose btn-full" id="btn-sauvegarder" onclick="sauvegarderCompte()" style="padding:1rem;font-size:.95rem;letter-spacing:.02em;">💾 Sauvegarder Mon Compte</button>
       <button class="btn btn-ghost" style="width:100%;margin-top:.5rem;font-size:.78rem;color:var(--gris-clair);" onclick="seDeconnecter()">↩️ Se déconnecter</button>
     </div>
     <div class="note">⚠️ Ces données sont enregistrées uniquement sur ton appareil — aucune donnée n’est envoyée à Roze Communications.</div>
@@ -2687,12 +2687,7 @@ function go(id, btn){
   else{ const ordre=['p-accueil','p-semaine','p-generer','p-calendrier','p-compte']; const i=ordre.indexOf(id); const tabs=document.querySelectorAll('.tab'); if(i>-1&&tabs[i]) tabs[i].classList.add('on'); }
   if(id==='p-calendrier'){
     if(document.getElementById('stories-panel').classList.contains('on')) majStoriesPanel();
-    // Si localStorage vide → sync d'abord, puis rendreCal
-    if(CFG.as && getBiblio().length === 0){
-      syncPostsDepuisSheets().then(() => rendreCal());
-    } else {
-      rendreCal();
-    }
+    rendreCal();
   }
   if(id==='p-accueil') majAccueil();
   if(id==='p-generer') majGenFormats(getGenReseau());
@@ -4042,37 +4037,41 @@ async function syncPostsDepuisSheets(){
       body: JSON.stringify({ action: 'lire_posts', limite: 300 })
     });
     const j = await r.json();
-    if(!j.posts || !j.posts.length) return;
 
+    // Le Sheets est la source de vérité
+    // On reconstruit le localStorage depuis le Sheets
+    // en gardant uniquement les posts locaux pas encore synchronisés
+    // (id = timestamp > 1000000000000 = généré localement, pas encore dans Sheets)
+    const postsSheets = (j.posts || []).filter(p => p.texte);
+
+    // Posts locaux non encore dans le Sheets (en attente de sync)
     const local = getBiblio();
-    // Clé anti-doublon : date + reseau + typeContenu + 50 premiers chars du texte
-    const cleLocaux = new Set(local.map(p =>
+    const clesSheets = new Set(postsSheets.map(p =>
       (p.date||'')+'|'+(p.reseau||'')+'|'+(p.typeContenu||'')+'|'+String(p.texte||'').substring(0,50)
     ));
-    let ajouts = 0;
-
-    j.posts.forEach(p => {
-      if(!p.texte) return;
+    const postsLocauxEnAttente = local.filter(p => {
+      // Post récent non encore dans le Sheets
       const cle = (p.date||'')+'|'+(p.reseau||'')+'|'+(p.typeContenu||'')+'|'+String(p.texte||'').substring(0,50);
-      if(cleLocaux.has(cle)) return; // déjà présent
-      // Reconstituer un post compatible avec le format localStorage
-      local.push({
+      return !clesSheets.has(cle);
+    });
+
+    // Reconstruire : posts du Sheets + posts locaux non encore synchronisés
+    const postsReconstruits = [
+      ...postsSheets.map(p => ({
         id:          parseInt(p.id) || Date.now(),
         reseau:      p.reseau      || '',
         typeContenu: p.typeContenu || 'Post texte',
         texte:       p.texte       || '',
         legende:     p.legende     || '',
         date:        p.date        || dateAujourdhui(),
-        dateAffiche: p.dateAffiche || p.date || '',
+        dateAffiche: p.date        || dateAujourdhui(),
         statut:      p.statut      || 'À relire',
-      });
-      cleLocaux.add(cle);
-      ajouts++;
-    });
+      })),
+      ...postsLocauxEnAttente
+    ];
 
-    // Mettre à jour le localStorage et rafraîchir le calendrier
-    // Même si ajouts=0, on force rendreCal pour garantir l'affichage correct
-    setBiblio(local);
+    // Remplacer le localStorage et rafraîchir — identique sur tous les appareils
+    setBiblio(postsReconstruits);
     majSemMini(); majKPIs();
     rendreCal();
   } catch(e){
@@ -5950,6 +5949,9 @@ function chargerCompte(){
 }
 
 function sauvegarderCompte(){
+  // Feedback visuel immédiat
+  const btnSave = document.getElementById('btn-sauvegarder');
+  if(btnSave){ btnSave.disabled = true; btnSave.textContent = '⏳ Synchronisation…'; }
   CFG.prenom = document.getElementById('cfg-prenom').value.trim();
   CFG.as     = document.getElementById('cfg-as').value.trim();
   CFG.api    = document.getElementById('cfg-api').value.trim();
@@ -6016,10 +6018,12 @@ function sauvegarderCompte(){
       syncConfigDepuisSheets().catch(()=>{}),
       syncPostsDepuisSheets().catch(()=>{})
     ]).then(() => {
-      toast('✅ Compte sauvegardé et données synchronisées !','ok');
+      if(btnSave){ btnSave.disabled = false; btnSave.textContent = '💾 Sauvegarder Mon Compte'; }
+      toast('✅ Synchronisé !','ok');
     });
   } else {
-    toast('✅ Compte sauvegardé !','ok');
+    if(btnSave){ btnSave.disabled = false; btnSave.textContent = '💾 Sauvegarder Mon Compte'; }
+    toast('✅ Sauvegardé !','ok');
   }
 }
 
@@ -6315,7 +6319,7 @@ function switchAideTab(btn, tabId){
 function toast(msg,type='ok'){
   const t=document.getElementById('toast');
   t.textContent=msg; t.className=`on ${type}`;
-  setTimeout(()=>t.className='',3500);
+  setTimeout(()=>t.className='',2000);
 }
 </script>
 </body>

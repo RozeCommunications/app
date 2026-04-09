@@ -4030,7 +4030,8 @@ function appliquerConfig(config){
 
 // Lire la config depuis le Sheets (au démarrage si CFG.as connu)
 async function syncPostsDepuisSheets(){
-  if(!CFG.as) return;
+  if(!CFG.as){ console.warn('[Roze] syncPostsDepuisSheets: CFG.as vide — sync impossible'); return; }
+  console.log('[Roze] Sync depuis Sheets — CFG.as:', CFG.as.substring(0,50)+'...');
   try{
     const r = await fetch(CFG.as, {
       method: 'POST',
@@ -4042,7 +4043,9 @@ async function syncPostsDepuisSheets(){
     // On reconstruit le localStorage depuis le Sheets
     // en gardant uniquement les posts locaux pas encore synchronisés
     // (id = timestamp > 1000000000000 = généré localement, pas encore dans Sheets)
+    console.log('[Roze] AS retourne:', (j.posts||[]).length, 'posts');
     const postsSheets = (j.posts || []).filter(p => p.texte);
+    console.log('[Roze] Posts valides (avec texte):', postsSheets.length);
 
     // Posts locaux non encore dans le Sheets (en attente de sync)
     const local = getBiblio();
@@ -4070,6 +4073,7 @@ async function syncPostsDepuisSheets(){
       ...postsLocauxEnAttente
     ];
 
+    console.log('[Roze] postsReconstruits:', postsReconstruits.length, '(Sheets:', postsSheets.length, '+ attente:', postsLocauxEnAttente.length, ')');
     // Remplacer le localStorage et rafraîchir — identique sur tous les appareils
     setBiblio(postsReconstruits);
     majSemMini(); majKPIs();
@@ -5191,7 +5195,8 @@ function setQueueSync(q){ localStorage.setItem('roze_sync_queue', JSON.stringify
 
 // Envoie un post vers l'onglet Posts_generes du Sheets
 async function syncPostVersSheets(post) {
-  if(!CFG.as) return false;
+  if(!CFG.as){ console.warn('[Roze] syncPostVersSheets: CFG.as vide — post non envoyé au Sheets'); return false; }
+  console.log('[Roze] Envoi post vers Sheets:', post.date, post.reseau, post.typeContenu);
   try {
     const r = await fetch(CFG.as, {
       method: 'POST',

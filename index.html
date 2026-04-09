@@ -5303,8 +5303,7 @@ async function viderQueueSync() {
     const restants = queue.filter(p => !envoyés.includes(p.id));
     setQueueSync(restants);
     majBadgeSync(restants.length);
-    if(envoyés.length > 0)
-      toast('☁️ ' + envoyés.length + ' post(s) synchronisé(s) avec Google Sheets','ok');
+
   }
 }
 
@@ -5412,7 +5411,6 @@ function getSemaineCourante(){
 
 // Écouter le retour en ligne pour vider la file automatiquement
 window.addEventListener('online', () => {
-  toast('📶 Connexion rétablie — synchronisation en cours…','ok');
   setTimeout(viderQueueSync, 1500);
 });
 

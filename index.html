@@ -2165,6 +2165,19 @@
 </nav>
 
 <!-- ══ MODALE ÉDITION POST ══ -->
+<!-- Modale liste posts du jour -->
+<div class="overlay" id="ov-jour" onclick="fermerJour(event)">
+  <div class="sheet" id="sheet-jour">
+    <div class="sheet-handle"></div>
+    <div class="sheet-hd">
+      <h3 id="jour-titre">Posts du jour</h3>
+      <button class="sheet-close" onclick="fermerJour()">✕</button>
+    </div>
+    <div id="jour-liste" style="display:flex;flex-direction:column;gap:.6rem;margin-top:.4rem;"></div>
+    <button class="btn btn-ghost btn-full" style="margin-top:1rem;" onclick="ouvrirCreerDepuisJour()">＋ Ajouter un post</button>
+  </div>
+</div>
+
 <div class="overlay" id="ov-edit" onclick="fermerEdit(event)">
   <div class="sheet">
     <div class="sheet-handle"></div>
@@ -2676,6 +2689,7 @@ function go(id, btn){
   document.getElementById('ov-edit').classList.remove('on');
   document.getElementById('ov-story').classList.remove('on');
   document.getElementById('ov-creer').classList.remove('on');
+  document.getElementById('ov-jour').classList.remove('on');
   const cvFs = document.getElementById('cv-fullscreen'); if(cvFs) cvFs.classList.remove('on');
   const smFs = document.getElementById('streak-modal-fond'); if(smFs) smFs.classList.remove('on');
   document.querySelector('.scroll').style.overflow = '';
@@ -3963,28 +3977,43 @@ function seDeconnecter(){
 
 // Construire l'objet config à envoyer au Sheets
 function buildConfigPayload(){
+  // Collecter toutes les clés dynamiques du localStorage
+  const semaines = {}, storiesPub = {}, storiesScripts = {};
+  for(let i=0; i<localStorage.length; i++){
+    const k = localStorage.key(i);
+    if(k && k.startsWith('roze_sem_'))           semaines[k]       = localStorage.getItem(k);
+    if(k && k.startsWith('roze_story_pub_'))      storiesPub[k]     = localStorage.getItem(k);
+    if(k && k.startsWith('roze_story_script_'))   storiesScripts[k] = localStorage.getItem(k);
+  }
   return {
-    prenom:       CFG.prenom       || '',
-    nom:          CFG.nom          || '',
-    entreprise:   CFG.entreprise   || '',
-    metier:       CFG.metier       || '',
-    references:   CFG.references   || '',
-    insta_user:   CFG.instaUser    || '',
-    linkedin_url: CFG.linkedinUrl  || '',
-    as:           CFG.as           || '',
-    api:          CFG.api          || '',
-    api_gemini:   CFG.apiGemini    || '',
-    ia:           CFG.ia           || 'claude',
-    drive_photos: CFG.drivePhotos  || '',
-    logo_url:     CFG.logoUrl      || '',
-    couleur1:     CFG.couleur1     || '#E8186D',
-    couleur2:     CFG.couleur2     || '#111111',
-    couleur3:     CFG.couleur3     || '',
-    couleur4:     CFG.couleur4     || '',
-    couleur_texte:CFG.couleurTexte || '#111111',
-    police_titre: CFG.policeTitre  || 'Playfair Display',
-    police_corps: CFG.policeCorps  || 'DM Sans',
-    brouillons:   JSON.stringify(getBrouillons()),
+    prenom:        CFG.prenom       || '',
+    nom:           CFG.nom          || '',
+    entreprise:    CFG.entreprise   || '',
+    metier:        CFG.metier       || '',
+    references:    CFG.references   || '',
+    insta_user:    CFG.instaUser    || '',
+    linkedin_url:  CFG.linkedinUrl  || '',
+    as:            CFG.as           || '',
+    api:           CFG.api          || '',
+    api_gemini:    CFG.apiGemini    || '',
+    ia:            CFG.ia           || 'claude',
+    drive_photos:  CFG.drivePhotos  || '',
+    logo_url:      CFG.logoUrl      || '',
+    couleur1:      CFG.couleur1     || '#E8186D',
+    couleur2:      CFG.couleur2     || '#111111',
+    couleur3:      CFG.couleur3     || '',
+    couleur4:      CFG.couleur4     || '',
+    couleur_texte: CFG.couleurTexte || '#111111',
+    police_titre:  CFG.policeTitre  || 'Playfair Display',
+    police_corps:  CFG.policeCorps  || 'DM Sans',
+    brouillons:    JSON.stringify(getBrouillons()),
+    // Données de suivi éditorial
+    draft:         localStorage.getItem('roze_draft') || '',
+    streak:        localStorage.getItem('roze_streak') || '0',
+    rythme:        localStorage.getItem('roze_rythme') || '',
+    semaines:      JSON.stringify(semaines),
+    stories_pub:   JSON.stringify(storiesPub),
+    stories_scripts: JSON.stringify(storiesScripts),
   };
 }
 
@@ -4020,16 +4049,50 @@ function appliquerConfig(config){
       localStorage.setItem(lsKey, val);
     }
   });
-  // Restaurer les brouillons depuis Sheets
+  // Restaurer les brouillons
   if(config.brouillons){
     try{
       const b = JSON.parse(config.brouillons);
-      if(Array.isArray(b)){
-        localStorage.setItem('roze_brouillons', JSON.stringify(b));
-        majCompteurBrouillons();
-      }
+      if(Array.isArray(b)){ localStorage.setItem('roze_brouillons', JSON.stringify(b)); majCompteurBrouillons(); }
     }catch(e){}
   }
+  // Restaurer le draft (questions semaine)
+  if(config.draft){
+    try{ localStorage.setItem('roze_draft', config.draft); }catch(e){}
+  }
+  // Restaurer le streak
+  if(config.streak !== undefined && config.streak !== ''){
+    localStorage.setItem('roze_streak', config.streak);
+    afficherStreak();
+  }
+  // Restaurer le rythme éditorial
+  if(config.rythme){
+    try{ localStorage.setItem('roze_rythme', config.rythme); }catch(e){}
+  }
+  // Restaurer les semaines enregistrées (roze_sem_DATE)
+  if(config.semaines){
+    try{
+      const sems = JSON.parse(config.semaines);
+      Object.entries(sems).forEach(([k,v]) => { if(k.startsWith('roze_sem_')) localStorage.setItem(k,v); });
+    }catch(e){}
+  }
+  // Restaurer les stories publiées (roze_story_pub_DATE)
+  if(config.stories_pub){
+    try{
+      const pubs = JSON.parse(config.stories_pub);
+      Object.entries(pubs).forEach(([k,v]) => { if(k.startsWith('roze_story_pub_')) localStorage.setItem(k,v); });
+      majTrackerStories();
+    }catch(e){}
+  }
+  // Restaurer les scripts stories (roze_story_script_DATE)
+  if(config.stories_scripts){
+    try{
+      const scripts = JSON.parse(config.stories_scripts);
+      Object.entries(scripts).forEach(([k,v]) => { if(k.startsWith('roze_story_script_')) localStorage.setItem(k,v); });
+    }catch(e){}
+  }
+  // Rafraîchir les indicateurs
+  majSemMini(); majKPIs();
 }
 
 // Lire la config depuis le Sheets (au démarrage si CFG.as connu)
@@ -4246,7 +4309,7 @@ ${hook}
 
 Génère un CARROUSEL ${reseau} (format 1080x1440px, ratio 3:4).
 La slide 1 utilise le hook défini ci-dessus — ancré dans une réalité vécue ou une donnée surprenante.
-Si une photo est disponible (Q7), intègre-la dans la slide 1 ou le CTA.
+Si une photo est disponible (Q7), intègre-la en introduction ou dans le CTA.
 
 EXIGENCES QUALITÉ :
 - Chaque slide parle à UNE personne réelle, pas à "les professionnels"
@@ -5911,19 +5974,47 @@ function copierCreer(){
     .then(() => toast('✅ Copié !','ok'));
 }
 
-function ouvrirJour(ds,items){
-  if(!items.length){
-    // Jour vide → ouvrir la modale de création
-    ouvrirCreer(ds);
-    return;
-  }
+let _jourDs = null;
+function ouvrirJour(ds, items){
+  if(!items.length){ ouvrirCreer(ds); return; }
   if(items.length===1){ ouvrirEdit(items[0].id); return; }
-  // Plusieurs posts → vue semaine sur ce jour
-  CAL.vue='semaine'; CAL.semDebut=lundiSem(new Date(ds+'T12:00:00'));
-  document.querySelectorAll('.vue-b').forEach(b=>b.classList.remove('on'));
-  document.getElementById('b-sem').classList.add('on');
-  document.getElementById('cal-hd').style.display='none';
-  rendreCal();
+
+  // Plusieurs posts → bottom sheet avec liste
+  _jourDs = ds;
+  const noms = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  const d = new Date(ds+'T12:00:00');
+  document.getElementById('jour-titre').textContent = d.getDate()+' '+noms[d.getMonth()]+' '+d.getFullYear();
+
+  const liste = document.getElementById('jour-liste');
+  liste.innerHTML = '';
+  items.forEach(it => {
+    const cl = it.reseau==='LinkedIn' ? 'li' : 'ig';
+    const btn = document.createElement('button');
+    btn.style.cssText = 'width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:12px;padding:.85rem 1rem;display:flex;align-items:center;gap:.8rem;cursor:pointer;text-align:left;transition:border-color .15s;';
+    btn.innerHTML = `
+      <div style="width:10px;height:10px;border-radius:50%;background:${it.reseau==='LinkedIn'?'#5bb8ff':'var(--rose)'};flex-shrink:0;"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.78rem;font-weight:700;color:${it.reseau==='LinkedIn'?'#5bb8ff':'var(--rose-clair)'};">${escapeHtml(it.reseau)} · ${escapeHtml(it.typeContenu)}</div>
+        <div style="font-size:.82rem;color:var(--blanc-doux);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">${escapeHtml(String(it.texte||'').substring(0,60))}</div>
+      </div>
+      <span style="font-size:.85rem;color:var(--gris-clair);">›</span>`;
+    btn.onclick = () => { fermerJour(); ouvrirEdit(it.id); };
+    liste.appendChild(btn);
+  });
+
+  document.getElementById('ov-jour').classList.add('on');
+  document.querySelector('.scroll').style.overflow='hidden';
+}
+
+function fermerJour(e){
+  if(e && e.target !== document.getElementById('ov-jour')) return;
+  document.getElementById('ov-jour').classList.remove('on');
+  document.querySelector('.scroll').style.overflow='';
+}
+
+function ouvrirCreerDepuisJour(){
+  fermerJour();
+  if(_jourDs) ouvrirCreer(_jourDs);
 }
 
 // ══════════════════════════════════════════

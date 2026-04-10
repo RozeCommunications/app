@@ -2668,9 +2668,10 @@ function initTheme(){
 }
 
 function go(id, btn){
-  // Effacer le toast en cours lors d'une navigation
+  // Effacer le toast immédiatement et définitivement lors d'une navigation
   if(_toastTimer){ clearTimeout(_toastTimer); _toastTimer=null; }
-  document.getElementById('toast').className='';
+  const _t = document.getElementById('toast');
+  _t.className=''; _t.textContent='';
   // Toujours fermer les modales et restaurer le scroll avant de naviguer
   document.getElementById('ov-edit').classList.remove('on');
   document.getElementById('ov-story').classList.remove('on');
@@ -4680,8 +4681,8 @@ async function genUnPost(){
     result.dataset.isCarrousel = parsed.isCarrousel ? '1' : '0';
     if(parsed.isCarrousel) result.dataset.slides = JSON.stringify(parsed.slides);
 
-    toast('✅ Post généré !','ok');
     if(btnGen){ btnGen.disabled=false; btnGen.textContent='✨ Générer ce post'; }
+    toastSiPage('✅ Post généré !','ok','p-generer');
 
   }catch(e){
     inlineLoader.classList.remove('on');
@@ -5098,7 +5099,7 @@ function gspRegenerer(){
 function gspSauvegarder(){
   // Déjà sauvegardé à la génération — proposer d'aller au calendrier
   toast('✅ Story déjà sauvegardée dans le calendrier','ok');
-  setTimeout(() => go('p-calendrier'), 1200);
+  setTimeout(() => go('p-calendrier'), 1600);
 }
 
 function getBrouillons(){ return lsJ('roze_brouillons') || []; }
@@ -6034,7 +6035,7 @@ function sauvegarderCompte(){
       syncPostsDepuisSheets().catch(()=>{})
     ]).then(() => {
       if(btnSave){ btnSave.disabled = false; btnSave.textContent = '💾 Sauvegarder Mon Compte'; }
-      toast('✅ Synchronisé !','ok');
+      toastSiPage('✅ Synchronisé !','ok','p-compte');
     });
   } else {
     if(btnSave){ btnSave.disabled = false; btnSave.textContent = '💾 Sauvegarder Mon Compte'; }
@@ -6334,10 +6335,14 @@ function switchAideTab(btn, tabId){
 let _toastTimer = null;
 function toast(msg,type='ok'){
   const t=document.getElementById('toast');
-  // Annuler le timer précédent pour éviter qu'un ancien toast efface le nouveau
   if(_toastTimer){ clearTimeout(_toastTimer); _toastTimer=null; }
   t.textContent=msg; t.className=`on ${type}`;
-  _toastTimer = setTimeout(()=>{ t.className=''; _toastTimer=null; }, 2000);
+  _toastTimer = setTimeout(()=>{ t.className=''; t.textContent=''; _toastTimer=null; }, 2000);
+}
+// Toast conditionnel : s'affiche seulement si l'utilisateur est sur la page attendue
+function toastSiPage(msg, type, pageId){
+  const page = document.getElementById(pageId);
+  if(page && page.classList.contains('on')) toast(msg, type);
 }
 </script>
 </body>

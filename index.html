@@ -4091,8 +4091,8 @@ function appliquerConfig(config){
       Object.entries(scripts).forEach(([k,v]) => { if(k.startsWith('roze_story_script_')) localStorage.setItem(k,v); });
     }catch(e){}
   }
-  // Rafraîchir les indicateurs
-  majSemMini(); majKPIs();
+  // Rafraîchir tous les indicateurs et l'accueil
+  majSemMini(); majKPIs(); majAccueil(); afficherStreak();
 }
 
 // Lire la config depuis le Sheets (au démarrage si CFG.as connu)

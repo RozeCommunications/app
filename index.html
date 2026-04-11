@@ -1636,6 +1636,18 @@
         <button class="btn btn-ghost btn-sm btn-full" style="margin-top:.4rem;" onclick="regenLegendePaneau()">🔄 Régénérer la légende</button>
       </div>
 
+      <!-- Sélecteur de style Post Photo -->
+      <div id="gen-photo-style-zone" style="display:none;margin-top:.8rem;">
+        <span class="creer-lbl" style="margin-top:0;">Style visuel du post photo</span>
+        <div style="display:flex;gap:.5rem;margin-top:.4rem;flex-wrap:wrap;" id="gen-photo-style-btns">
+          <button class="cv-fond-opt on" id="gps-brute"   onclick="setPhotoStyle('brute',this)"  >📷 Photo brute</button>
+          <button class="cv-fond-opt"    id="gps-titre"   onclick="setPhotoStyle('titre',this)"  >✍️ Photo + titre</button>
+          <button class="cv-fond-opt"    id="gps-fond"    onclick="setPhotoStyle('fond',this)"   >🎨 Fond coloré</button>
+        </div>
+        <div id="gen-photo-preview-zone" style="margin-top:.7rem;border-radius:10px;overflow:hidden;aspect-ratio:3/4;max-width:180px;"></div>
+        <div id="gen-photo-add-msg" style="display:none;font-size:.75rem;color:#888;margin-top:.4rem;font-style:italic;">📎 Ajoute une photo dans la Q7 pour activer ce style</div>
+      </div>
+
       <!-- Actions post généré -->
       <div class="edit-actions" id="gen-post-actions" style="display:none;">
         <button class="btn btn-rose" onclick="sauvegarderGenPanel()">💾 Sauvegarder</button>
@@ -2454,23 +2466,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   if('serviceWorker'in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 });
 
-function appliquerCouleursDynamiques(){
-  const c1  = CFG.couleur1     || '#E8186D';
-  const c2  = CFG.couleur2     || '#111111';
-  const r   = document.documentElement;
-  // Dériver les variantes depuis c1
-  r.style.setProperty('--rose',        c1);
-  r.style.setProperty('--rose-clair',  ajusterLum(c1, 15));
-  r.style.setProperty('--rose-sombre', ajusterLum(c1, -20));
-  r.style.setProperty('--rose-glow',   c1.startsWith('#') ? hexToRgba(c1, .18) : 'rgba(232,24,109,.18)');
-  r.style.setProperty('--ig-glow',     c1.startsWith('#') ? hexToRgba(c1, .18) : 'rgba(232,24,109,.18)');
-}
-function hexToRgba(hex, alpha){
-  const r=parseInt(hex.slice(1,3),16);
-  const g=parseInt(hex.slice(3,5),16);
-  const b=parseInt(hex.slice(5,7),16);
-  return 'rgba('+r+','+g+','+b+','+alpha+')';
-}
 function initUI(){
   const nomAffiche = [CFG.prenom, CFG.nom].filter(Boolean).join(' '); const el_nc = document.getElementById('nom-client'); if(el_nc && !el_nc.onclick) el_nc.textContent = nomAffiche || 'Se repérer ›';
   afficherStreak();
@@ -2478,7 +2473,6 @@ function initUI(){
   majQuotaResume();
   majFormats();
   majAccueil();
-  appliquerCouleursDynamiques(); // Appliquer les couleurs de l'utilisateur dès le démarrage
 }
 
 
@@ -3953,6 +3947,82 @@ function q7EffacerPhoto(){
   try{ localStorage.removeItem('roze_photo_slide1'); }catch(e){}
 }
 
+// ══════════════════════════════════════════
+// SÉLECTEUR STYLE POST PHOTO
+// ══════════════════════════════════════════
+let genPhotoStyle = 'brute'; // style actif
+let genPhotoTitre = '';      // titre hook extrait du post
+
+function setPhotoStyle(style, btn){
+  genPhotoStyle = style;
+  document.querySelectorAll('#gen-photo-style-btns .cv-fond-opt').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  document.documentElement.style.setProperty('--ptit-tmp', "'" + (CFG.policeTitre||'Playfair Display') + "',serif");
+
+  const preview  = document.getElementById('gen-photo-preview-zone');
+  const addMsg   = document.getElementById('gen-photo-add-msg');
+  const hasPhoto = !!(photoSlide1 && photoSlide1.src);
+  const c1 = CFG.couleur1 || '#E8186D';
+  const c2 = CFG.couleur2 || '#111111';
+  const ptit = CFG.policeTitre || 'Playfair Display';
+  const tcoul = estCouleurClaire(c1) ? '#111111' : '#FFFFFF';
+  const soulCoul = couleurSoulignement(tcoul, c1, c2);
+
+  if(style === 'brute'){
+    if(hasPhoto){
+      addMsg.style.display='none';
+      preview.innerHTML = '<img src="'+photoSlide1.src+'" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:10px;"/>';
+    } else {
+      addMsg.style.display='block';
+      preview.innerHTML = '<div style="width:100%;height:100%;background:var(--gris-input);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;">🖼️</div>';
+    }
+  } else if(style === 'titre'){
+    if(hasPhoto){
+      addMsg.style.display='none';
+      preview.innerHTML = '<div style="position:relative;width:100%;height:100%;border-radius:10px;overflow:hidden;">'
+        + '<img src="'+photoSlide1.src+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;"/>'
+        + '<div style="position:absolute;inset:0;background:rgba(0,0,0,0.42);"></div>'
+        + '<div style="position:relative;z-index:1;padding:1rem;display:flex;flex-direction:column;justify-content:flex-end;height:100%;box-sizing:border-box;">'
+        + '<div style="font-family:var(--ptit-tmp,serif);font-size:.9rem;font-weight:700;color:'+meilleureTexteCouleur('#000000',c1,c2)+';border-bottom:2.5px solid '+soulCoul+';padding-bottom:4px;line-height:1.3;">'+escapeHtml(genPhotoTitre.substring(0,60))+'</div>'
+        + '</div></div>';
+    } else {
+      addMsg.style.display='block';
+      preview.innerHTML = '<div style="width:100%;height:100%;background:var(--gris-input);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;">✍️</div>';
+    }
+  } else { // fond coloré
+    addMsg.style.display='none';
+    // Choisir un style de fond aléatoire parmi les styles carrousel
+    const styles = ['uni','degrade','grain','beton'];
+    const fondStyle = styles[Math.floor(Date.now()/10000) % styles.length];
+    let bg = '';
+    if(fondStyle === 'degrade') bg = 'linear-gradient(135deg,'+c1+','+ajusterLum(c1,-25)+')';
+    else if(fondStyle === 'grain') bg = c1;
+    else if(fondStyle === 'beton') bg = 'radial-gradient(ellipse at 30% 20%,'+c1+','+ajusterLum(c1,-35)+')';
+    else bg = c1;
+    preview.innerHTML = '<div style="width:100%;height:100%;background:'+bg+';border-radius:10px;display:flex;flex-direction:column;justify-content:flex-end;padding:1rem;box-sizing:border-box;">'
+      + '<div style="font-family:var(--ptit-tmp,serif);font-size:.9rem;font-weight:700;color:'+tcoul+';border-bottom:2.5px solid '+soulCoul+';padding-bottom:4px;line-height:1.3;">'+escapeHtml(genPhotoTitre.substring(0,60))+'</div>'
+      + '</div>';
+  }
+}
+
+// Générer le hook de titre pour le post Photo via l'IA
+async function genHookPhoto(textePost){
+  if(!CFG.api && !CFG.apiGemini) return textePost.split('\n')[0].replace(/^[#*]+\s*/,'').substring(0,80);
+  try{
+    const prompt = 'Génère UN SEUL hook accrocheur (max 12 mots) pour ce post.'
+      +'\nTypes possibles (choisis le plus fort) :'
+      +'\n- Question qui interpelle (JAMAIS "Et si...")'
+      +'\n- Anecdote personnelle ou client en 1 phrase'
+      +'\n- Donnée contre-intuitive ou chiffrée actuelle'
+      +'\nRéponds UNIQUEMENT avec le hook, sans ponctuation finale, sans guillemets.'
+      +'\n\nPost :\n'+textePost.substring(0,400);
+    const rep = await appelIA(prompt);
+    return rep.trim().replace(/^["«]+|["»]+$/g,'').substring(0,80);
+  }catch(e){
+    return textePost.split('\n')[0].replace(/^[#*]+\s*/,'').substring(0,80);
+  }
+}
+
 async function q7ImporterPhoto(){
   if(!CFG.as){ toast('⚙️ URL Apps Script manquante','err'); return; }
   const file = document.getElementById('q7-file').files[0];
@@ -4282,7 +4352,6 @@ function appliquerConfig(config){
     }catch(e){}
   }
   // Rafraîchir tous les indicateurs et l'accueil
-  appliquerCouleursDynamiques(); // Couleurs de ce compte
   majSemMini(); majKPIs(); majAccueil(); afficherStreak();
 }
 
@@ -4849,16 +4918,6 @@ function lireRythme(){
 async function genUnPost(){
   if(!verifierCleIA()) return;
 
-  // Synchroniser CFG depuis les champs de Mon Compte avant génération
-  const c1input = document.getElementById('cfg-couleur1');
-  const c2input = document.getElementById('cfg-couleur2');
-  const ptInput = document.getElementById('cfg-police-titre');
-  const pcInput = document.getElementById('cfg-police-corps');
-  if(c1input && c1input.value) CFG.couleur1 = c1input.value;
-  if(c2input && c2input.value) CFG.couleur2 = c2input.value;
-  if(ptInput && ptInput.value) CFG.policeTitre = ptInput.value;
-  if(pcInput && pcInput.value) CFG.policeCorps = pcInput.value;
-
   const reseau    = getGenReseau();
   const format    = getGenFormat();
   const sujet     = document.getElementById('gen-sujet').value.trim();
@@ -4937,6 +4996,16 @@ async function genUnPost(){
       document.getElementById('gen-legende').value = l;
       if(format !== 'Stories') legZone.classList.add('on');
       actions.style.display='flex';
+      // Sélecteur de style Photo
+      const psZone = document.getElementById('gen-photo-style-zone');
+      if(format === 'Photo' && psZone){
+        psZone.style.display='block';
+        genPhotoTitre = t.split('\n')[0].replace(/^[#*]+\s*/,'').substring(0,80);
+        genHookPhoto(t).then(hook => { genPhotoTitre = hook; setPhotoStyle(genPhotoStyle, document.getElementById('gps-'+genPhotoStyle)); });
+        setPhotoStyle('brute', document.getElementById('gps-brute'));
+      } else if(psZone){
+        psZone.style.display='none';
+      }
     }
 
     result.dataset.date   = datePub;
@@ -5012,6 +5081,8 @@ async function sauvegarderGenPanel(){
 
   // Reset panneau
   document.getElementById('gen-panel').classList.remove('on');
+  const _psz = document.getElementById('gen-photo-style-zone');
+  if(_psz) _psz.style.display='none';
   result.textContent=''; result.classList.remove('on');
   const cvInline = document.getElementById('gen-cv-inline');
   if(cvInline) cvInline.innerHTML='';
@@ -6271,11 +6342,13 @@ function sauvegarderCompte(){
   localStorage.setItem('roze_ia',         CFG.ia||'claude');
   // Charte visuelle
   const gv = id => (document.getElementById(id)||{}).value?.trim()||'';
-  CFG.couleur1     = gv('cfg-couleur1')     || '#E8186D';
-  CFG.couleur2     = gv('cfg-couleur2')     || '#111111';
-  CFG.couleur3     = gv('cfg-couleur3')     || '';
-  CFG.couleur4     = gv('cfg-couleur4')     || '';
-  CFG.couleurTexte = gv('cfg-couleur-texte')|| '#111111';
+  // Valider le format hex avant d'appliquer (évite les fallbacks erronés)
+  const isHex = (v) => /^#[0-9a-fA-F]{3,6}$/.test(v);
+  const c1v = gv('cfg-couleur1'); CFG.couleur1     = (c1v && isHex(c1v)) ? c1v : (CFG.couleur1 || '#E8186D');
+  const c2v = gv('cfg-couleur2'); CFG.couleur2     = (c2v && isHex(c2v)) ? c2v : (CFG.couleur2 || '#111111');
+  const c3v = gv('cfg-couleur3'); CFG.couleur3     = (c3v && isHex(c3v)) ? c3v : (CFG.couleur3 || '');
+  const c4v = gv('cfg-couleur4'); CFG.couleur4     = (c4v && isHex(c4v)) ? c4v : (CFG.couleur4 || '');
+  const ctv = gv('cfg-couleur-texte'); CFG.couleurTexte = (ctv && isHex(ctv)) ? ctv : (CFG.couleurTexte || '#111111');
   CFG.policeTitre  = gv('cfg-police-titre') || 'Playfair Display';
   CFG.policeCorps  = gv('cfg-police-corps') || 'DM Sans';
   CFG.logoUrl      = gv('cfg-logo-url');
@@ -6315,7 +6388,6 @@ function sauvegarderCompte(){
   syncStories();
   construireStoriesUI();
   const nomAffiche = [CFG.prenom, CFG.nom].filter(Boolean).join(' '); const el_nc = document.getElementById('nom-client'); if(el_nc && !el_nc.onclick) el_nc.textContent = nomAffiche || 'Se repérer ›';
-  appliquerCouleursDynamiques(); // Mettre à jour l'UI avec les nouvelles couleurs
   syncConfigVersSheets(); // Envoie la config locale vers Sheets
 
   // Si l'URL AS vient d'être saisie ou modifiée → relire le Sheets

@@ -1479,22 +1479,53 @@
     <div class="sep"><span>La semaine à venir</span></div>
     <div class="bq"><div class="ql"><div class="qn">6</div><span class="qc">Offre à mettre en avant</span></div><p class="qt">Quelle offre veux-tu valoriser dans tes contenus cette semaine ?</p><input type="text" id="q6" oninput="autosaveDraft()" placeholder="Ex : Mon offre phare, ma prestation signature…"/></div>
     <div class="bq" id="bq-photo"><div class="ql"><div class="qn">7</div><span class="qc">Photo disponible</span></div>
-      <p class="qt">Dépose ta photo dans le bon dossier Drive, puis décris-la ici — l'IA l'intègre dans ton post photo ou carrousel.</p>
-      <input type="text" id="q7" oninput="autosaveDraft()" placeholder="Ex : portrait studio fond blanc, dans Portraits-Action…"/>
-      <button class="btn btn-ghost btn-sm btn-full" style="margin-top:.5rem;" onclick="ouvrirDriveExplorer()">📁 Voir mes dossiers Drive</button>
-      <div id="drive-photo-preview" style="display:none;"></div>
-      <div class="drive-explorer" id="drive-explorer" style="display:none;">
-        <div class="drive-explorer-hd">
-          <span class="titre-exp">
-            <button class="drive-back" id="drive-back-btn" onclick="driveRetour()" style="display:none;">← Retour</button>
-            <span id="drive-exp-titre">Mes dossiers photos</span>
-          </span>
-          <button onclick="fermerDriveExplorer()" style="background:none;border:none;color:#888;cursor:pointer;font-size:1rem;">✕</button>
+      <p class="qt">Importe ta photo directement dans Drive depuis ton appareil — l'IA l'intègre dans tes posts photo et carrousels.</p>
+
+      <!-- Zone d'import photo -->
+      <div id="q7-import-zone" style="margin-top:.6rem;">
+        <label style="display:block;font-size:.75rem;font-weight:600;color:#999;letter-spacing:.03em;text-transform:uppercase;margin-bottom:.4rem;">Choisir la photo</label>
+        <input type="file" id="q7-file" accept="image/*" onchange="q7OnFileChosen()" style="display:none;"/>
+        <div id="q7-file-btn" onclick="document.getElementById('q7-file').click()"
+          style="display:flex;align-items:center;gap:.7rem;background:var(--gris-input);border:1.5px dashed var(--gris-border);border-radius:10px;padding:.8rem 1rem;cursor:pointer;transition:border-color .2s;">
+          <span style="font-size:1.4rem;">🖼️</span>
+          <div>
+            <div id="q7-file-label" style="font-size:.85rem;font-weight:600;color:var(--blanc-doux);">Sélectionner depuis cet appareil</div>
+            <div style="font-size:.72rem;color:#888;">Photo, portrait, résultat client…</div>
+          </div>
         </div>
-        <div id="drive-exp-contenu"></div>
+        <div id="q7-preview" style="display:none;margin-top:.5rem;position:relative;">
+          <img id="q7-img" src="" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;border:1px solid var(--gris-border);"/>
+          <button onclick="q7EffacerPhoto()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.85rem;">✕</button>
+        </div>
       </div>
+
+      <!-- Sélecteur de dossier -->
+      <div id="q7-dossier-zone" style="margin-top:.7rem;display:none;">
+        <label style="display:block;font-size:.75rem;font-weight:600;color:#999;letter-spacing:.03em;text-transform:uppercase;margin-bottom:.4rem;">Importer dans le dossier</label>
+        <select id="q7-dossier" style="font-size:16px;">
+          <option value="Portraits &amp; Action">🧍 Portraits &amp; Action</option>
+          <option value="Résultats &amp; Clients">✨ Résultats &amp; Clients</option>
+          <option value="Événements">🎉 Événements</option>
+          <option value="Partenaires">🤝 Partenaires</option>
+          <option value="Coulisses">🎬 Coulisses</option>
+          <option value="Produits &amp; Services">📦 Produits &amp; Services</option>
+        </select>
+        <button class="btn btn-rose btn-full" id="q7-import-btn" onclick="q7ImporterPhoto()" style="margin-top:.5rem;padding:.75rem;">
+          ☁️ Importer dans Drive
+        </button>
+        <div id="q7-import-status" style="display:none;margin-top:.5rem;font-size:.78rem;color:var(--succes);text-align:center;"></div>
+      </div>
+
+      <!-- Champ description (rempli automatiquement ou manuellement) -->
+      <div style="margin-top:.7rem;">
+        <label style="display:block;font-size:.75rem;font-weight:600;color:#999;letter-spacing:.03em;text-transform:uppercase;margin-bottom:.4rem;">Description pour l'IA</label>
+        <input type="text" id="q7" oninput="autosaveDraft()" placeholder="Ex : portrait studio fond blanc, regard confiant…"/>
+      </div>
+
+      <div id="drive-photo-preview" style="display:none;"></div>
       <div class="opt">Optionnel</div>
     </div>
+
     <div class="bq"><div class="ql"><div class="qn">8</div><span class="qc">Sujet libre</span></div><p class="qt">Un sujet ou format que tu veux tester cette semaine ?</p><textarea id="q8" oninput="autosaveDraft()" placeholder="Optionnel…" style="min-height:60px;"></textarea><div class="opt">Optionnel</div></div>
     <button class="btn btn-rose btn-full" onclick="enrSemaine()">💾 Enregistrer ma semaine</button>
   </section>
@@ -2695,6 +2726,10 @@ function go(id, btn){
   document.querySelector('.scroll').style.overflow = '';
   editId = null; storyModalIndex = null;
   if(id==='p-semaine') restaurerDraft();
+  // Quand on quitte la page Semaine, synchro silencieuse du draft
+  else if(document.getElementById('p-semaine') && document.getElementById('p-semaine').classList.contains('on')){
+    syncConfigVersSheets();
+  }
   if(id==='p-accueil'){ majSemMini(); majKPIs(); }
 
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
@@ -2878,6 +2913,7 @@ async function enrSemaine(){
       localStorage.setItem('roze_sem_'+lundi.toISOString().split('T')[0],'1');
       majAccueil();
       viderDraft();
+      syncConfigVersSheets(); // Propager aux autres appareils
       toast('✅ Semaine enregistrée — mémoire IA mise à jour !','ok');
     } else toast('❌ '+(j.erreur||'Erreur'),'err');
   }catch{ toast('❌ Impossible de joindre Google Sheets','err'); }
@@ -3816,6 +3852,93 @@ function effacerPhoto(){
   const zone = document.getElementById('drive-photo-preview');
   zone.style.display = 'none';
   zone.innerHTML = '';
+}
+
+// ══════════════════════════════════════════
+// Q7 — IMPORT PHOTO VERS DRIVE
+// ══════════════════════════════════════════
+function q7OnFileChosen(){
+  const file = document.getElementById('q7-file').files[0];
+  if(!file) return;
+  // Aperçu
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('q7-img').src = e.target.result;
+    document.getElementById('q7-preview').style.display = 'block';
+    document.getElementById('q7-file-label').textContent = file.name;
+    document.getElementById('q7-file-btn').style.borderColor = 'var(--rose)';
+    document.getElementById('q7-dossier-zone').style.display = 'block';
+    // Pré-remplir la description avec le nom du fichier
+    const descEl = document.getElementById('q7');
+    if(!descEl.value) descEl.value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+    autosaveDraft();
+  };
+  reader.readAsDataURL(file);
+}
+
+function q7EffacerPhoto(){
+  document.getElementById('q7-file').value = '';
+  document.getElementById('q7-preview').style.display = 'none';
+  document.getElementById('q7-img').src = '';
+  document.getElementById('q7-file-label').textContent = 'Sélectionner depuis cet appareil';
+  document.getElementById('q7-file-btn').style.borderColor = 'var(--gris-border)';
+  document.getElementById('q7-dossier-zone').style.display = 'none';
+  document.getElementById('q7-import-status').style.display = 'none';
+}
+
+async function q7ImporterPhoto(){
+  if(!CFG.as){ toast('⚙️ URL Apps Script manquante','err'); return; }
+  const file = document.getElementById('q7-file').files[0];
+  if(!file){ toast('⚠️ Aucun fichier sélectionné','err'); return; }
+  const dossier = document.getElementById('q7-dossier').value;
+  const btn = document.getElementById('q7-import-btn');
+  const status = document.getElementById('q7-import-status');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Import en cours…';
+  status.style.display = 'none';
+
+  try{
+    // Lire la photo en base64
+    const base64 = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+
+    const resp = await fetch(CFG.as, {
+      method: 'POST',
+      body: JSON.stringify({
+        action:   'importer_photo',
+        nom:      file.name,
+        dossier:  dossier,
+        mimeType: file.type,
+        base64:   base64
+      })
+    });
+    const j = await resp.json();
+
+    if(j.succes){
+      status.textContent = '✅ Photo importée dans "' + dossier + '"';
+      status.style.cssText = 'display:block;margin-top:.5rem;font-size:.78rem;color:var(--succes);text-align:center;';
+      // Remplir Q7 avec dossier + description
+      const descEl = document.getElementById('q7');
+      const desc = descEl.value.trim() || file.name.replace(/\.[^.]+$/, '');
+      descEl.value = desc + ' [' + dossier + ']';
+      autosaveDraft();
+      toast('✅ Photo importée !','ok');
+    } else {
+      throw new Error(j.erreur || 'Erreur AS');
+    }
+  } catch(e){
+    status.textContent = '❌ ' + e.message;
+    status.style.cssText = 'display:block;margin-top:.5rem;font-size:.78rem;color:var(--rose-clair);text-align:center;';
+    toast('❌ Import échoué : ' + e.message,'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '☁️ Importer dans Drive';
+  }
 }
 
 function driveRetour(){

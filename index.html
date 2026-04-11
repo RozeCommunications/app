@@ -242,7 +242,7 @@
     .web-loader{display:none;align-items:center;gap:.6rem;padding:.5rem 0;font-size:.78rem;color:var(--gris-clair);margin-bottom:.6rem;}
     .web-loader.on{display:flex;}
     .web-ring{width:14px;height:14px;border:2px solid var(--gris-moyen);border-top-color:#5bb8ff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
-    .actu-result{background:rgba(0,119,181,.08);border:1px solid rgba(0,119,181,.2);border-radius:10px;padding:.7rem 1rem;margin-bottom:.8rem;font-size:.78rem;color:var(--blanc-doux);line-height:1.5;display:none;}
+    .actu-result{display:none!important;}
     .actu-result.on{display:block;}
     .actu-result strong{color:#5bb8ff;display:block;margin-bottom:.3rem;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;}
     .loader{display:none;text-align:center;padding:2rem 1rem;}
@@ -1626,7 +1626,7 @@
 
       <!-- Résultat inline -->
       <div class="creer-loader" id="gen-inline-loader" style="margin-top:.6rem;"><div class="creer-mini-ring"></div><span id="gen-inline-loader-txt">Génération en cours…</span></div>
-      <span class="creer-lbl" id="lbl-gen-texte" style="display:none;margin-top:.8rem;">Texte du post</span>
+      <span class="creer-lbl" id="lbl-gen-texte" style="display:none!important;margin-top:.8rem;"></span>
       <div class="creer-result" id="gen-result"></div>
 
       <!-- Légende -->
@@ -1634,6 +1634,10 @@
         <span class="creer-lbl" style="margin-top:.5rem;">Légende & hashtags</span>
         <textarea id="gen-legende" placeholder="Légende + hashtags…"></textarea>
         <button class="btn btn-ghost btn-sm btn-full" style="margin-top:.4rem;" onclick="regenLegendePaneau()">🔄 Régénérer la légende</button>
+        <div id="gen-source-chip" style="display:none;margin-top:.5rem;">
+          <button onclick="toggleSourceDetail()" style="background:rgba(0,119,181,.12);border:1px solid rgba(0,119,181,.3);border-radius:20px;padding:.25rem .75rem;font-size:.72rem;color:#5bb8ff;cursor:pointer;font-weight:600;">🌐 Source</button>
+          <div id="gen-source-detail" style="display:none;background:rgba(0,119,181,.08);border:1px solid rgba(0,119,181,.2);border-radius:8px;padding:.6rem .8rem;margin-top:.4rem;font-size:.72rem;color:var(--blanc-doux);line-height:1.5;"></div>
+        </div>
       </div>
 
       <!-- Sélecteur de style Post Photo -->
@@ -1651,7 +1655,7 @@
       <!-- Actions post généré -->
       <div class="edit-actions" id="gen-post-actions" style="display:none;">
         <button class="btn btn-rose" onclick="sauvegarderGenPanel()">💾 Sauvegarder</button>
-        <button class="btn btn-ghost" onclick="genUnPost()">🔄 Regénérer</button>
+        <button class="btn btn-ghost" id="btn-regen-style" onclick="regenStylePhoto()" style="display:none;">🎨 Régénérer le style</button>
         <button class="btn btn-outline" onclick="copierGenPanel()">📋 Copier</button>
         <button class="btn btn-ghost" id="btn-publier-gen" onclick="publierSurReseau()" style="font-size:.78rem;">🚀 Publier →</button>
       </div>
@@ -3164,96 +3168,103 @@ function toggleActu(){
 }
 
 async function rechercherActu(){
-  // Déclenché uniquement au clic sur Générer si le toggle actu est activé
-
   const sujetSaisi = (document.getElementById('gen-sujet')||{}).value?.trim() || '';
   const metier     = CFG.metier || '';
-  const refsRaw    = CFG.references || '';
-
-  // Lire les URLs (une par ligne, max 10)
   const urlSources = lireURLsSources();
-  // Rotation : utiliser 3 URLs différentes à chaque appel
-  // Le seed est basé sur l'heure pour varier au fil de la journée
-  const seed = Math.floor(Date.now() / 60000) % Math.max(urlSources.length, 1);
-  const urlsActives = urlSources.length
-    ? [...urlSources.slice(seed), ...urlSources.slice(0, seed)].slice(0, 3)
-    : [];
 
-  const wl = document.getElementById('web-loader'); wl.classList.add('on');
+  // 1 seule URL à la fois — rotation simple
+  const seed = Math.floor(Date.now() / 60000) % Math.max(urlSources.length, 1);
+  const urlActive = urlSources.length ? urlSources[seed] : null;
+
+  const wl = document.getElementById('web-loader');
+  wl.classList.add('on');
   document.getElementById('actu-result').classList.remove('on');
 
   try{
     let actuBrut = '';
 
-    // ── Étape 1 : web_fetch sur les URLs déclarées ──
-    // Si l'utilisateur a saisi des URLs, on les lit directement
-    if(urlsActives.length){
-      const fetchPromises = urlsActives.map(async url => {
-        try{
-          const rf = await fetch('https://api.anthropic.com/v1/messages',{
-            method:'POST',
-            headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-            body: JSON.stringify({
-              model:'claude-sonnet-4-20250514',
-              max_tokens:400,
-              tools:[{type:'web_search_20250305',name:'web_search'}],
-              messages:[{role:'user',content:`Lis cette page et extrais le titre + résumé (2 phrases max) de l'article le plus récent et le plus pertinent pour un professionnel dont le métier est : ${metier}${sujetSaisi ? ' et le sujet du post est : '+sujetSaisi : ''}.
-URL : ${url}
-Cite la source et la date entre parenthèses. Réponds uniquement avec le résumé, sans préambule.`}]
-            })
-          });
-          const d = await rf.json();
-          return (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
-        }catch(e){ return ''; }
-      });
-      const resultats = await Promise.all(fetchPromises);
-      actuBrut = resultats.filter(Boolean).join(' ');
+    // Étape 1 : 1 seule URL déclarée
+    if(urlActive){
+      try{
+        const rf = await fetch('https://api.anthropic.com/v1/messages',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+          body: JSON.stringify({
+            model:'claude-sonnet-4-20250514',
+            max_tokens:300,
+            tools:[{type:'web_search_20250305',name:'web_search'}],
+            messages:[{role:'user',content:`Lis cette page et extrais UNE SEULE information factuelle (chiffre, tendance ou fait récent) utile pour un professionnel dont le métier est : ${metier}${sujetSaisi ? ', sur le sujet : '+sujetSaisi : ''}.
+URL : ${urlActive}
+Réponds en 1-2 phrases max. Cite la source et la date entre parenthèses. Sans préambule.`}]
+          })
+        });
+        const d = await rf.json();
+        actuBrut = (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
+      }catch(e){}
     }
 
-    // ── Étape 2 : web_search si noms de sources ou si URLs n'ont rien donné ──
+    // Étape 2 : web_search si rien trouvé
     if(!actuBrut || actuBrut.length < 30){
-      let query, instruction;
-
-      if(sujetSaisi){
-        query = `${sujetSaisi} actualités tendances ${new Date().getFullYear()}`;
-        instruction = `Cherche des données récentes sur ce sujet exact.`;
-      } else {
-        query = `tendances ${metier || 'secteur professionnel'} ${new Date().getFullYear()}`;
-        instruction = `Cherche des données et tendances récentes sur ce secteur.`;
-      }
+      const query = sujetSaisi
+        ? `${sujetSaisi} données statistiques ${new Date().getFullYear()}`
+        : `tendances ${metier || 'professionnel'} ${new Date().getFullYear()}`;
 
       const rs = await fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',
         headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
         body: JSON.stringify({
           model:'claude-sonnet-4-20250514',
-          max_tokens:500,
+          max_tokens:300,
           tools:[{type:'web_search_20250305',name:'web_search'}],
-          messages:[{role:'user',content:`${instruction}
-
-Requête : "${query}"
-
-RÈGLES :
-- Cherche des CONTENUS (articles, chiffres, tendances) — pas des personnes ou concurrents
-- 2-3 phrases factuelles et récentes
-- Cite la source : (Source : nom du média, date)
-- Sans préambule`}]
+          messages:[{role:'user',content:`Cherche UNE SEULE donnée factuelle récente (chiffre, statistique ou tendance) sur : "${query}".
+RÈGLES STRICTES :
+- 1 seule information, pas de liste
+- 1-2 phrases maximum
+- Cite la source : (Source : nom, date)
+- Sans préambule, sans introduction`}]
         })
       });
       const ds = await rs.json();
-      const complement = (ds.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
-      actuBrut = actuBrut ? actuBrut + ' ' + complement : complement;
+      actuBrut = (ds.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
     }
 
-    actuTexte = actuBrut || 'Aucune actu trouvée.';
-    document.getElementById('actu-txt').textContent = actuTexte;
-    document.getElementById('actu-result').classList.add('on');
+    actuTexte = actuBrut || '';
+    if(actuTexte){
+      document.getElementById('actu-txt').textContent = actuTexte;
+      document.getElementById('actu-result').classList.add('on');
+    }
 
   }catch(e){
     actuTexte = '';
     toast('❌ Recherche web échouée','err');
   }
   wl.classList.remove('on');
+}
+
+function toggleSourceDetail(){
+  const d = document.getElementById('gen-source-detail');
+  if(d) d.style.display = d.style.display === 'none' ? 'block' : 'none';
+}
+
+function regenStylePhoto(){
+  // Régénérer uniquement le style visuel — ne touche pas au texte ni à la légende
+  if(genPhotoStyle){
+    const activeBtn = document.getElementById('gps-' + genPhotoStyle);
+    setPhotoStyle(genPhotoStyle, activeBtn);
+  }
+}
+
+function afficherChipSource(){
+  const chip = document.getElementById('gen-source-chip');
+  const detail = document.getElementById('gen-source-detail');
+  if(!chip || !detail) return;
+  if(actuTexte){
+    chip.style.display = 'block';
+    detail.textContent = actuTexte;
+    detail.style.display = 'none'; // fermé par défaut
+  } else {
+    chip.style.display = 'none';
+  }
 }
 
 // ══════════════════════════════════════════
@@ -3349,6 +3360,16 @@ function fondSlide(numSlide, totalSlides, couleur1, couleur2){
   const clair = estCouleurClaire(couleur1);
   if(clair) return '#FFFFFF';
   return '#F8F8F6';
+}
+
+// Taille de police adaptative pour le titre slide 1 selon le nombre de mots
+function fontSizeTitre(titre, baseRem, basePx){
+  // baseRem pour miniature, basePx pour export PNG
+  const mots = (titre||'').trim().split(/\s+/).length;
+  if(mots <= 6)  return { rem: baseRem,       px: basePx };
+  if(mots <= 9)  return { rem: baseRem * 0.85, px: Math.round(basePx * 0.85) };
+  if(mots <= 12) return { rem: baseRem * 0.72, px: Math.round(basePx * 0.72) };
+  return           { rem: baseRem * 0.62, px: Math.round(basePx * 0.62) }; // >12 mots (sécurité)
 }
 
 // Retourne le style CSS complet d'une slide selon le style de fond actif
@@ -3447,7 +3468,7 @@ function afficherCarrousel(slides, legende, reseau, containerId){
             <div class="cv-slide-inner" style="position:relative;z-index:1;font-family:'${pcorp}',sans-serif;color:${i===0&&photoSlide1 ? meilleureTexteCouleur('#000000',c1,c2) : texteSlide(fondSlide(s.num, slides.length, c1, c2))};">
               <div class="cv-slide-num" style="color:${i===0&&photoSlide1?'rgba(255,255,255,.6)':texteSlide(fondSlide(s.num, slides.length, c1, c2))};opacity:.35;">${s.num}/${slides.length}</div>
               <div class="cv-slide-type" style="color:${i===0&&photoSlide1?c1:c1};">${s.type === 'hook' ? 'Hook' : s.type === 'cta' ? 'CTA' : 'Contenu'}</div>
-              <div class="cv-slide-titre" style="font-family:'${ptit}',serif;${(i===0&&photoSlide1) ? 'color:'+meilleureTexteCouleur('#000000',c1,c2)+';border-bottom:3px solid '+couleurSoulignement(meilleureTexteCouleur('#000000',c1,c2),c1,c2)+';padding-bottom:4px;' : ''}">${s.titre||''}</div>
+              <div class="cv-slide-titre" style="font-family:'${ptit}',serif;font-size:${i===0 ? fontSizeTitre(s.titre, .82, 48).rem+'rem' : ''};${(i===0&&photoSlide1) ? 'color:'+meilleureTexteCouleur('#000000',c1,c2)+';border-bottom:3px solid '+couleurSoulignement(meilleureTexteCouleur('#000000',c1,c2),c1,c2)+';padding-bottom:4px;' : ''}">${s.titre||''}</div>
               ${s.sousTitre ? '<div style="font-size:.65rem;opacity:.7;margin-bottom:4px;">' + s.sousTitre + '</div>' : ''}
               <div class="cv-slide-corps">${s.corps||''}</div>
               ${(s.type === 'cta' && CFG.logoUrl) ? '<img class="cv-slide-logo" src="' + CFG.logoUrl + '" alt="logo"/>' : ''}
@@ -3507,7 +3528,7 @@ function ouvrirCarrouselFullscreen(){
       <div class="cv-fs-slide" style="background:${fond};">
         <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};width:100%;height:100%;box-sizing:border-box;padding:28px 24px;">
           <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:${c1};margin-bottom:8px;">${s.type==='hook'?'Hook':s.type==='cta'?'CTA':'Contenu'}</div>
-          <div style="font-family:'${ptit}',serif;font-size:1.15rem;font-weight:700;line-height:1.3;margin-bottom:8px;">${s.titre||''}</div>
+          <div style="font-family:'${ptit}',serif;font-size:${idx===0 ? fontSizeTitre(s.titre, 1.15, 44).rem+'rem' : '1.15rem'};font-weight:700;line-height:1.3;margin-bottom:8px;">${s.titre||''}</div>
           ${s.sousTitre?`<div style="font-size:.8rem;opacity:.7;margin-bottom:8px;">${s.sousTitre}</div>`:''}
           <div style="font-size:.85rem;line-height:1.6;">${s.corps||''}</div>
           ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="position:absolute;bottom:16px;right:16px;max-width:60px;max-height:28px;object-fit:contain;opacity:.8;"/>`:''
@@ -3679,7 +3700,7 @@ async function exporterPNG(){
       ${photoHtml}
       <div style="position:relative;z-index:2;display:flex;flex-direction:column;height:100%;width:100%;">
         <div style="font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:${c1};margin-bottom:24px;">${s.type==='hook'?'':s.type==='cta'?'':''}</div>
-        <div style="font-family:'${ptit}',serif;font-size:${s.type==='hook'?72:54}px;font-weight:700;line-height:1.2;margin-bottom:${isSlide1Photo?'8px':'24px'};${isSlide1Photo?`border-bottom:6px solid ${soulCoul};padding-bottom:12px;`:''}">${s.titre||''}</div>
+        <div style="font-family:'${ptit}',serif;font-size:${isSlide1Photo ? fontSizeTitre(s.titre, .82, 72).px : (s.type==='hook'?72:54)}px;font-weight:700;line-height:1.25;margin-bottom:${isSlide1Photo?'8px':'24px'};${isSlide1Photo?'border-bottom:6px solid '+soulCoul+';padding-bottom:12px;':''}">${s.titre||''}</div>
         ${s.sousTitre?`<div style="font-size:32px;opacity:.7;margin-bottom:24px;">${s.sousTitre}</div>`:''}
         <div style="font-size:${s.type==='hook'?36:32}px;line-height:1.65;flex:1;">${isSlide1Photo ? '' : (s.corps||'')}</div>
         ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="max-width:160px;max-height:60px;object-fit:contain;opacity:.8;margin-top:auto;"/>` : ''}
@@ -5002,9 +5023,13 @@ async function genUnPost(){
         psZone.style.display='block';
         genPhotoTitre = t.split('\n')[0].replace(/^[#*]+\s*/,'').substring(0,80);
         genHookPhoto(t).then(hook => { genPhotoTitre = hook; setPhotoStyle(genPhotoStyle, document.getElementById('gps-'+genPhotoStyle)); });
+        const brs = document.getElementById('btn-regen-style');
+        if(brs) brs.style.display='inline-flex';
         setPhotoStyle('brute', document.getElementById('gps-brute'));
       } else if(psZone){
         psZone.style.display='none';
+        const brs2 = document.getElementById('btn-regen-style');
+        if(brs2) brs2.style.display='none';
       }
     }
 
@@ -5015,6 +5040,7 @@ async function genUnPost(){
     if(parsed.isCarrousel) result.dataset.slides = JSON.stringify(parsed.slides);
 
     if(btnGen){ btnGen.disabled=false; btnGen.textContent='✨ Générer ce post'; }
+    afficherChipSource(); // Afficher chip source si actu disponible
     toastSiPage('✅ Post généré !','ok','p-generer');
 
   }catch(e){
@@ -5083,6 +5109,10 @@ async function sauvegarderGenPanel(){
   document.getElementById('gen-panel').classList.remove('on');
   const _psz = document.getElementById('gen-photo-style-zone');
   if(_psz) _psz.style.display='none';
+  const _brs = document.getElementById('btn-regen-style');
+  if(_brs) _brs.style.display='none';
+  const _chip = document.getElementById('gen-source-chip');
+  if(_chip) _chip.style.display='none';
   result.textContent=''; result.classList.remove('on');
   const cvInline = document.getElementById('gen-cv-inline');
   if(cvInline) cvInline.innerHTML='';

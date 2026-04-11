@@ -4860,6 +4860,27 @@ function limiterHashtags(texte, max=5){
   return result.trim().replace(/\s{2,}/g, ' ');
 }
 
+function nettoyerJsonNewlines(s){
+  // Remplace les vraies newlines à l'intérieur des strings JSON
+  // pour éviter "Invalid control character" lors du JSON.parse
+  const result = [];
+  let inString = false;
+  for(let i=0; i<s.length; i++){
+    const c = s[i];
+    if(c === '"' && (i===0 || s[i-1] !== '\\')){
+      inString = !inString;
+      result.push(c);
+    } else if(inString && c === '\n'){
+      result.push('\\n');
+    } else if(inString && c === '\r'){
+      // ignorer \r
+    } else {
+      result.push(c);
+    }
+  }
+  return result.join('');
+}
+
 function splitTexteLegende(texte){
   if(!texte) return {texte:'', legende:''};
 
@@ -4868,7 +4889,6 @@ function splitTexteLegende(texte){
   t = t.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/,'').trim();
 
   // Tentative extraction JSON carrousel
-  // Chercher { "slides" ou {"slides" n'importe où dans le texte
   const patterns = ['{"slides"', '{ "slides"', '{\n  "slides"', '{\n"slides"'];
   let jIdx = -1;
   for(const p of patterns){
@@ -4877,33 +4897,39 @@ function splitTexteLegende(texte){
   }
 
   if(jIdx > -1){
-    try{
-      // Trouver l'accolade fermante correspondante
-      let depth = 0, endIdx = -1;
-      for(let i=jIdx; i<t.length; i++){
-        if(t[i]==='{') depth++;
-        else if(t[i]==='}') { depth--; if(depth===0){ endIdx=i; break; } }
-      }
-      if(endIdx > -1){
-        const jsonStr = t.slice(jIdx, endIdx+1);
+    // Trouver l'accolade fermante correspondante
+    let depth = 0, endIdx = -1;
+    for(let i=jIdx; i<t.length; i++){
+      if(t[i]==='{') depth++;
+      else if(t[i]==='}') { depth--; if(depth===0){ endIdx=i; break; } }
+    }
+    if(endIdx > -1){
+      let jsonStr = t.slice(jIdx, endIdx+1);
+      // Nettoyer les newlines dans les strings avant JSON.parse
+      jsonStr = nettoyerJsonNewlines(jsonStr);
+      // Tentative 1 : parse direct
+      try{
         const data = JSON.parse(jsonStr);
         if(data.slides && Array.isArray(data.slides) && data.slides.length > 0){
-          return { texte:t, legende:data.legende||'', isCarrousel:true, slides:data.slides };
+          // Restaurer les \n en vraies newlines dans la légende
+          const legende = (data.legende||'').replace(/\\n/g,'\n');
+          return { texte:t, legende, isCarrousel:true, slides:data.slides };
         }
+      }catch(e){
+        // Tentative 2 : nettoyage virgules trailing
+        try{
+          const jsonStr2 = jsonStr.replace(/,\s*([}\]])/g,'$1');
+          const data = JSON.parse(jsonStr2);
+          if(data.slides && Array.isArray(data.slides)){
+            const legende = (data.legende||'').replace(/\\n/g,'\n');
+            return { texte:t, legende, isCarrousel:true, slides:data.slides };
+          }
+        }catch(e2){}
       }
-    }catch(e){
-      // JSON malformé — tenter nettoyage agressif
-      try{
-        const jsonStr = t.slice(jIdx).replace(/,\s*([}\]])/g,'$1');
-        const data = JSON.parse(jsonStr);
-        if(data.slides && Array.isArray(data.slides)){
-          return { texte:t, legende:data.legende||'', isCarrousel:true, slides:data.slides };
-        }
-      }catch(e2){}
     }
   }
 
-  // Légende séparée par marqueur
+  // Légende séparée par marqueur LÉGENDE:
   const idx = t.indexOf('LÉGENDE:');
   if(idx===-1) return {texte:t, legende:''};
   const legendeBrute = t.slice(idx+8).trim();

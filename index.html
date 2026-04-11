@@ -2454,6 +2454,23 @@ document.addEventListener('DOMContentLoaded',()=>{
   if('serviceWorker'in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 });
 
+function appliquerCouleursDynamiques(){
+  const c1  = CFG.couleur1     || '#E8186D';
+  const c2  = CFG.couleur2     || '#111111';
+  const r   = document.documentElement;
+  // Dériver les variantes depuis c1
+  r.style.setProperty('--rose',        c1);
+  r.style.setProperty('--rose-clair',  ajusterLum(c1, 15));
+  r.style.setProperty('--rose-sombre', ajusterLum(c1, -20));
+  r.style.setProperty('--rose-glow',   c1.startsWith('#') ? hexToRgba(c1, .18) : 'rgba(232,24,109,.18)');
+  r.style.setProperty('--ig-glow',     c1.startsWith('#') ? hexToRgba(c1, .18) : 'rgba(232,24,109,.18)');
+}
+function hexToRgba(hex, alpha){
+  const r=parseInt(hex.slice(1,3),16);
+  const g=parseInt(hex.slice(3,5),16);
+  const b=parseInt(hex.slice(5,7),16);
+  return 'rgba('+r+','+g+','+b+','+alpha+')';
+}
 function initUI(){
   const nomAffiche = [CFG.prenom, CFG.nom].filter(Boolean).join(' '); const el_nc = document.getElementById('nom-client'); if(el_nc && !el_nc.onclick) el_nc.textContent = nomAffiche || 'Se repérer ›';
   afficherStreak();
@@ -2461,6 +2478,7 @@ function initUI(){
   majQuotaResume();
   majFormats();
   majAccueil();
+  appliquerCouleursDynamiques(); // Appliquer les couleurs de l'utilisateur dès le démarrage
 }
 
 
@@ -3422,7 +3440,8 @@ function afficherCarrousel(slides, legende, reseau, containerId){
         ${slides.map((s,i) => `
           <div class="cv-slide${i===0?' active':''}" id="cv-slide-${i}"
                onclick="cvSelectSlide(${i})"
-               style="${styleFondSlide(s.num, slides.length, c1, c2)}">
+               style="${(i===0 && photoSlide1) ? 'position:relative;overflow:hidden;' : styleFondSlide(s.num, slides.length, c1, c2)}">
+            ${(i===0 && photoSlide1) ? '<img src="' + photoSlide1.src + '" alt="photo" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;pointer-events:none;"/><div style=\"position:absolute;inset:0;background:rgba(0,0,0,0.38);\"></div>' : ''}
             <!-- Mini sélecteur par slide -->
             <div class="cv-slide-style-picker" onclick="event.stopPropagation()">
               <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'uni')"     title="Uni 1" style="background:${c1}"></button>
@@ -3431,13 +3450,13 @@ function afficherCarrousel(slides, legende, reseau, containerId){
               <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'grain')"   title="Grain" style="background:${c1};opacity:.7"></button>
               <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'beton')"   title="Matière" style="background:${c2};opacity:.7"></button>
             </div>
-            <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${texteSlide(fondSlide(s.num, slides.length, c1, c2))};">
-              <div class="cv-slide-num" style="color:${texteSlide(fondSlide(s.num, slides.length, c1, c2))};opacity:.35;">${s.num}/${slides.length}</div>
-              <div class="cv-slide-type" style="color:${c1};">${s.type === 'hook' ? 'Hook' : s.type === 'cta' ? 'CTA' : 'Contenu'}</div>
-              <div class="cv-slide-titre" style="font-family:'${ptit}',serif;">${s.titre||''}</div>
-              ${s.sousTitre ? `<div style="font-size:.65rem;opacity:.7;margin-bottom:4px;">${s.sousTitre}</div>` : ''}
+            <div class="cv-slide-inner" style="position:relative;z-index:1;font-family:'${pcorp}',sans-serif;color:${i===0&&photoSlide1 ? meilleureTexteCouleur('#000000',c1,c2) : texteSlide(fondSlide(s.num, slides.length, c1, c2))};">
+              <div class="cv-slide-num" style="color:${i===0&&photoSlide1?'rgba(255,255,255,.6)':texteSlide(fondSlide(s.num, slides.length, c1, c2))};opacity:.35;">${s.num}/${slides.length}</div>
+              <div class="cv-slide-type" style="color:${i===0&&photoSlide1?c1:c1};">${s.type === 'hook' ? 'Hook' : s.type === 'cta' ? 'CTA' : 'Contenu'}</div>
+              <div class="cv-slide-titre" style="font-family:'${ptit}',serif;${(i===0&&photoSlide1) ? 'color:'+meilleureTexteCouleur('#000000',c1,c2)+';border-bottom:3px solid '+couleurSoulignement(meilleureTexteCouleur('#000000',c1,c2),c1,c2)+';padding-bottom:4px;' : ''}">${s.titre||''}</div>
+              ${s.sousTitre ? '<div style="font-size:.65rem;opacity:.7;margin-bottom:4px;">' + s.sousTitre + '</div>' : ''}
               <div class="cv-slide-corps">${s.corps||''}</div>
-              ${(s.type === 'cta' && CFG.logoUrl) ? `<img class="cv-slide-logo" src="${CFG.logoUrl}" alt="logo"/>` : ''}
+              ${(s.type === 'cta' && CFG.logoUrl) ? '<img class="cv-slide-logo" src="' + CFG.logoUrl + '" alt="logo"/>' : ''}
             </div>
           </div>`).join('')}
       </div>
@@ -3450,6 +3469,7 @@ function afficherCarrousel(slides, legende, reseau, containerId){
         <button class="cv-fond-opt"    id="cvf-grain"   onclick="setStyleFond(this,'grain')"   title="Grain"><span class="cv-fond-dot" style="background:${c1};opacity:.9"></span>Grain</button>
         <button class="cv-fond-opt"    id="cvf-beton"   onclick="setStyleFond(this,'beton')"   title="Matière"><span class="cv-fond-dot" style="background:radial-gradient(ellipse at 30% 20%,${c1},${c2})"></span>Matière</button>
         <button class="cv-fond-reset"  onclick="resetOverrides()" title="Annuler les overrides par slide">↺ Tout réinitialiser</button>
+        ${photoSlide1 ? '<span style="font-size:.72rem;color:var(--succes);padding:.2rem .6rem;background:rgba(46,204,113,.1);border-radius:6px;border:1px solid rgba(46,204,113,.3);">🖼️ Slide 1 : ' + photoSlide1.nom.substring(0,20) + '…</span>' : ''}
       </div>
         ${reseau === 'Instagram'
           ? `<button class="btn btn-ghost" onclick="exporterPNG()">⬇️ PNG 1080×1440</button>`
@@ -3601,21 +3621,20 @@ function majFondsSlides(){
   slides.forEach((s, i) => {
     const slideEl = document.getElementById('cv-slide-' + i);
     if(!slideEl) return;
-    // Calculer le style pour cette slide
+    if(i === 0 && photoSlide1){
+      // Slide 1 avec photo — pas de changement de fond, la photo reste
+      return;
+    }
     const styleCSS = styleFondSlide(s.num, slides.length, c1, c2);
-    // Parser le cssText généré et l'appliquer
     const tmp = document.createElement('div');
     tmp.style.cssText = styleCSS;
-    // Appliquer chaque propriété
     ['background', 'backgroundImage', 'backgroundSize'].forEach(prop => {
       if(tmp.style[prop]) slideEl.style[prop] = tmp.style[prop];
     });
-    // Mettre à jour la couleur du texte
     const inner = slideEl.querySelector('.cv-slide-inner');
     if(inner){
       const fond = fondSlide(s.num, slides.length, c1, c2);
       const style = overridesSlide[i] || styleFondActif || 'uni';
-      // Pour dégradé/matière, on utilise toujours blanc
       const useDark = style === 'uni' || style === 'uni2';
       const fond2 = style === 'uni2' ? (c2 || '#222222') : fond;
       inner.style.color = useDark ? texteSlide(fond2) : '#ffffff';
@@ -3650,17 +3669,28 @@ async function exporterPNG(){
     const tcoul = texteSlide(fond);
 
     // Créer un div offscreen 1080x1440
+    const isSlide1Photo = (i === 0 && photoSlide1);
+    const tcoulFinal = isSlide1Photo ? meilleureTexteCouleur('#000000', c1, c2) : tcoul;
+    const soulCoul   = isSlide1Photo ? couleurSoulignement(tcoulFinal, c1, c2) : null;
+
     const div = document.createElement('div');
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;${styleFondSlide(s.num, slides.length, c1, c2)}font-family:'${pcorp}',sans-serif;color:${tcoul};padding:80px 72px;box-sizing:border-box;display:flex;flex-direction:column;`;
+    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;overflow:hidden;${isSlide1Photo ? 'background:#000;' : styleFondSlide(s.num, slides.length, c1, c2)}font-family:'${pcorp}',sans-serif;color:${tcoulFinal};padding:80px 72px;box-sizing:border-box;display:flex;flex-direction:column;`;
+
+    const photoHtml = isSlide1Photo ? `
+      <img src="${photoSlide1.src}" alt="photo" crossOrigin="anonymous"
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;z-index:0;"/>
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.38);z-index:1;"></div>` : '';
 
     div.innerHTML = `
-      <div style="font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:${c1};margin-bottom:24px;">${s.type==='hook'?'':s.type==='cta'?'':''}</div>
-      <div style="font-family:'${ptit}',serif;font-size:${s.type==='hook'?72:54}px;font-weight:700;line-height:1.2;margin-bottom:24px;">${s.titre||''}</div>
-      ${s.sousTitre?`<div style="font-size:32px;opacity:.7;margin-bottom:24px;">${s.sousTitre}</div>`:''}
-      <div style="font-size:${s.type==='hook'?36:32}px;line-height:1.65;flex:1;">${s.corps||''}</div>
-      ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="max-width:160px;max-height:60px;object-fit:contain;opacity:.8;margin-top:auto;"/>` : ''}
-      ${(s.type==='hook'||s.type==='cta')&&drivePhotoSelectionnee?.thumbnailUrl?`<img src="${drivePhotoSelectionnee.thumbnailUrl}" alt="photo" crossOrigin="anonymous" style="position:absolute;bottom:0;right:0;width:240px;height:320px;object-fit:cover;object-position:top;opacity:.22;border-radius:8px 0 0 0;"/>` : ''}
-      <div style="position:absolute;top:40px;right:60px;font-size:24px;opacity:.3;">${s.num}/${slides.length}</div>`;
+      ${photoHtml}
+      <div style="position:relative;z-index:2;display:flex;flex-direction:column;height:100%;width:100%;">
+        <div style="font-size:20px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:${c1};margin-bottom:24px;">${s.type==='hook'?'':s.type==='cta'?'':''}</div>
+        <div style="font-family:'${ptit}',serif;font-size:${s.type==='hook'?72:54}px;font-weight:700;line-height:1.2;margin-bottom:${isSlide1Photo?'8px':'24px'};${isSlide1Photo?`border-bottom:6px solid ${soulCoul};padding-bottom:12px;`:''}">${s.titre||''}</div>
+        ${s.sousTitre?`<div style="font-size:32px;opacity:.7;margin-bottom:24px;">${s.sousTitre}</div>`:''}
+        <div style="font-size:${s.type==='hook'?36:32}px;line-height:1.65;flex:1;">${isSlide1Photo ? '' : (s.corps||'')}</div>
+        ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="max-width:160px;max-height:60px;object-fit:contain;opacity:.8;margin-top:auto;"/>` : ''}
+        <div style="position:absolute;top:0;right:0;font-size:24px;opacity:.3;">${s.num}/${slides.length}</div>
+      </div>`;
 
     document.body.appendChild(div);
 
@@ -3761,6 +3791,37 @@ const DRIVE_DOSSIERS = [
 let driveEtatActuel = 'dossiers';
 let driveDossierActif = null;
 let drivePhotoSelectionnee = null;
+let photoSlide1 = null; // { src: dataURL, nom: string } — photo pour slide 1 des carrousels
+
+// Charger photoSlide1 depuis localStorage si disponible
+(function(){ try{ const p=localStorage.getItem('roze_photo_slide1'); if(p) photoSlide1=JSON.parse(p); }catch(e){} })();
+
+// Contraste WCAG 2.1 — ratio minimum 4.5:1 pour texte normal
+function luminanceRGB(hex){
+  const r=parseInt(hex.slice(1,3),16)/255;
+  const g=parseInt(hex.slice(3,5),16)/255;
+  const b=parseInt(hex.slice(5,7),16)/255;
+  const lin=(c)=> c<=0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055,2.4);
+  return 0.2126*lin(r) + 0.7152*lin(g) + 0.0722*lin(b);
+}
+function ratioContraste(hex1, hex2){
+  const l1=luminanceRGB(hex1)+0.05, l2=luminanceRGB(hex2)+0.05;
+  return l1>l2 ? l1/l2 : l2/l1;
+}
+function meilleureTexteCouleur(fond, c1, c2){
+  // Choisir parmi blanc, noir, c1, c2 la couleur la plus lisible sur le fond
+  const candidats = ['#FFFFFF','#111111', c1, c2].filter(Boolean);
+  return candidats.reduce((best, c) => {
+    return ratioContraste(fond, c) > ratioContraste(fond, best) ? c : best;
+  }, '#FFFFFF');
+}
+function couleurSoulignement(texteCouleur, c1, c2){
+  // Soulignement = couleur secondaire ou complémentaire visible
+  const opts = [c1, c2, '#FFFFFF', '#111111'].filter(Boolean);
+  // Éviter la même couleur que le texte, choisir le meilleur contraste
+  return opts.filter(c=>c!==texteCouleur)
+    .reduce((best, c) => ratioContraste(texteCouleur, c) > ratioContraste(texteCouleur, best) ? c : best, opts[0]);
+}
 
 function ouvrirDriveExplorer(){
   const exp = document.getElementById('drive-explorer');
@@ -3872,6 +3933,10 @@ function q7OnFileChosen(){
     const descEl = document.getElementById('q7');
     if(!descEl.value) descEl.value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
     autosaveDraft();
+    // Stocker comme photo slide 1
+    photoSlide1 = { src: e.target.result, nom: file.name };
+    try{ localStorage.setItem('roze_photo_slide1', JSON.stringify({ src: e.target.result, nom: file.name })); }catch(ex){}
+    toast('🖼️ Photo prête pour la slide 1 !','ok');
   };
   reader.readAsDataURL(file);
 }
@@ -3884,6 +3949,8 @@ function q7EffacerPhoto(){
   document.getElementById('q7-file-btn').style.borderColor = 'var(--gris-border)';
   document.getElementById('q7-dossier-zone').style.display = 'none';
   document.getElementById('q7-import-status').style.display = 'none';
+  photoSlide1 = null;
+  try{ localStorage.removeItem('roze_photo_slide1'); }catch(e){}
 }
 
 async function q7ImporterPhoto(){
@@ -4215,6 +4282,7 @@ function appliquerConfig(config){
     }catch(e){}
   }
   // Rafraîchir tous les indicateurs et l'accueil
+  appliquerCouleursDynamiques(); // Couleurs de ce compte
   majSemMini(); majKPIs(); majAccueil(); afficherStreak();
 }
 
@@ -4780,6 +4848,16 @@ function lireRythme(){
 
 async function genUnPost(){
   if(!verifierCleIA()) return;
+
+  // Synchroniser CFG depuis les champs de Mon Compte avant génération
+  const c1input = document.getElementById('cfg-couleur1');
+  const c2input = document.getElementById('cfg-couleur2');
+  const ptInput = document.getElementById('cfg-police-titre');
+  const pcInput = document.getElementById('cfg-police-corps');
+  if(c1input && c1input.value) CFG.couleur1 = c1input.value;
+  if(c2input && c2input.value) CFG.couleur2 = c2input.value;
+  if(ptInput && ptInput.value) CFG.policeTitre = ptInput.value;
+  if(pcInput && pcInput.value) CFG.policeCorps = pcInput.value;
 
   const reseau    = getGenReseau();
   const format    = getGenFormat();
@@ -6237,6 +6315,7 @@ function sauvegarderCompte(){
   syncStories();
   construireStoriesUI();
   const nomAffiche = [CFG.prenom, CFG.nom].filter(Boolean).join(' '); const el_nc = document.getElementById('nom-client'); if(el_nc && !el_nc.onclick) el_nc.textContent = nomAffiche || 'Se repérer ›';
+  appliquerCouleursDynamiques(); // Mettre à jour l'UI avec les nouvelles couleurs
   syncConfigVersSheets(); // Envoie la config locale vers Sheets
 
   // Si l'URL AS vient d'être saisie ou modifiée → relire le Sheets

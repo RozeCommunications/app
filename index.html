@@ -3191,19 +3191,27 @@ async function rechercherActu(){
           headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
           body: JSON.stringify({
             model:'claude-sonnet-4-20250514',
-            max_tokens:300,
+            max_tokens:500,
             tools:[{type:'web_search_20250305',name:'web_search'}],
-            messages:[{role:'user',content:`Lis cette page et extrais UNE SEULE information factuelle (chiffre, tendance ou fait récent) utile pour un professionnel dont le métier est : ${metier}${sujetSaisi ? ', sur le sujet : '+sujetSaisi : ''}.
+            messages:[{role:'user',content:`Lis attentivement cette page et extrais les données chiffrées concrètes (pourcentages, chiffres, statistiques, résultats mesurables).
 URL : ${urlActive}
-Réponds en 1-2 phrases max. Cite la source et la date entre parenthèses. Sans préambule.`}]
+Contexte : professionnel dont le métier est "${metier}"${sujetSaisi ? ', sujet du post : "'+sujetSaisi+'"' : ''}.
+
+RÈGLES D'EXTRACTION STRICTES :
+- Extrais entre 1 et 5 chiffres/statistiques EXACTES trouvés dans l'article (pas de paraphrase vague)
+- Chaque donnée doit être concrète : un nombre, un pourcentage, une date, un nom propre
+- Si l'article ne contient AUCUNE donnée chiffrée exploitable, réponds uniquement : "AUCUNE_DONNÉE"
+- Format de réponse : liste les données brièvement, cite la source exacte (nom du média, date)
+- Sélectionne la donnée la plus pertinente pour le sujet du post`}]
           })
         });
         const d = await rf.json();
-        actuBrut = (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
+        const rawResult = (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
+        actuBrut = rawResult.includes('AUCUNE_DONNÉE') ? '' : rawResult;
       }catch(e){}
     }
 
-    // Étape 2 : web_search si rien trouvé
+    // Étape 2 : web_search si rien trouvé ou article sans chiffres
     if(!actuBrut || actuBrut.length < 30){
       const query = sujetSaisi
         ? `${sujetSaisi} données statistiques ${new Date().getFullYear()}`
@@ -3216,12 +3224,14 @@ Réponds en 1-2 phrases max. Cite la source et la date entre parenthèses. Sans 
           model:'claude-sonnet-4-20250514',
           max_tokens:300,
           tools:[{type:'web_search_20250305',name:'web_search'}],
-          messages:[{role:'user',content:`Cherche UNE SEULE donnée factuelle récente (chiffre, statistique ou tendance) sur : "${query}".
-RÈGLES STRICTES :
-- 1 seule information, pas de liste
-- 1-2 phrases maximum
-- Cite la source : (Source : nom, date)
-- Sans préambule, sans introduction`}]
+          messages:[{role:'user',content:`Cherche des données chiffrées récentes et concrètes sur : "${query}".
+
+RÈGLES D'EXTRACTION STRICTES :
+- Extrais 1 à 3 statistiques EXACTES (pourcentages, chiffres, résultats mesurables)
+- Chaque donnée doit être spécifique et sourcée — INTERDIT les généralités vagues
+- Si plusieurs données, prends la plus récente et la plus surprenante
+- Format : donnée exacte + source entre parenthèses (nom, date)
+- Pas d'introduction, pas de conclusion — uniquement les données`}]
         })
       });
       const ds = await rs.json();
@@ -3265,6 +3275,35 @@ function afficherChipSource(){
   } else {
     chip.style.display = 'none';
   }
+}
+
+// ── Gestion des stats mensuelles — éviter répétition dans le même mois ──
+function getStatsMois(){
+  const moisCle = new Date().toISOString().substring(0,7); // YYYY-MM
+  try{
+    const data = JSON.parse(localStorage.getItem('roze_stats_mois')||'{}');
+    // Nettoyer les mois anciens (garder seulement le mois courant)
+    return (data[moisCle] || []);
+  }catch(e){ return []; }
+}
+
+function ajouterStatMois(stat){
+  if(!stat || stat.length < 10) return;
+  const moisCle = new Date().toISOString().substring(0,7);
+  try{
+    const data = JSON.parse(localStorage.getItem('roze_stats_mois')||'{}');
+    // Garder seulement le mois courant
+    const fresh = { [moisCle]: (data[moisCle]||[]).concat(stat).slice(-8) };
+    localStorage.setItem('roze_stats_mois', JSON.stringify(fresh));
+  }catch(e){}
+}
+
+function buildStatsEviterBloc(){
+  const stats = getStatsMois();
+  if(!stats.length) return '';
+  return '\n=== DONNÉES DÉJÀ UTILISÉES CE MOIS — NE PAS RÉUTILISER ===\n'
+    + stats.map((s,i) => (i+1)+'. '+s).join('\n')
+    + '\nSi l\'actualité contient l\'une de ces données, utilises-en une différente du même article ou cherche une autre source.\n';
 }
 
 // ══════════════════════════════════════════
@@ -4962,11 +5001,12 @@ async function genUnPost(){
   try{
     const mat = matiereSemaine();
 
-    // Si toggle actu activé → lancer la recherche web maintenant
+    // Si toggle actu activé OU pilier=expertise → lancer la recherche web
     const cbActu = document.getElementById('cb-actu');
-    if(cbActu && cbActu.checked){
-      inlineLoaderTxt.textContent = '🔍 Recherche une actu de ton secteur…';
-      await rechercherActu();
+    const pilierActuel = genPilier || 'autorite';
+    if((cbActu && cbActu.checked) || pilierActuel === 'expertise'){
+      inlineLoaderTxt.textContent = '🔍 Recherche une donnée de ton secteur…';
+      if(!actuTexte) await rechercherActu(); // Ne pas relancer si déjà chargée
     }
 
     // Envoi vers Apps Script — la génération se fait côté serveur
@@ -4976,10 +5016,11 @@ async function genUnPost(){
       cle_ia:  CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
       reseau,
       format,
-      pilier:  genPilier || 'autorite',
+      pilier:       genPilier || 'autorite',
       sujet,
-      matiere: mat,
-      actu:    actuTexte || '',
+      matiere:      mat,
+      actu:         actuTexte || '',
+      stats_eviter: buildStatsEviterBloc(),
     };
 
     const r = await fetch(CFG.as, {
@@ -5041,6 +5082,8 @@ async function genUnPost(){
 
     if(btnGen){ btnGen.disabled=false; btnGen.textContent='✨ Générer ce post'; }
     afficherChipSource(); // Afficher chip source si actu disponible
+    // Sauvegarder la stat de l'actu pour éviter répétition ce mois
+    if(actuTexte) ajouterStatMois(actuTexte.substring(0,120));
     toastSiPage('✅ Post généré !','ok','p-generer');
 
   }catch(e){

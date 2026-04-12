@@ -76,6 +76,25 @@
       color:var(--blanc);
       box-shadow:0 1px 4px rgba(0,0,0,.1);
     }
+
+    /* ── Tableaux script Réel / Vidéo / Story ── */
+    .script-table{width:100%;border-collapse:collapse;margin-top:.6rem;font-size:.8rem;}
+    .script-table th{background:var(--gris-moyen);padding:.45rem .6rem;text-align:left;font-weight:500;font-size:.72rem;color:var(--gris-clair);border-bottom:1px solid var(--gris-border);white-space:nowrap;}
+    .script-table td{padding:.5rem .6rem;border-bottom:1px solid #1e1e1e;vertical-align:top;line-height:1.5;}
+    .script-table tr:last-child td{border-bottom:none;}
+    .script-table tr:hover td{background:rgba(255,255,255,.02);}
+    .script-col-temps{color:var(--rose);font-weight:600;white-space:nowrap;width:60px;}
+    .script-col-visuel{color:#7ec8e3;width:32%;}
+    .script-col-audio{color:var(--blanc-doux);width:36%;}
+    .script-col-emotion{color:#b5a0d8;font-style:italic;width:20%;}
+    .script-col-slide{color:var(--rose);font-weight:600;white-space:nowrap;width:50px;}
+    .script-col-texte{color:var(--blanc-doux);width:45%;}
+    .script-col-bg{color:#7ec8e3;width:45%;}
+    .script-conseil{background:rgba(232,24,109,.07);border:1px solid rgba(232,24,109,.25);border-radius:10px;padding:.8rem 1rem;margin-top:.8rem;font-size:.82rem;color:var(--blanc-doux);line-height:1.6;}
+    .script-conseil-lbl{font-size:.7rem;font-weight:700;color:var(--rose-clair);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.35rem;}
+    .script-legende-box{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:10px;padding:.8rem 1rem;margin-top:.8rem;}
+    .script-legende-lbl{font-size:.7rem;font-weight:600;color:var(--gris-clair);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.4rem;}
+    .script-legende-txt{font-size:.82rem;line-height:1.7;white-space:pre-wrap;color:var(--blanc-doux);}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
     html{height:100%;}
     body{font-family:'DM Sans',sans-serif;background:var(--anthracite);color:var(--blanc);height:100%;overflow:hidden;display:flex;flex-direction:column;padding-top:var(--safe-top);}
@@ -1680,11 +1699,11 @@
         </div>
         <div class="pilier-chip" data-type="valeur" onclick="setGspType(this,'valeur')">
           <span class="pi">💡</span><span class="pn">Valeur</span>
-          <div class="pilier-detail">1 astuce concrète et actionnable pour ta cible</div>
+          <div class="pilier-detail">1 astuce concrète que ta cible peut appliquer tout de suite</div>
         </div>
         <div class="pilier-chip" data-type="lifestyle" onclick="setGspType(this,'lifestyle')">
           <span class="pi">🌿</span><span class="pn">Lifestyle</span>
-          <div class="pilier-detail">Scène du quotidien pro ou perso qui révèle qui tu es</div>
+          <div class="pilier-detail">Scène du quotidien pro — un moment, une émotion, ce que ça révèle de qui tu es</div>
         </div>
       </div>
 
@@ -1883,7 +1902,13 @@
           <input type="text" id="cfg-police-titre" placeholder="Ex : Playfair Display…" style="font-size:16px;"/>
           <label class="lbl">Police corps</label>
           <input type="text" id="cfg-police-corps" placeholder="Ex : DM Sans…" style="font-size:16px;"/>
-          <label class="lbl">URL logo (Drive)</label>
+          <label class="lbl" style="margin-top:1rem;">Vocabulaire interdit <span style="color:#888;font-size:.7rem;font-weight:400;">(mots ou expressions que l'IA ne doit jamais utiliser)</span></label>
+          <textarea id="cfg-mots-interdits" rows="3" placeholder="Ex : soin&#10;guérison&#10;traitement" style="font-size:15px;resize:vertical;line-height:1.5;" oninput="majCompteurMotsInterdits()"></textarea>
+          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.2rem;">Un mot ou expression par ligne. Indispensable pour les professions réglementées.</div>
+          <label class="lbl" style="margin-top:1rem;">Émojis de marque <span style="color:#888;font-size:.7rem;font-weight:400;">(1 à 4 max — ta signature visuelle)</span></label>
+          <input type="text" id="cfg-emojis-marque" placeholder="Ex : 🌿 💪 🌙" style="font-size:20px;letter-spacing:.3rem;" maxlength="20"/>
+          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.2rem;">Tape tes émojis via le clavier ou le sélecteur de ton téléphone. Max 4 émojis. Utilisés avec parcimonie dans les légendes.</div>
+          <label class="lbl" style="margin-top:1rem;">URL logo (Drive)</label>
           <input type="url" id="cfg-logo-url" placeholder="https://drive.google.com/uc?id=…" style="font-size:16px;"/>
           <div class="opt" style="margin-top:.3rem;">Logo sur la dernière slide uniquement</div>
         </div>
@@ -2423,6 +2448,8 @@ let CFG = {
   entreprise:   ls('roze_entreprise')    || '',
   metier:       ls('roze_metier')        || '',
   references:   ls('roze_references')    || '',
+  motsInterdits: ls('roze_mots_interdits') || '',
+  emojisMarque:  ls('roze_emojis_marque')  || '',
   instaUser:    ls('roze_insta_user')    || '',
   linkedinUrl:  ls('roze_linkedin_url')  || ''
 };
@@ -2440,13 +2467,13 @@ if(!RYTHME.ig.jours) RYTHME.ig.jours = [4];
 
 // Stories config (7 jours)
 const STORIES_DEF = [
-  {jour:'Lundi',   typo:'lifestyle', sujet:'Scène du quotidien pro ou perso qui révèle qui tu es'},
-  {jour:'Mardi',   typo:'valeur',    sujet:'1 astuce utile pour ton client cible (1 astuce, plusieurs slides en story)'},
-  {jour:'Mercredi',typo:'vente',     sujet:'Contextualisation → Problème / douleur du client → Appel à action vers l\'offre'},
-  {jour:'Jeudi',   typo:'lifestyle', sujet:'Opinion assumée sur un sujet qui touche ta cible'},
-  {jour:'Vendredi',typo:'valeur',    sujet:'1 astuce utile pour ton client cible — nouvelle idée, nouvel angle'},
-  {jour:'Samedi',  typo:'lifestyle', sujet:'Valeur incarnée — montrer, pas déclarer'},
-  {jour:'Dimanche',typo:'vente',     sujet:'Contextualisation → Problème / douleur du client → Appel à action vers l\'offre'},
+  {jour:'Lundi',   typo:'storytelling-lifestyle', sujet:'Scène du quotidien pro — un moment, une émotion, ce que ça révèle de qui tu es'},
+  {jour:'Mardi',   typo:'valeur',                 sujet:'1 astuce concrète que ta cible peut appliquer tout de suite — avec ton avis de pro'},
+  {jour:'Mercredi',typo:'vente',                  sujet:'Contexte / avis pro → douleur de ta cible → appel à action avec lien story'},
+  {jour:'Jeudi',   typo:'storytelling-lifestyle', sujet:'Opinion assumée sur un sujet qui touche ta cible — prise de position claire'},
+  {jour:'Vendredi',typo:'valeur',                 sujet:'1 conseil de pro ou 1 partage d\'actu utile pour ta cible — angle inédit'},
+  {jour:'Samedi',  typo:'storytelling-lifestyle', sujet:'Valeur incarnée via une anecdote du quotidien — montrer, pas déclarer'},
+  {jour:'Dimanche',typo:'vente',                  sujet:'Contexte / situation / avis → douleur de ta cible → appel à action avec lien story'},
 ];
 let STORIES_CFG = lsJ('roze_stories') || JSON.parse(JSON.stringify(STORIES_DEF));
 
@@ -2502,7 +2529,7 @@ function majStoryDuJour(){
   const s = STORIES_CFG[idx];
   if(!s) return;
 
-  const typoNom = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente'};
+  const typoNom = {'storytelling-lifestyle':'Storytelling',valeur:'Valeur',vente:'Vente'};
   const publiee = localStorage.getItem('roze_story_pub_' + aujStr) === '1';
 
   // Mettre à jour l'affichage
@@ -2592,6 +2619,7 @@ async function sqpGenerer(){
     sujet:   '[STORY ' + s.typo.toUpperCase() + '] ' + s.sujet + (saisie ? ' — ' + saisie : ''),
     matiere: matiere,
     story_type: s.typo
+    anti_redondance: contexteAntiRedondance(),
   };
 
   try{
@@ -3312,7 +3340,7 @@ function buildStatsEviterBloc(){
 function construireStoriesUI(){
   const zone = document.getElementById('stories-config');
   if(!zone) return;
-  const typoMap = {lifestyle:'typo-lifestyle',valeur:'typo-valeur',vente:'typo-vente'};
+  const typoMap = {'storytelling-lifestyle':'typo-lifestyle',valeur:'typo-valeur',vente:'typo-vente'};
   const typoNom = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente'};
   zone.innerHTML = STORIES_CFG.map((s,i)=>`
     <div class="story-jour">
@@ -3321,9 +3349,9 @@ function construireStoriesUI(){
         <span class="typo-badge ${typoMap[s.typo]}">${typoNom[s.typo]}</span>
       </div>
       <select style="margin-bottom:.5rem;font-size:14px;" onchange="STORIES_CFG[${i}].typo=this.value;">
-        <option value="lifestyle" ${s.typo==='lifestyle'?'selected':''}>🎭 Lifestyle / Storytelling</option>
-        <option value="valeur"    ${s.typo==='valeur'?'selected':''}>💡 Valeur / Astuce</option>
-        <option value="vente"     ${s.typo==='vente'?'selected':''}>🎯 Vente</option>
+        <option value="storytelling-lifestyle" ${s.typo==='storytelling-lifestyle'?'selected':''}>🎭 Storytelling / Lifestyle</option>
+        <option value="valeur"                  ${s.typo==='valeur'?'selected':''}>💡 Valeur / Astuce</option>
+        <option value="vente"                   ${s.typo==='vente'?'selected':''}>🎯 Vente</option>
       </select>
       <div class="story-sujet">
         <input type="text" value="${s.sujet}" placeholder="Sujet de la story…"
@@ -3461,6 +3489,177 @@ let carrouselCourant = null;
 let styleFondActif = 'uni'; // 'uni' | 'uni2' | 'degrade' | 'grain' | 'beton'
 let overridesSlide = {};  // { slideIndex: style } — surcharge par slide
 let cvSlideActive = 0;
+
+
+// ══════════════════════════════════════════
+// RENDU TABLEAU SCRIPT (Réel / Vidéo LI / Stories)
+// ══════════════════════════════════════════
+function parseMarkdownTable(text) {
+  // Extrait un tableau markdown et retourne array de {cols}
+  const lines = text.split('\n').filter(l => l.includes('|'));
+  const rows = lines.filter(l => !l.match(/^[\s|:-]+$/));
+  if (rows.length < 2) return null;
+  const headers = rows[0].split('|').map(c => c.trim()).filter(c => c);
+  const data = rows.slice(1).map(row => {
+    const cells = row.split('|').map(c => c.trim()).filter((c, i, arr) => {
+      // Garder toutes les cellules sauf première et dernière si vides (pipes extérieurs)
+      return true;
+    });
+    // Retirer cellules vides aux extrémités causées par les pipes
+    const cleaned = row.split('|');
+    const trimmed = cleaned.slice(1, cleaned.length - 1).map(c => c.trim());
+    return trimmed;
+  });
+  return { headers, data };
+}
+
+function renderScriptReel(texte) {
+  // Parser SCRIPT: / LÉGENDE: / CONSEIL:
+  const scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
+  const legendeMatch = texte.match(/LÉGENDE:\s*([\s\S]*?)(?=CONSEIL:|$)/i);
+  const conseilMatch = texte.match(/CONSEIL:\s*([\s\S]*?)$/i);
+
+  let html = '';
+
+  if (scriptMatch) {
+    const tableData = parseMarkdownTable(scriptMatch[1]);
+    if (tableData && tableData.data.length > 0) {
+      html += '<div style="overflow-x:auto;"><table class="script-table"><thead><tr>';
+      html += '<th>Temps</th><th>Visuel & texte à l\'écran</th><th>Audio / Voix off</th><th>Émotion</th>';
+      html += '</tr></thead><tbody>';
+      tableData.data.forEach(row => {
+        if (row.length < 3) return;
+        html += `<tr>
+          <td class="script-col-temps">${escapeHtml(row[0]||'')}</td>
+          <td class="script-col-visuel">${escapeHtml(row[1]||'')}</td>
+          <td class="script-col-audio">${escapeHtml(row[2]||'')}</td>
+          <td class="script-col-emotion">${escapeHtml(row[3]||'')}</td>
+        </tr>`;
+      });
+      html += '</tbody></table></div>';
+    } else {
+      html += `<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">${escapeHtml(scriptMatch[1])}</div>`;
+    }
+  }
+
+  const legende = legendeMatch ? legendeMatch[1].trim() : '';
+  if (legende) {
+    html += `<div class="script-legende-box">
+      <div class="script-legende-lbl">Légende Instagram</div>
+      <div class="script-legende-txt">${escapeHtml(legende)}</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:.5rem;" onclick="navigator.clipboard.writeText(${JSON.stringify(legende)}).then(()=>toast('✅ Légende copiée !','ok'))">📋 Copier la légende</button>
+    </div>`;
+  }
+
+  const conseil = conseilMatch ? conseilMatch[1].trim() : '';
+  if (conseil) {
+    html += `<div class="script-conseil">
+      <div class="script-conseil-lbl">🎬 Conseil de tournage</div>
+      ${escapeHtml(conseil)}
+    </div>`;
+  }
+
+  return html;
+}
+
+function renderScriptVideoLI(texte) {
+  // Parser SCRIPT: / LÉGENDE:
+  const scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
+  const legendeMatch = texte.match(/LÉGENDE:\s*([\s\S]*?)$/i);
+
+  let html = '';
+
+  if (scriptMatch) {
+    const tableData = parseMarkdownTable(scriptMatch[1]);
+    if (tableData && tableData.data.length > 0) {
+      html += '<div style="overflow-x:auto;"><table class="script-table"><thead><tr>';
+      html += '<th>Temps</th><th>Visuel & sous-titres écran</th><th>Audio / Voix off</th><th>Émotion</th>';
+      html += '</tr></thead><tbody>';
+      tableData.data.forEach(row => {
+        if (row.length < 2) return;
+        html += `<tr>
+          <td class="script-col-temps">${escapeHtml(row[0]||'')}</td>
+          <td class="script-col-visuel">${escapeHtml(row[1]||'')}</td>
+          <td class="script-col-audio">${escapeHtml(row[2]||'')}</td>
+          <td class="script-col-emotion">${escapeHtml(row[3]||'')}</td>
+        </tr>`;
+      });
+      html += '</tbody></table></div>';
+    } else {
+      html += `<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">${escapeHtml(scriptMatch[1])}</div>`;
+    }
+  }
+
+  const legende = legendeMatch ? legendeMatch[1].trim() : '';
+  if (legende) {
+    html += `<div class="script-legende-box">
+      <div class="script-legende-lbl">Légende LinkedIn</div>
+      <div class="script-legende-txt">${escapeHtml(legende)}</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:.5rem;" onclick="navigator.clipboard.writeText(${JSON.stringify(legende)}).then(()=>toast('✅ Légende copiée !','ok'))">📋 Copier la légende</button>
+    </div>`;
+  }
+
+  return html;
+}
+
+function renderScriptStory(texte) {
+  // Parser SCRIPT:
+  const scriptMatch = texte.match(/SCRIPT:\s*([\s\S]*?)$/i);
+
+  let html = '';
+
+  if (scriptMatch) {
+    const tableData = parseMarkdownTable(scriptMatch[1]);
+    if (tableData && tableData.data.length > 0) {
+      html += '<div style="overflow-x:auto;"><table class="script-table"><thead><tr>';
+      html += '<th>Slide</th><th>Texte à l\'écran</th><th>Arrière-plan</th>';
+      html += '</tr></thead><tbody>';
+      tableData.data.forEach(row => {
+        if (row.length < 2) return;
+        html += `<tr>
+          <td class="script-col-slide">${escapeHtml(row[0]||'')}</td>
+          <td class="script-col-texte">${escapeHtml(row[1]||'')}</td>
+          <td class="script-col-bg">${escapeHtml(row[2]||'')}</td>
+        </tr>`;
+      });
+      html += '</tbody></table></div>';
+    } else {
+      html += `<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">${escapeHtml(scriptMatch[1] || texte)}</div>`;
+    }
+  } else {
+    html += `<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">${escapeHtml(texte)}</div>`;
+  }
+
+  return html;
+}
+
+function isScriptTableau(texte, format) {
+  if (!texte) return false;
+  if (format === 'Réel') return texte.includes('SCRIPT:') || texte.includes('| Temps |');
+  if (format === 'Vidéo') return texte.includes('SCRIPT:') || texte.includes('| Temps |');
+  if (format === 'Stories') return texte.includes('SCRIPT:') || texte.includes('| Slide |');
+  return false;
+}
+
+function afficherResultatScript(texte, format, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  let html = '';
+  if (format === 'Réel') html = renderScriptReel(texte);
+  else if (format === 'Vidéo') html = renderScriptVideoLI(texte);
+  else if (format === 'Stories') html = renderScriptStory(texte);
+  else html = `<div style="white-space:pre-wrap;font-size:.82rem;">${escapeHtml(texte)}</div>`;
+  container.innerHTML = html;
+}
+
+function majCompteurMotsInterdits() {
+  // Optionnel : feedback visuel sur le nombre de mots saisis
+  const el = document.getElementById('cfg-mots-interdits');
+  if (!el) return;
+  const lignes = el.value.split('\n').filter(l => l.trim()).length;
+  // Pas de compteur affiché — simple validation silencieuse
+}
+
 
 function afficherCarrousel(slides, legende, reseau, containerId){
   carrouselCourant = { slides, legende, reseau };
@@ -4311,6 +4510,8 @@ function buildConfigPayload(){
     entreprise:    CFG.entreprise   || '',
     metier:        CFG.metier       || '',
     references:    CFG.references   || '',
+    mots_interdits: CFG.motsInterdits || '',
+    emojis_marque:  CFG.emojisMarque  || '',
     insta_user:    CFG.instaUser    || '',
     linkedin_url:  CFG.linkedinUrl  || '',
     as:            CFG.as           || '',
@@ -4551,135 +4752,6 @@ function viderDraft(){
 
 
 
-function promptPost(reseau, typeContenu, profil, matiere, sujetForce='', actuBloc='', pilier=''){
-
-  const base = profil ? `Voici le profil complet du professionnel :\n\n${profil}\n\n` : '';
-  const mat  = `MATIÈRE DE LA SEMAINE (s'en inspirer obligatoirement) :\n\n${matiere}\n\n`;
-  const anti = contexteAntiRedondance();
-  const sujetBloc = sujetForce ? `\nANGLE IMPOSÉ PAR LE CLIENT : ${sujetForce}\n` : '';
-
-  // Photo disponible cette semaine (Q7) — utilisée pour Photo et Carrousel
-  const photoQ7 = v('q7') ? `\nPHOTO DISPONIBLE CETTE SEMAINE : ${v('q7')}\nSi le format est Photo ou Carrousel, le contenu DOIT partir de cette image ou s'y référer explicitement.\n` : '';
-
-  // Q8 — sujet libre optionnel à intégrer si pertinent
-  const q8Bloc = v('q8') ? `\nINTENTION ÉDITORIALE DU CLIENT : ${v('q8')}\n` : '';
-
-  // ── MÉTHODE THIBAULT LOUIS — HOOKS DIFFÉRENCIÉS PAR PILIER ──
-  // Hook LinkedIn : 1 phrase d'accroche SANS point final, en gras dans le post
-  // 4 types de hooks selon pilier :
-  // • Visibilité   → donnée chiffrée surprenante ou contre-intuitive (ex: "65% des Français...")
-  // • Autorité     → anecdote personnelle ou client, ou résultat concret et daté
-  // • Expertise    → question rhétorique + réponse contre-intuitive, ou erreur commune révélée
-  // • Autre/libre  → l'un des 4 au choix selon la matière
-
-  const hookGuide = {
-    visibilite: `HOOK (méthode Thibault Louis) : commence par une DONNÉE CHIFFRÉE surprenante liée au secteur ou à la cible${actuBloc ? ' — utilise de préférence la donnée issue de la recherche web fournie ci-dessous' : ''}. Format : "[chiffre]% de [cible] [fait inattendu]" ou "[chiffre] [professionnels/personnes] [réalité contre-intuitive]". Une phrase, sans point final. Doit donner envie de lire la suite.`,
-
-    autorite: `HOOK (méthode Thibault Louis) : commence par une ANECDOTE PERSONNELLE ou CLIENT concrète et datée. Format : "Il y a [durée], [prénom/un client/je] [situation précise]." ou "Cette semaine, [événement réel tiré de la matière semaine]." Une phrase courte, factuelle, humaine. Sans point final.`,
-
-    expertise: `HOOK (méthode Thibault Louis) : commence par une AFFIRMATION CONTRE-INTUITIVE ou une ERREUR FRÉQUENTE révélée. Format : "[Croyance commune] — c'est faux." ou "La plupart des [cible] font cette erreur sans le savoir :" ou une question rhétorique à laquelle tu réponds immédiatement dans le 2e paragraphe. Une phrase, sans point final.`,
-
-    autre: `HOOK (méthode Thibault Louis) : choisis le type de hook le plus adapté à la matière semaine parmi : donnée chiffrée surprenante, anecdote personnelle/client concrète, affirmation contre-intuitive, ou question rhétorique. Une seule phrase, sans point final.`
-  };
-  const hook = hookGuide[pilier] || hookGuide.autre;
-
-  // ── RÈGLES DE STRUCTURE COMMUNES — MÉTHODE THIBAULT LOUIS ──
-  const reglesTL = `
-RÈGLES COPYWRITING LINKEDIN (méthode Thibault Louis) — OBLIGATOIRES :
-1. HOOK : 1 seule phrase d'accroche, sans point final. Voir instruction ci-dessus.
-2. LIGNE VIDE après le hook — toujours.
-3. DÉVELOPPEMENT : 2 à 4 paragraphes courts (2-3 phrases max chacun). Chaque paragraphe = 1 idée. Ligne vide entre chaque paragraphe.
-4. Aucun point de liste à puce (*) dans un post texte — rédiger en prose fluide.
-5. Phrases courtes. Verbes d'action. Pas de jargon, pas de superlatifs vides ("incroyable", "passionnant", "fascinant").
-6. Tutoiement ou vouvoiement : respecter strictement le profil du client.
-7. CTA final : 1 phrase simple et directe. Pas de "N'hésitez pas à..." ou "Je serais ravi de...".
-8. Le post fait 150 à 220 mots maximum (LinkedIn pénalise au-delà).
-9. Le post doit sembler écrit par un humain, pas par une IA.
-
-EXIGENCES D'HUMANITÉ — NON NÉGOCIABLES :
-- Ancre le post dans un fait réel issu de la matière de la semaine (anecdote, retour client, observation)
-- Utilise des détails concrets et spécifiques — jamais de généralités
-- La voix doit correspondre exactement à la personne décrite dans le profil
-- Évite tout ce qui semble "template" : reformule chaque phrase pour qu'elle soit unique
-- Si la matière de la semaine est vide, invente RIEN — base-toi uniquement sur le profil`;
-
-  const templ = {
-    'Post texte': `${base}${mat}${anti}${sujetBloc}${actuBloc}${q8Bloc}
-PILIER SÉLECTIONNÉ : ${pilier||'non défini — choisir le plus adapté à la matière'}
-${hook}
-${reglesTL}
-
-Génère 1 post ${reseau} qui suit exactement cette méthode.
-Puis sur une nouvelle ligne : "LÉGENDE:" suivi de la légende avec ${reseau==='LinkedIn'?'2-3':'4-5'} hashtags pertinents et 1 emoji d'ouverture.`,
-
-    'Photo': `${base}${mat}${anti}${sujetBloc}${actuBloc}${photoQ7}${q8Bloc}
-PILIER SÉLECTIONNÉ : ${pilier||'autorité'}
-${hook}
-
-Génère un texte d'accompagnement pour une publication PHOTO sur ${reseau}.
-Le texte DOIT partir de la description de la photo disponible (Q7) ou y faire explicitement référence.
-Structure : hook visuel (ce qu'on voit/ressent sur la photo) → développement en 2 paragraphes → CTA.
-80 à 120 mots maximum.
-${reglesTL}
-Puis : "LÉGENDE:" suivi de la légende avec hashtags.`,
-
-    'Carrousel': `${base}${mat}${anti}${sujetBloc}${actuBloc}${photoQ7}${q8Bloc}
-PILIER SÉLECTIONNÉ : ${pilier||'expertise'}
-${hook}
-
-Génère un CARROUSEL ${reseau} (format 1080x1440px, ratio 3:4).
-La slide 1 utilise le hook défini ci-dessus — ancré dans une réalité vécue ou une donnée surprenante.
-Si une photo est disponible (Q7), intègre-la en introduction ou dans le CTA.
-
-EXIGENCES QUALITÉ :
-- Chaque slide parle à UNE personne réelle, pas à "les professionnels"
-- Les titres sont directs, concrets, jamais génériques ni lisses
-- Le corps de chaque slide est une phrase courte et actionnable
-- Le CTA final est personnel et chaleureux, pas commercial
-- Le tout sonne comme si la personne l'avait écrit elle-même
-
-RÈGLE ABSOLUE : réponds UNIQUEMENT avec le JSON brut ci-dessous.
-Aucun texte avant, aucun texte après, aucune balise markdown, aucun \`\`\`json.
-Commence directement par { et termine par }.
-
-{
-  "slides": [
-    {"num": 1, "type": "hook", "titre": "...", "sousTitre": "...", "corps": ""},
-    {"num": 2, "type": "contenu", "titre": "...", "sousTitre": "", "corps": "..."},
-    {"num": 3, "type": "contenu", "titre": "...", "sousTitre": "", "corps": "..."},
-    {"num": 4, "type": "contenu", "titre": "...", "sousTitre": "", "corps": "..."},
-    {"num": 5, "type": "contenu", "titre": "...", "sousTitre": "", "corps": "..."},
-    {"num": 6, "type": "contenu", "titre": "...", "sousTitre": "", "corps": "..."},
-    {"num": 7, "type": "cta", "titre": "...", "sousTitre": "...", "corps": "..."}
-  ],
-  "legende": "légende humaine et directe avec hashtags (max 5 Instagram, 3 LinkedIn)"
-}
-Règles slides :
-- Slide 1 : titre hook max 8 mots, sous-titre max 12 mots, corps vide
-- Slides 2-6 : titre max 6 mots, corps max 25 mots, une seule idée par slide
-- Slide 7 : CTA chaleureux avec mot-clé DM si présent dans le profil
-- Pas de slide surchargée — l'espace vide est un outil de lecture`,
-
-    'Vidéo': `${base}${mat}${anti}${sujetBloc}${actuBloc}${q8Bloc}
-PILIER SÉLECTIONNÉ : ${pilier||'expertise'}
-Génère un script pour une vidéo ${reseau} (60-90 sec).
-Structure : accroche verbale forte (5 premières secondes) → 3 points développés → CTA oral clair.
-Puis "LÉGENDE:" suivi de la légende avec hashtags.`,
-
-    'Réel': `${base}${mat}${anti}${sujetBloc}${actuBloc}${q8Bloc}
-PILIER SÉLECTIONNÉ : ${pilier||'visibilité'}
-Génère un script de Réel Instagram (30-45 sec).
-Structure : accroche visuelle forte (3 premières secondes à l'écran) → message en 2 temps → CTA simple.
-Pas de jargon. Phrases ultra-courtes. Rythme oral.
-Puis "LÉGENDE:" suivi de la légende avec 4-5 hashtags.`,
-
-    'Stories': `${base}${mat}${anti}${q8Bloc}
-Génère les 7 stories Instagram de la semaine selon ce cadre :\n${STORIES_CFG.map(s=>`• ${s.jour} (${s.typo}) : ${s.sujet}`).join('\n')}
-Pour chaque story : texte slide (max 20 mots, direct et engageant) + légende si utile.
-Les stories doivent être dans le ton du profil, pas génériques.`,
-  };
-  return templ[typeContenu] || templ['Post texte'];
-}
 
 
 // ══════════════════════════════════════════
@@ -5036,17 +5108,19 @@ async function genUnPost(){
     }
 
     // Envoi vers Apps Script — la génération se fait côté serveur
+    // anti_redondance : résumé des 20 derniers posts pour éviter les répétitions
     const body = {
-      action:  'generer_post',
-      ia:      CFG.ia || 'claude',
-      cle_ia:  CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+      action:          'generer_post',
+      ia:              CFG.ia || 'claude',
+      cle_ia:          CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
       reseau,
       format,
-      pilier:       genPilier || 'autorite',
+      pilier:          genPilier || 'autorite',
       sujet,
-      matiere:      mat,
-      actu:         actuTexte || '',
-      stats_eviter: buildStatsEviterBloc(),
+      matiere:         mat,
+      actu:            actuTexte || '',
+      stats_eviter:    buildStatsEviterBloc(),
+      anti_redondance: contexteAntiRedondance(),
     };
 
     const r = await fetch(CFG.as, {
@@ -5064,7 +5138,23 @@ async function genUnPost(){
     const {legende:l} = parsed;
     const t = parsed.isCarrousel ? texte : parsed.texte;
 
-    if(parsed.isCarrousel){
+    // Formats tableau : Réel, Vidéo, Stories → affichage dédié
+    if(format === 'Réel' || format === 'Vidéo' || format === 'Stories'){
+      document.getElementById('lbl-gen-texte').style.display='block';
+      document.getElementById('lbl-gen-texte').textContent = format === 'Stories' ? 'Script stories' : format === 'Réel' ? 'Script Réel' : 'Script vidéo';
+      result.textContent='';
+      result.classList.remove('on');
+      const cvId = 'gen-script-inline';
+      let cvDiv = document.getElementById(cvId);
+      if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv,result.nextSibling); }
+      cvDiv.innerHTML = '';
+      afficherResultatScript(texte, format, cvId);
+      // Légende dans le champ si présente (Réel / Vidéo)
+      const legendeScript = texte.match(/LÉGENDE:\s*([\s\S]*?)(?=CONSEIL:|$)/i);
+      if(legendeScript) document.getElementById('gen-legende').value = legendeScript[1].trim();
+      if(format !== 'Stories') legZone.classList.add('on');
+      actions.style.display='flex';
+    } else if(parsed.isCarrousel){
       document.getElementById('lbl-gen-texte').style.display='block';
       document.getElementById('lbl-gen-texte').textContent='Aperçu carrousel';
       result.textContent='';
@@ -5213,11 +5303,12 @@ async function genSemaine(){
     const jours = Array.from({length:7},(_,i)=>{ const d=new Date(lundi.getTime()+i*86400000); return d.toISOString().split('T')[0]; });
 
     const body = {
-      action:   'generer_semaine',
-      ia:       CFG.ia || 'claude',
-      cle_ia:   CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
-      posts:    posts,
-      matiere:  mat,
+      action:          'generer_semaine',
+      ia:              CFG.ia || 'claude',
+      cle_ia:          CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+      posts:           posts,
+      matiere:         mat,
+      anti_redondance: contexteAntiRedondance(),
     };
 
     const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
@@ -5364,6 +5455,7 @@ function toggleStoryPanel(){
   chips.forEach(b => b.classList.remove('on','on-vente','on-valeur','on-lifestyle'));
   if(chips[0]) chips[0].classList.add('on-vente');
   gspTypeActif = 'vente';
+  // Note : types story = 'vente' | 'valeur' | 'storytelling-lifestyle'
 
   // Ancre — scroll immédiat vers le panel
   setTimeout(() => panel.scrollIntoView({ behavior:'smooth', block:'start' }), 50);
@@ -5436,7 +5528,8 @@ function publierSur(reseau){
 }
 
 function setGspType(btn, type){
-  gspTypeActif = type;
+  // Mapper 'lifestyle' vers 'storytelling-lifestyle' pour Apps Script
+  gspTypeActif = (type === 'lifestyle') ? 'storytelling-lifestyle' : type;
   document.querySelectorAll('#gsp-types .pilier-chip').forEach(b => {
     b.classList.remove('on','on-vente','on-valeur','on-lifestyle');
   });
@@ -5485,13 +5578,14 @@ async function genererStoryPanel(){
       format:     'Stories',
       pilier:     gspTypeActif,
       sujet:      sujet || '[STORY ' + gspTypeActif.toUpperCase() + '] ' + (
-        gspTypeActif === 'vente'     ? "Contextualisation → Problème / douleur du client → Appel à action vers l’offre" :
-        gspTypeActif === 'valeur'    ? "1 astuce concrète et actionnable pour ta cible" :
-        "Scène du quotidien pro ou perso qui révèle qui tu es"
+        gspTypeActif === 'vente'     ? "Contexte / avis pro \u2192 douleur de ta cible \u2192 appel \u00e0 action avec lien story" :
+        gspTypeActif === 'valeur'    ? "1 astuce concr\u00e8te que ta cible peut appliquer tout de suite \u2014 avec ton avis de pro" :
+        "Sc\u00e8ne du quotidien pro \u2014 un moment, une \u00e9motion, ce que \u00e7a r\u00e9v\u00e8le de qui tu es"
       ),
       matiere:    mat,
       actu:       gspActuTexte,
       story_type: gspTypeActif,
+      anti_redondance: contexteAntiRedondance(),
     };
 
     const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
@@ -5500,7 +5594,12 @@ async function genererStoryPanel(){
 
     const texte = nettoyerIntroIA(j.texte || '');
 
-    resultEl.textContent = texte;
+    // Story → tableau si format tableau détecté
+    if(isScriptTableau(texte, 'Stories')){
+      resultEl.innerHTML = renderScriptStory(texte);
+    } else {
+      resultEl.textContent = texte;
+    }
     resultZone.style.display = 'block';
 
     // Sauvegarder automatiquement
@@ -6005,14 +6104,15 @@ async function regenPost(){
   const loader=document.getElementById('loader-regen'); loader.classList.add('on');
   try{
     const body = {
-      action: 'generer_post',
-      ia: CFG.ia||'claude',
-      cle_ia: CFG.ia==='gemini' ? CFG.apiGemini : CFG.api,
-      reseau: getReseauSelectionne(),
-      format: it.typeContenu,
-      pilier: it.pilier||'autorite',
-      sujet: '',
-      matiere: matiereSemaine()
+      action:          'generer_post',
+      ia:              CFG.ia||'claude',
+      cle_ia:          CFG.ia==='gemini' ? CFG.apiGemini : CFG.api,
+      reseau:          getReseauSelectionne(),
+      format:          it.typeContenu,
+      pilier:          it.pilier||'autorite',
+      sujet:           '',
+      matiere:         matiereSemaine(),
+      anti_redondance: contexteAntiRedondance(),
     };
     const r = await fetch(CFG.as, {method:'POST', body:JSON.stringify(body)});
     const j = await r.json();
@@ -6039,14 +6139,15 @@ async function genDepuisSujet(){
   const loader=document.getElementById('loader-regen'); loader.classList.add('on');
   try{
     const body = {
-      action: 'generer_post',
-      ia: CFG.ia||'claude',
-      cle_ia: CFG.ia==='gemini' ? CFG.apiGemini : CFG.api,
-      reseau: getReseauSelectionne(),
-      format: it.typeContenu,
-      pilier: it.pilier||'autorite',
-      sujet: sujet,
-      matiere: matiereSemaine()
+      action:          'generer_post',
+      ia:              CFG.ia||'claude',
+      cle_ia:          CFG.ia==='gemini' ? CFG.apiGemini : CFG.api,
+      reseau:          getReseauSelectionne(),
+      format:          it.typeContenu,
+      pilier:          it.pilier||'autorite',
+      sujet:           sujet,
+      matiere:         matiereSemaine(),
+      anti_redondance: contexteAntiRedondance(),
     };
     const r = await fetch(CFG.as, {method:'POST', body:JSON.stringify(body)});
     const j = await r.json();
@@ -6260,14 +6361,15 @@ async function genCreerPost(){
   try{
     const matiere = matiereSemaine();
     const body = {
-      action:  'generer_post',
-      ia:      CFG.ia || 'claude',
-      cle_ia:  CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+      action:          'generer_post',
+      ia:              CFG.ia || 'claude',
+      cle_ia:          CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
       reseau,
       format,
-      pilier:  creerPilier || 'autorite',
+      pilier:          creerPilier || 'autorite',
       sujet,
-      matiere
+      matiere,
+      anti_redondance: contexteAntiRedondance(),
     };
     if(!CFG.as){ throw new Error('URL Apps Script manquante — configure Mon Compte'); }
     const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
@@ -6401,6 +6503,8 @@ function chargerCompte(){
   setV2('cfg-linkedin-url', CFG.linkedinUrl);
   majLiensReseaux();
   setV2('cfg-references',   CFG.references);
+  setV2('cfg-mots-interdits', CFG.motsInterdits || '');
+  setV2('cfg-emojis-marque',  CFG.emojisMarque  || '');
   setV2('cfg-as',           CFG.as);
   setV2('cfg-api',          CFG.api);
   setV2('cfg-api-gemini',   CFG.apiGemini);
@@ -6473,6 +6577,10 @@ function sauvegarderCompte(){
   localStorage.setItem('roze_linkedin_url', CFG.linkedinUrl);
   CFG.references = (document.getElementById('cfg-references')||{}).value?.trim()||'';
   localStorage.setItem('roze_references',   CFG.references);
+  CFG.motsInterdits = (document.getElementById('cfg-mots-interdits')||{}).value?.trim()||'';
+  CFG.emojisMarque  = (document.getElementById('cfg-emojis-marque') ||{}).value?.trim()||'';
+  localStorage.setItem('roze_mots_interdits', CFG.motsInterdits);
+  localStorage.setItem('roze_emojis_marque',  CFG.emojisMarque);
   // Rythme
   majRythme();
   localStorage.setItem('roze_secteur', JSON.stringify(CFG.prenom));
@@ -6624,6 +6732,7 @@ async function genScriptPanel(idx, dateStr){
     sujet:      '[STORY ' + s.typo.toUpperCase() + '] ' + s.sujet,
     matiere:    matiere,
     story_type: s.typo
+    anti_redondance: contexteAntiRedondance(),
   };
 
   try{
@@ -6767,6 +6876,7 @@ async function genStoryTexte(){
     sujet:      '[STORY ' + s.typo.toUpperCase() + '] ' + s.sujet,
     matiere:    matiere,
     story_type: s.typo
+    anti_redondance: contexteAntiRedondance(),
   };
 
   try{

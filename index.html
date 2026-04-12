@@ -1862,7 +1862,7 @@
             oninput="validerURLsSources(this)"></textarea>
           <div id="refs-erreur" style="font-size:.72rem;color:var(--rose);margin-top:.3rem;display:none;"></div>
           <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.3rem;line-height:1.4;">
-            L'IA lit ces pages directement — 3 sources par génération, en rotation automatique.
+            L'IA puise parmi vos références pour vos contenus, en rotation automatique.
           </div>
         </div>
       </div>
@@ -2467,13 +2467,13 @@ if(!RYTHME.ig.jours) RYTHME.ig.jours = [4];
 
 // Stories config (7 jours)
 const STORIES_DEF = [
-  {jour:'Lundi',   typo:'storytelling-lifestyle', sujet:'Scène du quotidien pro — un moment, une émotion, ce que ça révèle de qui tu es'},
-  {jour:'Mardi',   typo:'valeur',                 sujet:'1 astuce concrète que ta cible peut appliquer tout de suite — avec ton avis de pro'},
-  {jour:'Mercredi',typo:'vente',                  sujet:'Contexte / avis pro → douleur de ta cible → appel à action avec lien story'},
-  {jour:'Jeudi',   typo:'storytelling-lifestyle', sujet:'Opinion assumée sur un sujet qui touche ta cible — prise de position claire'},
-  {jour:'Vendredi',typo:'valeur',                 sujet:'1 conseil de pro ou 1 partage d\'actu utile pour ta cible — angle inédit'},
-  {jour:'Samedi',  typo:'storytelling-lifestyle', sujet:'Valeur incarnée via une anecdote du quotidien — montrer, pas déclarer'},
-  {jour:'Dimanche',typo:'vente',                  sujet:'Contexte / situation / avis → douleur de ta cible → appel à action avec lien story'},
+  {jour:'Lundi',   typo:'storytelling-lifestyle', sujet:'Scène du quotidien pro ou perso qui révèle qui tu es'},
+  {jour:'Mardi',   typo:'valeur',                 sujet:'1 astuce utile pour ta cible (plusieurs slides pour aérer ton message)'},
+  {jour:'Mercredi',typo:'vente',                  sujet:'Contexte du jour / Ta pensée sur une situation → Lien avec une douleur de ta cible → Appel à action vers un échange en message privé, ou vers un lien intégré en story'},
+  {jour:'Jeudi',   typo:'storytelling-lifestyle', sujet:'Opinion assumée sur un sujet qui te touche ou qui touche ta cible'},
+  {jour:'Vendredi',typo:'valeur',                 sujet:'1 astuce pour ta cible (en face caméra idéalement)'},
+  {jour:'Samedi',  typo:'storytelling-lifestyle', sujet:'Valeur incarnée dans ton quotidien (ex : la liberté à travers une habitude chaque semaine, …)'},
+  {jour:'Dimanche',typo:'vente',                  sujet:'Contexte du jour / Ta pensée sur une situation → Lien avec une douleur de ta cible → Appel à action vers un échange en message privé, ou vers un lien intégré en story'},
 ];
 let STORIES_CFG = lsJ('roze_stories') || JSON.parse(JSON.stringify(STORIES_DEF));
 
@@ -5461,6 +5461,18 @@ function toggleStoryPanel(){
   setTimeout(() => panel.scrollIntoView({ behavior:'smooth', block:'start' }), 50);
 }
 
+// ── Compteur sources de veille — mis à jour au chargement et à la saisie ──
+function majCompteurRefs(){
+  const el = document.getElementById('cfg-references');
+  if(!el) return;
+  const comptEl = document.getElementById('refs-compteur');
+  if(!comptEl) return;
+  const lignes = el.value.split('\n').map(l => l.trim()).filter(l => /^https?:\/\//i.test(l));
+  comptEl.textContent = Math.min(lignes.length, 10) + '/10';
+  // Couleur selon remplissage
+  comptEl.style.color = lignes.length >= 10 ? 'var(--rose)' : lignes.length > 0 ? 'var(--rose-clair)' : 'var(--gris-clair)';
+}
+
 // ── Validation URLs sources de veille ──
 function validerURLsSources(el){
   const lignes = el.value.split('\n').map(l => l.trim()).filter(Boolean);
@@ -5470,7 +5482,11 @@ function validerURLsSources(el){
   const nonURL = lignes.filter(l => !/^https?:\/\//i.test(l));
   const trop   = lignes.length > 10;
 
-  if(comptEl) comptEl.textContent = Math.min(lignes.length, 10) + '/10';
+  if(comptEl) {
+    const urlsValides = lignes.filter(l => /^https?:\/\//i.test(l));
+    comptEl.textContent = Math.min(urlsValides.length, 10) + '/10';
+    comptEl.style.color = urlsValides.length >= 10 ? 'var(--rose)' : urlsValides.length > 0 ? 'var(--rose-clair)' : 'var(--gris-clair)';
+  }
 
   if(nonURL.length){
     if(errEl){ errEl.textContent = '⚠️ Ligne(s) invalide(s) — chaque ligne doit commencer par https://'; errEl.style.display='block'; }
@@ -6504,6 +6520,8 @@ function chargerCompte(){
   majLiensReseaux();
   setV2('cfg-references',   CFG.references);
   setV2('cfg-mots-interdits', CFG.motsInterdits || '');
+  // Synchroniser le compteur sources de veille après chargement
+  majCompteurRefs();
   setV2('cfg-emojis-marque',  CFG.emojisMarque  || '');
   setV2('cfg-as',           CFG.as);
   setV2('cfg-api',          CFG.api);

@@ -258,10 +258,10 @@
     .actu-row .actu-lbl span{font-size:.72rem;color:var(--gris-clair);display:block;}
     .actu-badge{display:inline-block;background:var(--rose-glow);color:var(--rose-clair);font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:6px;margin-left:.4rem;letter-spacing:.04em;}
     /* Loader recherche web */
-    .web-loader{display:none;align-items:center;gap:.6rem;padding:.5rem 0;font-size:.78rem;color:var(--gris-clair);margin-bottom:.6rem;}
-    .web-loader.on{display:flex;}
+    .web-loader{display:none!important;} /* Feedback visuel intégré dans le bouton */
     .web-ring{width:14px;height:14px;border:2px solid var(--gris-moyen);border-top-color:#5bb8ff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
     .actu-result{display:none!important;}
+    #gen-inline-loader{display:none!important;} /* Feedback dans le bouton uniquement */
     .actu-result.on{display:block;}
     .actu-result strong{color:#5bb8ff;display:block;margin-bottom:.3rem;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;}
     .loader{display:none;text-align:center;padding:2rem 1rem;}
@@ -3686,13 +3686,7 @@ function renderScriptReel(texte) {
   }
 
   const legende = legendeMatch ? legendeMatch[1].trim() : '';
-  if (legende) {
-    html += `<div class="script-legende-box">
-      <div class="script-legende-lbl">Légende Instagram</div>
-      <div class="script-legende-txt">${escapeHtml(legende)}</div>
-      <button class="btn btn-ghost btn-sm" style="margin-top:.5rem;" onclick="navigator.clipboard.writeText(${JSON.stringify(legende)}).then(()=>toast('✅ Légende copiée !','ok'))">📋 Copier la légende</button>
-    </div>`;
-  }
+  // Pas de box légende ici — la légende est injectée dans gen-legende (champ éditable avec bouton Copier)
 
   const conseil = conseilMatch ? conseilMatch[1].trim() : '';
   if (conseil) {
@@ -3734,13 +3728,7 @@ function renderScriptVideoLI(texte) {
   }
 
   const legende = legendeMatch ? legendeMatch[1].trim() : '';
-  if (legende) {
-    html += `<div class="script-legende-box">
-      <div class="script-legende-lbl">Légende LinkedIn</div>
-      <div class="script-legende-txt">${escapeHtml(legende)}</div>
-      <button class="btn btn-ghost btn-sm" style="margin-top:.5rem;" onclick="navigator.clipboard.writeText(${JSON.stringify(legende)}).then(()=>toast('✅ Légende copiée !','ok'))">📋 Copier la légende</button>
-    </div>`;
-  }
+  // Pas de box légende ici — la légende est injectée dans gen-legende (champ éditable avec bouton Copier)
 
   return html;
 }
@@ -3755,17 +3743,38 @@ function renderScriptStory(texte) {
     const tableData = parseMarkdownTable(scriptMatch[1]);
     if (tableData && tableData.data.length > 0) {
       html += '<div style="overflow-x:auto;"><table class="script-table"><thead><tr>';
-      html += '<th>Slide</th><th>Texte à l\'écran</th><th>Arrière-plan</th>';
+      html += '<th style="width:72px;">Durée</th><th>Texte à l\'écran</th><th>Format & décor</th><th style="width:90px;">Ton</th>';
       html += '</tr></thead><tbody>';
-      tableData.data.forEach(row => {
+      tableData.data.forEach((row, idx) => {
         if (row.length < 2) return;
-        html += `<tr>
-          <td class="script-col-slide">${escapeHtml(row[0]||'')}</td>
-          <td class="script-col-texte">${escapeHtml(row[1]||'')}</td>
-          <td class="script-col-bg">${escapeHtml(row[2]||'')}</td>
+        // Détecter si c'est une vidéo ou photo selon la colonne format (col 2)
+        const formatCol = (row[2] || row[1] || '').toLowerCase();
+        const isVideo = formatCol.includes('vidéo') || formatCol.includes('video') || formatCol.includes('face cam') || formatCol.includes('cam');
+        // Durée : vidéo = jusqu'à 60s, photo statique = 10s
+        // Si la colonne 0 contient déjà une durée, on l'affiche telle quelle
+        // Sinon on calcule
+        let duree = row[0] || '';
+        if (!duree || duree.match(/^\d+$/)) {
+          duree = isVideo ? 'jusqu\u2019à 60s' : '10s';
+        }
+        const texteEcran = row[1] || '';
+        const formatDecor = row[2] || '';
+        const ton = row[3] || '';
+        // Couleur de ligne selon type
+        const bgRow = isVideo ? '' : 'background:rgba(126,200,227,.04);';
+        html += `<tr style="${bgRow}">
+          <td class="script-col-temps" style="font-size:.72rem;">${escapeHtml(duree)}</td>
+          <td class="script-col-audio" style="line-height:1.65;">${escapeHtml(texteEcran)}</td>
+          <td class="script-col-visuel" style="line-height:1.55;">${escapeHtml(formatDecor)}</td>
+          <td class="script-col-emotion">${escapeHtml(ton)}</td>
         </tr>`;
       });
       html += '</tbody></table></div>';
+      // Légende de lecture
+      html += '<div style="display:flex;gap:1rem;margin-top:.5rem;font-size:.7rem;color:var(--gris-clair);">'
+           + '<span>🎥 Fond normal = vidéo face cam</span>'
+           + '<span style="color:#7ec8e3;">📷 Fond bleuté = photo statique</span>'
+           + '</div>';
     } else {
       html += `<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">${escapeHtml(scriptMatch[1] || texte)}</div>`;
     }
@@ -3780,7 +3789,7 @@ function isScriptTableau(texte, format) {
   if (!texte) return false;
   if (format === 'Réel') return texte.includes('SCRIPT:') || texte.includes('| Temps |');
   if (format === 'Vidéo') return texte.includes('SCRIPT:') || texte.includes('| Temps |');
-  if (format === 'Stories') return texte.includes('SCRIPT:') || texte.includes('| Slide |');
+  if (format === 'Stories') return texte.includes('SCRIPT:') || texte.includes('| Slide |') || texte.includes('| Partie |') || texte.includes('| Durée |');
   return false;
 }
 
@@ -5287,6 +5296,8 @@ async function genUnPost(){
       document.getElementById('lbl-gen-texte').textContent = format === 'Stories' ? 'Script stories' : format === 'Réel' ? 'Script Réel' : 'Script vidéo';
       result.textContent='';
       result.classList.remove('on');
+      // Stocker le texte brut complet pour la sauvegarde (gen-result est vide pour ces formats)
+      result.dataset.scriptTexte = texte;
       const cvId = 'gen-script-inline';
       let cvDiv = document.getElementById(cvId);
       if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv,result.nextSibling); }
@@ -5378,6 +5389,7 @@ async function sauvegarderGenPanel(){
   const format  = result.dataset.format || getGenFormat();
   const date    = result.dataset.date   || dateAujourdhui();
   const isCarrousel = result.dataset.isCarrousel === '1';
+  const isScript = format === 'Réel' || format === 'Vidéo' || format === 'Stories';
   const id = Date.now();
 
   let texte = '';
@@ -5386,12 +5398,19 @@ async function sauvegarderGenPanel(){
   if(isCarrousel){
     // Récupérer les slides depuis le dataset ou depuis le viewer inline
     try{ slides = JSON.parse(result.dataset.slides||'null'); }catch(e){}
-    // Fallback : récupérer depuis carrouselCourant si dataset vide
     if(!slides && typeof carrouselCourant !== 'undefined' && carrouselCourant){
       slides = carrouselCourant.slides;
     }
     if(slides) texte = JSON.stringify({slides, legende});
     else texte = result.textContent.trim();
+  } else if(isScript){
+    // Réel / Vidéo / Stories — le contenu est dans dataset.scriptTexte (gen-result est vide)
+    texte = result.dataset.scriptTexte || '';
+    // Fallback : chercher dans le div gen-script-inline
+    if(!texte){
+      const cvDiv = document.getElementById('gen-script-inline');
+      if(cvDiv) texte = cvDiv.innerText.trim();
+    }
   } else {
     texte = result.textContent.trim();
   }
@@ -5416,8 +5435,11 @@ async function sauvegarderGenPanel(){
   const _chip = document.getElementById('gen-source-chip');
   if(_chip) _chip.style.display='none';
   result.textContent=''; result.classList.remove('on');
+  result.dataset.scriptTexte = '';
   const cvInline = document.getElementById('gen-cv-inline');
   if(cvInline) cvInline.innerHTML='';
+  const cvScriptInline = document.getElementById('gen-script-inline');
+  if(cvScriptInline) cvScriptInline.innerHTML='';
   document.getElementById('gen-legende-zone').classList.remove('on');
   document.getElementById('gen-post-actions').style.display='none';
   document.getElementById('lbl-gen-texte').style.display='none';

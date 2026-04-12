@@ -2280,6 +2280,11 @@
       <div style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Aperçu carrousel</div>
       <div id="edit-carrousel-wrap"></div>
     </div>
+    <!-- Zone tableau script Réel / Vidéo / Story dans la modale édition -->
+    <div id="edit-script-zone" style="display:none;">
+      <div style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;" id="edit-script-lbl">Script</div>
+      <div id="edit-script-wrap" style="overflow-x:auto;"></div>
+    </div>
     <div class="regen-row">
       <button class="btn btn-ghost btn-sm" onclick="regenPost()">🔄 Régénérer le sujet</button>
       <button class="btn btn-ghost btn-sm" onclick="regenManuel()">✏️ Saisir un sujet</button>
@@ -5240,10 +5245,25 @@ async function genUnPost(){
   const actions         = document.getElementById('gen-post-actions');
   const btnGen          = document.getElementById('btn-gen-post');
 
-  // Reset
+  // Reset complet du panneau avant nouvelle génération
   result.textContent=''; result.classList.remove('on');
+  result.dataset.scriptTexte = '';
   legZone.classList.remove('on'); actions.style.display='none';
   document.getElementById('lbl-gen-texte').style.display='none';
+  // Vider les zones tableau précédentes
+  const _cvsInline = document.getElementById('gen-script-inline');
+  if(_cvsInline) _cvsInline.innerHTML='';
+  const _cvCarousel = document.getElementById('gen-cv-inline');
+  if(_cvCarousel) _cvCarousel.innerHTML='';
+  // Réinitialiser le bouton Sauvegarder s'il était en mode "Enregistré"
+  const _btnSaveReset = document.querySelector('#gen-post-actions .btn-rose');
+  if(_btnSaveReset){
+    _btnSaveReset.textContent = '💾 Sauvegarder dans le calendrier';
+    _btnSaveReset.disabled = false;
+    _btnSaveReset.style.background = '';
+    _btnSaveReset.style.color = '';
+    _btnSaveReset.style.border = '';
+  }
   inlineLoader.classList.add('on');
   inlineLoaderTxt.textContent='Génération en cours…';
   if(btnGen){ btnGen.disabled=true; btnGen.textContent='⏳ Génération…'; }
@@ -5427,22 +5447,20 @@ async function sauvegarderGenPanel(){
   });
 
   // Reset panneau
-  document.getElementById('gen-panel').classList.remove('on');
+  // Ne pas vider le tableau — l'utilisateur doit continuer à le voir après sauvegarde
+  // On change juste le bouton Sauvegarder en confirmation visuelle
+  const _btnSave = document.querySelector('#gen-post-actions .btn-rose');
+  if(_btnSave){
+    _btnSave.textContent = '✅ Enregistré dans le calendrier';
+    _btnSave.disabled = true;
+    _btnSave.style.background = 'rgba(46,204,113,.25)';
+    _btnSave.style.color = 'var(--succes)';
+    _btnSave.style.border = '1px solid var(--succes)';
+  }
   const _psz = document.getElementById('gen-photo-style-zone');
   if(_psz) _psz.style.display='none';
-  const _brs = document.getElementById('btn-regen-style');
-  if(_brs) _brs.style.display='none';
   const _chip = document.getElementById('gen-source-chip');
   if(_chip) _chip.style.display='none';
-  result.textContent=''; result.classList.remove('on');
-  result.dataset.scriptTexte = '';
-  const cvInline = document.getElementById('gen-cv-inline');
-  if(cvInline) cvInline.innerHTML='';
-  const cvScriptInline = document.getElementById('gen-script-inline');
-  if(cvScriptInline) cvScriptInline.innerHTML='';
-  document.getElementById('gen-legende-zone').classList.remove('on');
-  document.getElementById('gen-post-actions').style.display='none';
-  document.getElementById('lbl-gen-texte').style.display='none';
   toast('💾 Post ajouté au calendrier !','ok');
 }
 
@@ -6207,9 +6225,33 @@ function ouvrirEdit(id){
       if(editTextArea){ editTextArea.style.display='block'; editTextArea.value = it.texte||''; }
     }
   } else {
-    if(editZoneWrap) editZoneWrap.style.display = 'none';
-    if(editTextArea){ editTextArea.style.display = 'block'; editTextArea.value = it.texte||''; }
-    if(editTexteHd)  editTexteHd.style.display   = 'block';
+    // Réel / Vidéo / Stories → afficher le tableau à la place du textarea brut
+    const editScriptZone = document.getElementById('edit-script-zone');
+    const editScriptWrap = document.getElementById('edit-script-wrap');
+    const editScriptLbl  = document.getElementById('edit-script-lbl');
+    const isScript = it.typeContenu === 'Réel' || it.typeContenu === 'Vidéo' || it.typeContenu === 'Stories';
+
+    if(isScript && it.texte && (it.texte.includes('SCRIPT:') || it.texte.includes('| Temps |') || it.texte.includes('| Durée |') || it.texte.includes('| Slide |'))){
+      // Afficher le tableau — masquer le textarea
+      if(editZoneWrap)  editZoneWrap.style.display  = 'none';
+      if(editTextArea){ editTextArea.style.display   = 'none'; }
+      if(editTexteHd)   editTexteHd.style.display    = 'none';
+      if(editScriptZone){ editScriptZone.style.display = 'block'; }
+      if(editScriptLbl)  editScriptLbl.textContent = it.typeContenu === 'Stories' ? 'Script stories' : it.typeContenu === 'Réel' ? 'Script Réel' : 'Script vidéo';
+      if(editScriptWrap){
+        let html = '';
+        if(it.typeContenu === 'Réel')     html = renderScriptReel(it.texte);
+        else if(it.typeContenu === 'Vidéo') html = renderScriptVideoLI(it.texte);
+        else if(it.typeContenu === 'Stories') html = renderScriptStory(it.texte);
+        editScriptWrap.innerHTML = html;
+      }
+    } else {
+      // Post texte, Photo → textarea standard
+      if(editScriptZone) editScriptZone.style.display = 'none';
+      if(editZoneWrap)   editZoneWrap.style.display   = 'none';
+      if(editTextArea){  editTextArea.style.display   = 'block'; editTextArea.value = it.texte||''; }
+      if(editTexteHd)    editTexteHd.style.display    = 'block';
+    }
   }
   document.getElementById('edit-legende').value=it.legende||'';
   // Masquer le textarea légende pour les carrousels (légende déjà dans le viewer)
@@ -6237,6 +6279,11 @@ function fermerEdit(e){
   if(e && e.type==='click' && e.target!==document.getElementById('ov-edit')) return;
   document.getElementById('ov-edit').classList.remove('on');
   document.querySelector('.scroll').style.overflow='';
+  // Reset zone script dans la modale
+  const _esz = document.getElementById('edit-script-zone');
+  if(_esz){ _esz.style.display = 'none'; }
+  const _esw = document.getElementById('edit-script-wrap');
+  if(_esw){ _esw.innerHTML = ''; }
   editId=null;
 }
 

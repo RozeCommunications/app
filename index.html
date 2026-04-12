@@ -3195,14 +3195,159 @@ function toggleActu(){
   // Pas de recherche ici — elle se déclenche au clic sur Générer
 }
 
+// ── Rotation des sources de veille — index persistant par utilisateur ──
+// Incrémenté à chaque appel de rechercherActu(), stocké en localStorage.
+// Garantit qu'on utilise chaque source à tour de rôle, indépendamment de l'heure.
+function prochainIndexSource(total){
+  if(total <= 0) return 0;
+  const idx = (parseInt(localStorage.getItem('roze_src_idx') || '0') || 0) % total;
+  localStorage.setItem('roze_src_idx', String((idx + 1) % total));
+  return idx;
+}
+
+// ── Construction intelligente de la requête de recherche ──
+// Basée sur le métier du professionnel + le sujet du post + le pilier actif.
+// Varie les angles : actus, stats, nouveautés, chiffres clés selon le contexte.
+function construireRequeteRecherche(metier, sujetSaisi, pilier){
+  const annee = new Date().getFullYear();
+
+  // Si un sujet précis est saisi → recherche directement liée
+  if(sujetSaisi && sujetSaisi.length > 5){
+    return `${sujetSaisi} statistiques chiffres ${annee} France`;
+  }
+
+  // Sinon : angles variés selon le métier et le pilier
+  // On génère plusieurs formulations possibles et on en choisit une selon l'index actuel
+  const mBase = metier.toLowerCase();
+
+  // ── Détection catégorie métier ──
+  // Chaque regex couvre les variantes courantes du secteur.
+  // Un métier peut matcher plusieurs catégories — la priorité va à la plus spécifique (ordre des if).
+  const isReseaux      = /réseau|social|instagram|linkedin|tiktok|contenu|community|digital|web|communication|créateur|créatrice/.test(mBase);
+  const isTherapie     = /thérapeute|thérapie|hypno|sophro|psycho|kinésio|ostéo|acupunct|réflexo|énergétici|magnétiseur|praticien|facilitatrice/.test(mBase);
+  const isNutriSante   = /naturo|nutri|diété|micronutri|naturopath/.test(mBase);
+  const isSportFitness = /coach sportif|fitness|muscul|yoga|pilates|sport|prépar|athlète|entraîn/.test(mBase);
+  const isBienEtre     = /bien-être|bien être|méditat|mindful|pleine conscience|développement personnel|coaching de vie|life coach/.test(mBase);
+  const isCommerce     = /commerce|boutique|artisan|commerçant|restaur|hôtel|café|boulang|pâtissi|coiffeur|esthéti|fleuriste|libraire|épicier/.test(mBase);
+  const isImmobilier   = /immobilier|agence immob|promoteur|gestionnaire de biens|syndic/.test(mBase);
+  const isFinance      = /finance|compta|expert-comptable|investissement|patrimoine|banque|gestion de patrimoine|conseiller financier/.test(mBase);
+  const isJuridique    = /avocat|juriste|notaire|huissier|droit/.test(mBase);
+  const isSante        = /médecin|infirmier|infirmière|kiné|orthophon|ergothérap|pédicure|podologue|pharmacien|sage-femme|dentiste/.test(mBase);
+
+  let angles = [];
+
+  if(isReseaux){
+    // Formatrices RS, community managers, créateurs de contenu, consultants digital
+    angles = [
+      `dernières fonctionnalités Instagram ${annee}`,
+      `statistiques réseaux sociaux France ${annee}`,
+      `nombre d'utilisateurs LinkedIn France ${annee}`,
+      `algorithme Instagram ${annee} nouvelles règles`,
+      `chiffres TikTok Instagram Facebook ${annee} France`,
+      `tendances contenu social media ${annee}`,
+      `stats engagement Instagram LinkedIn ${annee}`,
+      `intelligence artificielle contenu réseaux sociaux ${annee}`,
+    ];
+  } else if(isTherapie){
+    // Hypnothérapeutes, sophrologues, psychothérapeutes, kinésiologues, etc.
+    angles = [
+      `bien-être mental France chiffres ${annee}`,
+      `burn-out stress travail France statistiques ${annee}`,
+      `marché thérapies alternatives France ${annee}`,
+      `santé mentale France enquête ${annee}`,
+      `nombre de personnes en souffrance psychologique France ${annee}`,
+      `thérapies brèves sophologie hypnose tendances ${annee}`,
+      `prise en charge bien-être émotionnel France ${annee}`,
+    ];
+  } else if(isNutriSante){
+    // Naturopathes, nutritionnistes, diététiciens
+    angles = [
+      `santé alimentation France statistiques ${annee}`,
+      `naturopathie tendances France ${annee}`,
+      `micronutrition alimentation santé chiffres ${annee}`,
+      `obésité alimentation France données ${annee}`,
+      `marché compléments alimentaires France ${annee}`,
+      `tendances alimentation saine bio France ${annee}`,
+    ];
+  } else if(isSportFitness){
+    // Coachs sportifs, profs de yoga, pilates, fitness
+    angles = [
+      `sport pratique physique France statistiques ${annee}`,
+      `marché fitness salle de sport France ${annee}`,
+      `tendances sport bien-être France ${annee}`,
+      `yoga pilates France pratiquants ${annee}`,
+      `sport santé France chiffres clés ${annee}`,
+    ];
+  } else if(isBienEtre){
+    // Coachs de vie, méditants, mindfulness
+    angles = [
+      `développement personnel France marché ${annee}`,
+      `méditation mindfulness France statistiques ${annee}`,
+      `coaching de vie tendances France ${annee}`,
+      `burn-out quête de sens travail France ${annee}`,
+      `bien-être au travail France chiffres ${annee}`,
+    ];
+  } else if(isCommerce){
+    // Artisans, commerçants, restaurateurs, hôteliers
+    angles = [
+      `chiffres commerce de proximité France ${annee}`,
+      `consommateurs locaux habitudes achat ${annee}`,
+      `réseaux sociaux artisans commerçants statistiques ${annee}`,
+      `tendances commerce local France ${annee}`,
+      `tourisme restauration France chiffres ${annee}`,
+    ];
+  } else if(isImmobilier){
+    angles = [
+      `marché immobilier France ${annee} chiffres`,
+      `taux crédit immobilier tendances ${annee}`,
+      `statistiques achat vente immobilier France ${annee}`,
+      `prix immobilier villes France ${annee}`,
+    ];
+  } else if(isFinance){
+    angles = [
+      `épargne investissement France chiffres ${annee}`,
+      `finances personnelles tendances France ${annee}`,
+      `statistiques patrimoine France ${annee}`,
+      `ETF assurance-vie France ${annee}`,
+      `inflation pouvoir d'achat France ${annee}`,
+    ];
+  } else if(isJuridique){
+    angles = [
+      `droit entreprise France tendances ${annee}`,
+      `création entreprise France statistiques ${annee}`,
+      `litiges contrats France chiffres ${annee}`,
+    ];
+  } else if(isSante){
+    angles = [
+      `santé France statistiques ${annee}`,
+      `désert médical France chiffres ${annee}`,
+      `patients téléconsultation France ${annee}`,
+      `santé numérique France tendances ${annee}`,
+    ];
+  } else {
+    // Métier non reconnu → requête construite à partir du métier exact saisi
+    angles = [
+      `${metier} France statistiques ${annee}`,
+      `tendances ${metier} France ${annee}`,
+      `marché ${metier} chiffres ${annee}`,
+    ];
+  }
+
+  // Choisir un angle selon l'index actuel pour varier les requêtes
+  const angleIdx = (parseInt(localStorage.getItem('roze_src_idx') || '0') || 0) % angles.length;
+  return angles[angleIdx];
+}
+
 async function rechercherActu(){
   const sujetSaisi = (document.getElementById('gen-sujet')||{}).value?.trim() || '';
   const metier     = CFG.metier || '';
+  const pilier     = genPilier || 'autorite';
   const urlSources = lireURLsSources();
 
-  // 1 seule URL à la fois — rotation simple
-  const seed = Math.floor(Date.now() / 60000) % Math.max(urlSources.length, 1);
-  const urlActive = urlSources.length ? urlSources[seed] : null;
+  // Rotation séquentielle par index — 1 source par génération
+  const urlActive = urlSources.length
+    ? urlSources[prochainIndexSource(urlSources.length)]
+    : null;
 
   const wl = document.getElementById('web-loader');
   wl.classList.add('on');
@@ -3211,7 +3356,7 @@ async function rechercherActu(){
   try{
     let actuBrut = '';
 
-    // Étape 1 : 1 seule URL déclarée
+    // Étape 1 : lire la source de veille active si elle existe
     if(urlActive){
       try{
         const rf = await fetch('https://api.anthropic.com/v1/messages',{
@@ -3221,16 +3366,16 @@ async function rechercherActu(){
             model:'claude-sonnet-4-20250514',
             max_tokens:500,
             tools:[{type:'web_search_20250305',name:'web_search'}],
-            messages:[{role:'user',content:`Lis attentivement cette page et extrais les données chiffrées concrètes (pourcentages, chiffres, statistiques, résultats mesurables).
+            messages:[{role:'user',content:`Consulte cette page et extrais les informations les plus récentes et pertinentes.
 URL : ${urlActive}
-Contexte : professionnel dont le métier est "${metier}"${sujetSaisi ? ', sujet du post : "'+sujetSaisi+'"' : ''}.
+Professionnel : métier "${metier}"${sujetSaisi ? ', sujet du post : "'+sujetSaisi+'"' : ''}.
 
-RÈGLES D'EXTRACTION STRICTES :
-- Extrais entre 1 et 5 chiffres/statistiques EXACTES trouvés dans l'article (pas de paraphrase vague)
-- Chaque donnée doit être concrète : un nombre, un pourcentage, une date, un nom propre
-- Si l'article ne contient AUCUNE donnée chiffrée exploitable, réponds uniquement : "AUCUNE_DONNÉE"
-- Format de réponse : liste les données brièvement, cite la source exacte (nom du média, date)
-- Sélectionne la donnée la plus pertinente pour le sujet du post`}]
+RÈGLES D'EXTRACTION :
+- Extrais 1 à 3 faits concrets issus de cette page : chiffres, statistiques, nouvelles fonctionnalités, tendances datées
+- Chaque donnée doit être précise et sourcée (nom du site, date si disponible)
+- Si la page ne contient rien d'exploitable pour ce métier, réponds uniquement : "AUCUNE_DONNÉE"
+- Pas d'introduction — commence directement par les données
+- Format : fait concret + source entre parenthèses`}]
           })
         });
         const d = await rf.json();
@@ -3239,27 +3384,25 @@ RÈGLES D'EXTRACTION STRICTES :
       }catch(e){}
     }
 
-    // Étape 2 : web_search si rien trouvé ou article sans chiffres
+    // Étape 2 : recherche web intelligente si pas de source OU source sans résultat
     if(!actuBrut || actuBrut.length < 30){
-      const query = sujetSaisi
-        ? `${sujetSaisi} données statistiques ${new Date().getFullYear()}`
-        : `tendances ${metier || 'professionnel'} ${new Date().getFullYear()}`;
+      const query = construireRequeteRecherche(metier, sujetSaisi, pilier);
 
       const rs = await fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',
         headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
         body: JSON.stringify({
           model:'claude-sonnet-4-20250514',
-          max_tokens:300,
+          max_tokens:350,
           tools:[{type:'web_search_20250305',name:'web_search'}],
-          messages:[{role:'user',content:`Cherche des données chiffrées récentes et concrètes sur : "${query}".
+          messages:[{role:'user',content:`Recherche sur le web : "${query}"
 
-RÈGLES D'EXTRACTION STRICTES :
-- Extrais 1 à 3 statistiques EXACTES (pourcentages, chiffres, résultats mesurables)
+RÈGLES :
+- Extrais 1 à 3 faits concrets, récents, chiffrés ou factuels (chiffres, stats, nouveautés, tendances)
 - Chaque donnée doit être spécifique et sourcée — INTERDIT les généralités vagues
-- Si plusieurs données, prends la plus récente et la plus surprenante
-- Format : donnée exacte + source entre parenthèses (nom, date)
-- Pas d'introduction, pas de conclusion — uniquement les données`}]
+- Prends la plus récente et la plus surprenante si plusieurs résultats
+- Format : fait exact + source entre parenthèses (nom média, date)
+- Pas d'introduction ni de conclusion — uniquement les données`}]
         })
       });
       const ds = await rs.json();

@@ -138,6 +138,10 @@
     .btn-rose{background:linear-gradient(135deg,var(--rose),var(--rose-clair));color:#fff;box-shadow:0 4px 20px rgba(232,24,109,.3);}
     @keyframes sablier{0%{transform:rotate(0deg);}50%{transform:rotate(180deg);}100%{transform:rotate(360deg);}}
     .sablier-anim{display:inline-block;animation:sablier 1.2s ease-in-out infinite;}
+    /* Animation bouton story : remplissage gauche→droite */
+    .btn-story-loading{position:relative;overflow:hidden;color:rgba(255,255,255,.7)!important;}
+    .btn-story-loading::before{content:'';position:absolute;left:0;top:0;height:100%;width:0;background:rgba(255,255,255,.18);animation:fillBtn 6s linear forwards;}
+    @keyframes fillBtn{0%{width:0%;}100%{width:100%;}}
     .btn-rose:active{transform:scale(.97);}
     .btn-outline{background:transparent;color:var(--blanc);border:1px solid var(--gris-border) !important;}
     .btn-ghost{background:var(--gris-carte);color:var(--blanc);border:1px solid var(--gris-border);}
@@ -1757,16 +1761,12 @@
         </label>
       </div>
 
-      <!-- Bouton générer -->
-      <button class="btn btn-rose" id="gsp-btn-gen" onclick="genererStoryPanel()" style="width:100%;margin-top:1rem;padding:1rem;font-size:.95rem;">
-        ✨ Générer cette story
+      <!-- Bouton générer story — animation intégrée -->
+      <button class="btn btn-rose" id="gsp-btn-gen" onclick="genererStoryPanel()" style="width:100%;margin-top:1rem;padding:1rem;font-size:.95rem;transition:all .2s;">
+        <span id="gsp-btn-label"><span class="sablier-anim" id="gsp-sablier" style="display:none;">⏳</span> <span id="gsp-btn-txt">✨ Générer cette story</span></span>
       </button>
-
-      <!-- Loader -->
-      <div class="inline-loader" id="gsp-loader" style="display:none;">
-        <div class="il-dot"></div><div class="il-dot"></div><div class="il-dot"></div>
-        <span id="gsp-loader-txt">Génération en cours…</span>
-      </div>
+      <!-- Loader masqué — conservé pour compat -->
+      <div id="gsp-loader" style="display:none;"><span id="gsp-loader-txt"></span></div>
 
       <!-- Résultat -->
       <div id="gsp-result-zone" style="display:none;margin-top:1rem;">
@@ -3665,12 +3665,15 @@ function renderScriptReel(texte) {
 
   const conseil = conseilMatch ? conseilMatch[1].trim() : '';
   if (conseil) {
-    // Nettoyer guillemets superflus en debut/fin generés par l'IA
-    const cNet = conseil.replace(/^[\u201c\u201d\u00ab\u00bb"'\s]+|[\u201c\u201d\u00ab\u00bb"'\s]+$/g,'').trim();
-    html += `<div class="script-conseil">
-      <div class="script-conseil-lbl">🎬 Conseil de tournage</div>
-      ${escapeHtml(cNet)}
-    </div>`;
+    // Couper avant tout JSON parasite ou markdown bold
+    let cBrut = conseil.split('{')[0].split('**')[0]
+      .replace(/^[\u201c\u201d\u00ab\u00bb"'\s]+|[\u201c\u201d\u00ab\u00bb"'\s]+$/g,'').trim();
+    // Garder max 2 phrases
+    const phrases = cBrut.split(/[.!?]\s+/);
+    const cNet = phrases.slice(0,2).join('. ').replace(/\s+/g,' ').trim();
+    if(cNet.length > 5){
+      html += `<div class="script-conseil"><div class="script-conseil-lbl">🎬 Conseil de tournage</div>${escapeHtml(cNet)}</div>`;
+    }
   }
 
   return html;
@@ -3793,12 +3796,38 @@ function majCompteurMotsInterdits() {
 
 // ── Rendu titre avec accent [ACCENT]...[/ACCENT] ──
 // Applique la couleur de charte sur le groupe marqué
-function rendreTitreAccent(titre, couleurAccent){
+
+// Nettoyer le corps d'une slide : retirer guillemets superflus, FORMAT:X, etc.
+function nettoyerCorpsSlide(corps){
+  if(!corps) return '';
+  return corps
+    .replace(/\[FORMAT:[A-Z]\]/gi, '')                         // codes format expertise
+    .replace(/([❌✅👉✓✗×])\s*['\u2018\u2019\u201c\u201d«»]/g, '$1 ')  // guillemets après emoji
+    .replace(/['\u2018\u2019\u201c\u201d«»]\s*([❌✅👉✓✗×])/g, ' $1')  // guillemets avant emoji
+    .replace(/([.!?])\s*['\u2018\u2019\u201c\u201d«»]\s*/g, '$1 ')    // guillemets en fin de phrase
+    .replace(/^['\u2018\u2019\u201c\u201d«»\s]+|['\u2018\u2019\u201c\u201d«»\s]+$/g, '')
+    .trim();
+}
+
+function rendreTitreAccent(titre, couleurAccent, fondCouleur){
   if(!titre) return '';
+  // Choisir une couleur de texte accent contrastée par rapport au fond
+  let couleurFinale = couleurAccent;
+  if(fondCouleur){
+    // Si le fond est proche de la couleur accent → utiliser blanc ou noir
+    const fondClair = estCouleurClaire(fondCouleur);
+    const accentClair = estCouleurClaire(couleurAccent);
+    if(fondClair && accentClair){
+      // fond clair + accent clair → accent en foncé
+      couleurFinale = ajusterLum(couleurAccent, -40);
+    } else if(!fondClair && !accentClair){
+      // fond sombre + accent sombre → accent en blanc
+      couleurFinale = '#ffffff';
+    }
+  }
   return titre.replace(/\[ACCENT\](.*?)\[\/ACCENT\]/g, function(_, mot){
-    return '<span style="color:' + couleurAccent + ';">' + escapeHtml(mot) + '</span>';
+    return '<span style="color:' + couleurFinale + ';font-weight:700;">' + escapeHtml(mot) + '</span>';
   }).replace(/\[ACCENT\]|\[\/ACCENT\]/g,'');
-  // Fallback : si balises non fermées, les retirer proprement
 }
 
 // ── Nettoyer le sousTitre des codes FORMAT ──
@@ -3855,7 +3884,7 @@ function afficherCarrousel(slides, legende, reseau, containerId){
 
               <div class="cv-slide-titre" style="font-family:'${ptit}',serif;font-size:${i===0 ? fontSizeTitre(s.titre, .82, 48).rem+'rem' : ''};${(i===0&&photoSlide1) ? 'color:'+meilleureTexteCouleur('#000000',c1,c2)+';border-bottom:3px solid '+couleurSoulignement(meilleureTexteCouleur('#000000',c1,c2),c1,c2)+';padding-bottom:4px;' : ''}">${rendreTitreAccent(s.titre||'', c1)}</div>
               ${s.sousTitre ? '<div style="font-size:.65rem;opacity:.7;margin-bottom:4px;">' + escapeHtml(nettoyerSousTitre(s.sousTitre)) + '</div>' : ''}
-              <div class="cv-slide-corps">${s.corps||''}</div>
+              <div class="cv-slide-corps">${nettoyerCorpsSlide(s.corps||'')}</div>
               ${(s.type === 'cta' && CFG.logoUrl) ? '<img class="cv-slide-logo" src="' + CFG.logoUrl + '" alt="logo"/>' : ''}
             </div>
           </div>`).join('')}
@@ -3915,7 +3944,7 @@ function ouvrirCarrouselFullscreen(){
 
           <div style="font-family:'${ptit}',serif;font-size:${idx===0 ? fontSizeTitre(s.titre, 1.15, 44).rem+'rem' : '1.15rem'};font-weight:700;line-height:1.3;margin-bottom:8px;">${rendreTitreAccent(s.titre||'', c1)}</div>
           ${s.sousTitre?`<div style="font-size:.8rem;opacity:.7;margin-bottom:8px;">${escapeHtml(nettoyerSousTitre(s.sousTitre))}</div>`:''}
-          <div style="font-size:.85rem;line-height:1.6;">${s.corps||''}</div>
+          <div style="font-size:.85rem;line-height:1.6;">${nettoyerCorpsSlide(s.corps||'')}</div>
           ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="position:absolute;bottom:16px;right:16px;max-width:60px;max-height:28px;object-fit:contain;opacity:.8;"/>`:''
         }</div>
       </div>
@@ -5878,8 +5907,13 @@ async function genererStoryPanel(){
   const resultZone = document.getElementById('gsp-result-zone');
   const resultEl = document.getElementById('gsp-result');
 
-  loader.style.display = 'flex';
+  // Animation bouton : remplissage + sablier
   btnGen.disabled = true;
+  btnGen.classList.add('btn-story-loading');
+  const gspSablier = document.getElementById('gsp-sablier');
+  const gspBtnTxt  = document.getElementById('gsp-btn-txt');
+  if(gspSablier) gspSablier.style.display = 'inline-block';
+  if(gspBtnTxt)  gspBtnTxt.textContent = 'Génération…';
   resultZone.style.display = 'none';
   gspActuTexte = '';
 
@@ -5942,8 +5976,13 @@ async function genererStoryPanel(){
   } catch(e){
     toast('❌ Erreur : ' + e.message,'err');
   } finally {
-    loader.style.display = 'none';
+    // Rétablir le bouton
     btnGen.disabled = false;
+    btnGen.classList.remove('btn-story-loading');
+    const _sab = document.getElementById('gsp-sablier');
+    const _txt = document.getElementById('gsp-btn-txt');
+    if(_sab) _sab.style.display = 'none';
+    if(_txt) _txt.textContent = '✨ Générer cette story';
   }
 }
 
@@ -5966,13 +6005,12 @@ function getBrouillons(){ return lsJ('roze_brouillons') || []; }
 function setBrouillons(b){ localStorage.setItem('roze_brouillons', JSON.stringify(b)); }
 
 function toggleBrouillonsPanel(){
-  const panel = document.getElementById('brouillons-panel');
+  const panel   = document.getElementById('brouillons-panel');
   const stories = document.getElementById('stories-panel');
-  // Fermer les stories si ouvertes
-  if(stories.style.display !== 'none') stories.style.display = 'none';
-  const open = panel.style.display !== 'none';
-  panel.style.display = open ? 'none' : 'block';
-  if(!open) rendreBrouillons();
+  if(stories && stories.classList.contains('on')) stories.classList.remove('on');
+  const wasOpen = panel.classList.contains('on');
+  panel.classList.toggle('on');
+  if(!wasOpen) rendreBrouillons();
 }
 
 function majCompteurBrouillons(){
@@ -6577,6 +6615,40 @@ function navCal(d){
   rendreCal();
 }
 
+
+function apercuPost(it){
+  const texte = it.texte || '';
+  const type  = it.typeContenu || '';
+  if(type === 'Carrousel' || texte.trim().startsWith('{')){
+    try{
+      const data = JSON.parse(texte);
+      const sl = data.slides || (data.slides ? data.slides : null);
+      if(sl && sl[0] && sl[0].titre) return '\uD83C\uDF40 ' + sl[0].titre;
+    }catch(e){}
+    const m = texte.match(/"titre"\s*:\s*"([^"]{3,60})"/);
+    if(m) return '\uD83C\uDF40 ' + m[1];
+    return '\uD83C\uDF40 Carrousel';
+  }
+  if(type === 'R\u00e9el' || type === 'Vid\u00e9o'){
+    const m = texte.match(/\|[^|]+\|([^|]{5,80})\|/);
+    if(m) return (type==='R\u00e9el'?'\uD83C\uDF9E ':'📹 ') + m[1].trim();
+    return type==='R\u00e9el' ? '\uD83C\uDF9E R\u00e9el' : '📹 Vid\u00e9o';
+  }
+  if(type === 'Stories'){
+    const m = texte.match(/\|[^|]+\|([^|]{5,80})\|/);
+    if(m) return '📱 ' + m[1].trim();
+    return '📱 Story';
+  }
+  const lignes = texte.split('\n').map(l=>l.trim()).filter(l=>
+    l.length > 3 &&
+    !l.startsWith('{') && !l.startsWith('|') &&
+    !l.startsWith('#') && !l.startsWith('```') &&
+    !l.startsWith('L\u00c9GENDE') && !l.startsWith('CONSEIL') && !l.startsWith('SCRIPT')
+  );
+  if(lignes.length > 0) return lignes[0].substring(0,90).replace(/[\u201c\u201d\u00ab\u00bb]/g,'');
+  return texte.substring(0,80);
+}
+
 function rendreCal(){ if(CAL.vue==='mois') rendreMois(); else rendreSemaine(); }
 
 function indexBiblio(){ const idx={}; getBiblio().forEach(it=>{ if(!idx[it.date]) idx[it.date]=[]; idx[it.date].push(it); }); return idx; }
@@ -6629,7 +6701,7 @@ function rendreSemaine(){
     else items.forEach(it=>{
       const cl=it.reseau==='LinkedIn'?'li':'ig';
       const c=document.createElement('div'); c.className='cont-carte'; c.onclick=()=>ouvrirEdit(it.id);
-      c.innerHTML=`<div class="cont-hd"><div class="cont-tags"><span class="tag-${cl==='li'?'li':'ig'}">${escapeHtml(it.reseau)}</span><span class="tag-type">${it.typeContenu}</span></div><button class="cont-st ${it.statut==='Publié'?'st-publie':'st-relire'}" onclick="event.stopPropagation();toggleStatut(${it.id})">${it.statut}</button></div><div class="cont-ap">${it.texte.substring(0,80)}…</div>`;
+      c.innerHTML=`<div class="cont-hd"><div class="cont-tags"><span class="tag-${cl==='li'?'li':'ig'}">${escapeHtml(it.reseau)}</span><span class="tag-type">${it.typeContenu}</span></div><button class="cont-st ${it.statut==='Publié'?'st-publie':'st-relire'}" onclick="event.stopPropagation();toggleStatut(${it.id})">${it.statut}</button></div><div class="cont-ap">${escapeHtml(apercuPost(it))}</div>`;
       cont.appendChild(c);
     });
     row.appendChild(cont); grid.appendChild(row);
@@ -6981,7 +7053,9 @@ let storyModalIndex = null; // index dans STORIES_CFG
 // PANNEAU STORIES CALENDRIER
 // ══════════════════════════════════════════
 function toggleStoriesPanel(){
-  const panel = document.getElementById('stories-panel');
+  const panel      = document.getElementById('stories-panel');
+  const brouillons = document.getElementById('brouillons-panel');
+  if(brouillons && brouillons.classList.contains('on')) brouillons.classList.remove('on');
   panel.classList.toggle('on');
   if(panel.classList.contains('on')) majStoriesPanel();
 }

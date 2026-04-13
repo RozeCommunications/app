@@ -745,7 +745,7 @@
     .cv-slide{flex-shrink:0;width:180px;height:240px;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;scroll-snap-align:start;transition:transform .15s;border:2px solid transparent;}
     .cv-slide:active{transform:scale(.97);}
     .cv-slide.active{border-color:var(--rose);}
-    .cv-slide-inner{width:100%;height:100%;display:flex;flex-direction:column;padding:14px 12px;box-sizing:border-box;position:relative;}
+    .cv-slide-inner{width:100%;height:100%;display:flex;flex-direction:column;padding:20px 14px 14px;box-sizing:border-box;position:relative;justify-content:center;}
     .cv-slide-num{position:absolute;top:8px;right:10px;font-size:.6rem;font-weight:700;opacity:.5;}
     .cv-slide-type{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;opacity:.7;}
     .cv-slide-titre{font-size:.82rem;font-weight:700;line-height:1.3;margin-bottom:6px;}
@@ -1568,7 +1568,7 @@
     </div>
 
     <!-- 2 gros boutons -->
-    <div class="gen-2btns">
+    <div class="gen-2btns" id="gen-bigbtns">
       <div class="gen-bigbtn primaire" onclick="genSemaine()">
         <span class="gb-ic">🗓️</span>
         <span class="gb-titre">Semaine complète</span>
@@ -2310,6 +2310,7 @@
     <div class="edit-actions">
       <button class="btn btn-rose" onclick="sauvegarderEdit()">💾 Sauvegarder</button>
       <button class="btn btn-outline" onclick="copierEdit()">Copier</button>
+      <button class="btn btn-ghost" onclick="dupliquerPost()" title="Dupliquer ce post">📋 Dupliquer</button>
       <button class="btn" style="background:rgba(255,50,50,.12);color:#ff6b6b;border:1px solid rgba(255,50,50,.25);margin-top:0;" onclick="supprimerPost()">🗑️</button>
     </div>
 
@@ -2346,71 +2347,16 @@
 
 
 <!-- ══ MODALE CRÉATION POST (clic sur jour calendrier) ══ -->
-<div class="overlay" id="ov-creer" onclick="fermerCreer(event)">
-  <div class="sheet" id="sheet-creer">
+<!-- Réutilise exactement gen-panel — même interface que l'onglet Générer -->
+<div class="overlay" id="ov-creer" style="align-items:stretch;padding:0;">
+  <div class="sheet" id="sheet-creer" style="max-height:100vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;">
     <div class="sheet-handle"></div>
-    <div class="sheet-hd">
-      <h3>Nouveau post</h3>
+    <div class="sheet-hd" style="flex-shrink:0;">
+      <h3 id="creer-titre-hd">✨ Nouveau post</h3>
       <button class="sheet-close" onclick="fermerCreer()">✕</button>
     </div>
-
-    <!-- Date -->
-    <div class="date-badge" id="creer-date-badge">📅 —</div>
-    <input type="date" id="creer-date" style="display:none;"/>
-
-    <!-- Pilier de contenu -->
-    <span class="creer-lbl">Pilier de contenu</span>
-    <div class="piliers-row" id="creer-piliers">
-      <div class="pilier-chip" onclick="setCreerPilier(this,'visibilite')"><span class="pi">🔭</span><span class="pn">Visibilité</span></div>
-      <div class="pilier-chip" onclick="setCreerPilier(this,'autorite')"><span class="pi">👑</span><span class="pn">Autorité</span></div>
-      <div class="pilier-chip" onclick="setCreerPilier(this,'expertise')"><span class="pi">🧠</span><span class="pn">Expertise</span></div>
-      <div class="pilier-chip" onclick="setCreerPilier(this,'autre')"><span class="pi">✏️</span><span class="pn">Autre</span></div>
-    </div>
-    <div class="pilier-autre-input" id="creer-pilier-autre-zone">
-      <input type="text" id="creer-pilier-autre" placeholder="Ex : Série Excel 30 secondes…" style="font-size:16px;"/>
-    </div>
-
-    <!-- Réseau social -->
-    <span class="creer-lbl">Réseau social</span>
-    <div class="format-chips" id="creer-reseaux">
-      <div class="chip on" onclick="setCreerReseau(this,'LinkedIn')">💼 LinkedIn</div>
-      <div class="chip" onclick="setCreerReseau(this,'Instagram')">📸 Instagram</div>
-    </div>
-
-    <!-- Format -->
-    <span class="creer-lbl">Format</span>
-    <div class="format-chips" id="creer-formats">
-      <div class="chip on" data-fmt="Post texte" onclick="setCreerFormat(this)">📝 Texte</div>
-      <div class="chip" data-fmt="Photo" onclick="setCreerFormat(this)">🖼️ Photo</div>
-      <div class="chip" data-fmt="Carrousel" onclick="setCreerFormat(this)">🎠 Carrousel</div>
-      <div class="chip" data-fmt="Vidéo" onclick="setCreerFormat(this)">🎬 Vidéo</div>
-      <div class="chip" data-fmt="Réel" onclick="setCreerFormat(this)">🎬 Réel</div>
-    </div>
-
-    <!-- Sujet -->
-    <span class="creer-lbl">Sujet <span style="color:#888;font-weight:400;">(optionnel — sinon l'IA choisit)</span></span>
-    <div class="creer-sujet-row">
-      <input type="text" id="creer-sujet" placeholder="Ex : mon retour sur le dernier salon pro…"/>
-      <button class="btn btn-ghost" onclick="genCreerPost()">✨ Générer</button>
-    </div>
-    <div class="creer-loader" id="creer-loader"><div class="creer-mini-ring"></div><span id="creer-loader-txt">Génération en cours…</span></div>
-
-    <!-- Texte généré / saisi -->
-    <span class="creer-lbl" id="lbl-creer-texte" style="display:none;">Texte du post</span>
-    <div class="creer-result" id="creer-result"></div>
-
-    <!-- Légende -->
-    <div class="creer-legende" id="creer-legende-zone">
-      <span class="creer-lbl" style="margin-top:.5rem;">Légende & hashtags</span>
-      <textarea id="creer-legende" placeholder="Légende + hashtags…"></textarea>
-      <button class="btn btn-ghost btn-sm btn-full" style="margin-top:.4rem;" onclick="genCreerLegende()">🔄 Régénérer la légende</button>
-    </div>
-
-    <!-- Actions -->
-    <div class="edit-actions" id="creer-actions" style="display:none;">
-      <button class="btn btn-rose" onclick="sauvegarderCreer()">💾 Sauvegarder</button>
-      <button class="btn btn-outline" onclick="copierCreer()">Copier</button>
-    </div>
+    <!-- Contenu scrollable : gen-panel est déplacé ici dynamiquement via JS -->
+    <div id="creer-panel-zone" style="flex:1;overflow-y:auto;padding:0 1rem 1.5rem;"></div>
   </div>
 </div>
 
@@ -2770,7 +2716,7 @@ function go(id, btn){
   // Toujours fermer les modales et restaurer le scroll avant de naviguer
   document.getElementById('ov-edit').classList.remove('on');
   document.getElementById('ov-story').classList.remove('on');
-  document.getElementById('ov-creer').classList.remove('on');
+  const _ovC = document.getElementById('ov-creer'); if(_ovC) _ovC.classList.remove('on');
   document.getElementById('ov-jour').classList.remove('on');
   const cvFs = document.getElementById('cv-fullscreen'); if(cvFs) cvFs.classList.remove('on');
   const smFs = document.getElementById('streak-modal-fond'); if(smFs) smFs.classList.remove('on');
@@ -3118,11 +3064,7 @@ function resetGenPiliers(){
   document.querySelectorAll('#gen-piliers .pilier-chip').forEach(c=>c.className='pilier-chip');
   const z=document.getElementById('gen-pilier-autre-zone'); if(z) z.classList.remove('on');
 }
-function resetCreerPiliers(){
-  creerPilier = null;
-  document.querySelectorAll('#creer-piliers .pilier-chip').forEach(c=>c.className='pilier-chip');
-  const z=document.getElementById('creer-pilier-autre-zone'); if(z) z.classList.remove('on');
-}
+function resetCreerPiliers(){ resetGenPiliers(); }
 
 function setGenReseau(chip, reseau){
   document.querySelectorAll('#gen-reseaux .chip').forEach(c=>c.classList.remove('on'));
@@ -3865,7 +3807,7 @@ function afficherCarrousel(slides, legende, reseau, containerId){
               <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'beton')"   title="Matière" style="background:${c2};opacity:.7"></button>
             </div>
             <div class="cv-slide-inner" style="position:relative;z-index:1;font-family:'${pcorp}',sans-serif;color:${i===0&&photoSlide1 ? meilleureTexteCouleur('#000000',c1,c2) : texteSlide(fondSlide(s.num, slides.length, c1, c2))};">
-              <div class="cv-slide-num" style="color:${i===0&&photoSlide1?'rgba(255,255,255,.6)':texteSlide(fondSlide(s.num, slides.length, c1, c2))};opacity:.35;">${s.num}/${slides.length}</div>
+
 
               <div class="cv-slide-titre" style="font-family:'${ptit}',serif;font-size:${i===0 ? fontSizeTitre(s.titre, .82, 48).rem+'rem' : ''};${(i===0&&photoSlide1) ? 'color:'+meilleureTexteCouleur('#000000',c1,c2)+';border-bottom:3px solid '+couleurSoulignement(meilleureTexteCouleur('#000000',c1,c2),c1,c2)+';padding-bottom:4px;' : ''}">${s.titre||''}</div>
               ${s.sousTitre ? '<div style="font-size:.65rem;opacity:.7;margin-bottom:4px;">' + s.sousTitre + '</div>' : ''}
@@ -3925,7 +3867,7 @@ function ouvrirCarrouselFullscreen(){
     const tcoul = texteSlide(fond);
     return `
       <div class="cv-fs-slide" style="background:${fond};">
-        <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};width:100%;height:100%;box-sizing:border-box;padding:28px 24px;">
+        <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};width:100%;height:100%;box-sizing:border-box;padding:40px 28px 28px;display:flex;flex-direction:column;justify-content:center;">
 
           <div style="font-family:'${ptit}',serif;font-size:${idx===0 ? fontSizeTitre(s.titre, 1.15, 44).rem+'rem' : '1.15rem'};font-weight:700;line-height:1.3;margin-bottom:8px;">${s.titre||''}</div>
           ${s.sousTitre?`<div style="font-size:.8rem;opacity:.7;margin-bottom:8px;">${s.sousTitre}</div>`:''}
@@ -3983,15 +3925,15 @@ function afficherTooltipCanva(reseau){
       <button class="cv-tip-close" onclick="document.getElementById('canva-tooltip').remove()">✕</button>
       <div class="cv-tip-titre">🎨 Importer dans Canva</div>
       <ol class="cv-tip-steps">
-        <li>Télécharge tes slides en PNG ci-dessous 👇</li>
+        <li>Télécharge tes slides en ${isIG ? 'PNG' : 'PDF'} ci-dessous 👇</li>
         <li>Va sur <strong>canva.com</strong> et connecte-toi</li>
         <li>Crée un nouveau design <strong>${isIG ? 'Instagram (1080×1440, ratio 3:4)' : 'LinkedIn (1080×1440, ratio 3:4)'}</strong></li>
         <li>Clique sur <strong>Importer un fichier</strong> et sélectionne tes PNG</li>
         <li>Modifie textes &amp; graphismes librement</li>
       </ol>
       <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.8rem;">
-        <button class="btn btn-ghost btn-sm" onclick="exporterPNG();document.getElementById('canva-tooltip').remove();">
-          ⬇️ Télécharger les PNG d'abord
+        <button class="btn btn-ghost btn-sm" onclick="${isIG ? 'exporterPNG' : 'exporterPDF'}();document.getElementById('canva-tooltip').remove();">
+          ⬇️ Télécharger en ${isIG ? 'PNG' : 'PDF'} d'abord
         </button>
         <a href="https://www.canva.com" target="_blank" class="btn btn-rose btn-sm" style="text-decoration:none;"
            onclick="document.getElementById('canva-tooltip').remove()">
@@ -4088,7 +4030,7 @@ async function exporterPNG(){
     const soulCoul   = isSlide1Photo ? couleurSoulignement(tcoulFinal, c1, c2) : null;
 
     const div = document.createElement('div');
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;overflow:hidden;${isSlide1Photo ? 'background:#000;' : styleFondSlide(s.num, slides.length, c1, c2)}font-family:'${pcorp}',sans-serif;color:${tcoulFinal};padding:80px 72px;box-sizing:border-box;display:flex;flex-direction:column;`;
+    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;overflow:hidden;${isSlide1Photo ? 'background:#000;' : styleFondSlide(s.num, slides.length, c1, c2)}font-family:'${pcorp}',sans-serif;color:${tcoulFinal};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;`;
 
     const photoHtml = isSlide1Photo ? `
       <img src="${photoSlide1.src}" alt="photo" crossOrigin="anonymous"
@@ -4103,7 +4045,7 @@ async function exporterPNG(){
         ${s.sousTitre?`<div style="font-size:32px;opacity:.7;margin-bottom:24px;">${s.sousTitre}</div>`:''}
         <div style="font-size:${s.type==='hook'?36:32}px;line-height:1.65;flex:1;">${isSlide1Photo ? '' : (s.corps||'')}</div>
         ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="max-width:160px;max-height:60px;object-fit:contain;opacity:.8;margin-top:auto;"/>` : ''}
-        <div style="position:absolute;top:0;right:0;font-size:24px;opacity:.3;">${s.num}/${slides.length}</div>
+
       </div>`;
 
     document.body.appendChild(div);
@@ -4158,7 +4100,7 @@ async function exporterPDF(){
     const tcoul = texteSlide(fond);
 
     const div = document.createElement('div');
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;background:${fond};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:80px 72px;box-sizing:border-box;display:flex;flex-direction:column;`;
+    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;background:${fond};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;`;
     div.innerHTML = `
       <div style="font-family:'${ptit}',serif;font-size:${s.type==='hook'?72:54}px;font-weight:700;line-height:1.2;margin-bottom:24px;">${s.titre||''}</div>
       ${s.sousTitre?`<div style="font-size:32px;opacity:.7;margin-bottom:24px;">${s.sousTitre}</div>`:''}
@@ -5133,12 +5075,18 @@ function splitTexteLegende(texte){
   let t = texte.trim();
   t = t.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/,'').trim();
 
-  // Tentative extraction JSON carrousel
-  const patterns = ['{"slides"', '{ "slides"', '{\n  "slides"', '{\n"slides"'];
-  let jIdx = -1;
-  for(const p of patterns){
-    const i = t.indexOf(p);
-    if(i > -1){ jIdx = i; break; }
+  // Tentative extraction JSON carrousel — détection souple (LI et IG)
+  // Chercher n'importe quelle accolade ouvrante suivie de "slides" (avec espaces/newlines variés)
+  const slidesRegex = /\{[\s\S]*?"slides"\s*:/;
+  const slidesMatch = t.match(slidesRegex);
+  let jIdx = slidesMatch ? t.indexOf(slidesMatch[0]) : -1;
+  // Fallback : anciens patterns
+  if(jIdx === -1){
+    const patterns = ['{\"slides\"', '{ \"slides\"', '{\n  \"slides\"', '{\n\"slides\"'];
+    for(const p of patterns){
+      const i = t.indexOf(p);
+      if(i > -1){ jIdx = i; break; }
+    }
   }
 
   if(jIdx > -1){
@@ -5428,7 +5376,7 @@ async function sauvegarderGenPanel(){
   const legende = document.getElementById('gen-legende').value.trim();
   const reseau  = result.dataset.reseau || getGenReseau();
   const format  = result.dataset.format || getGenFormat();
-  const date    = result.dataset.date   || dateAujourdhui();
+  const date    = result.dataset.date || creerDate || dateAujourdhui();
   const isCarrousel = result.dataset.isCarrousel === '1';
   const isScript = format === 'Réel' || format === 'Vidéo' || format === 'Stories';
   const id = Date.now();
@@ -5484,7 +5432,12 @@ async function sauvegarderGenPanel(){
   document.getElementById('gen-post-actions').style.display='none';
   document.getElementById('lbl-gen-texte').style.display='none';
   toast('💾 Post ajouté au calendrier !','ok');
-  setTimeout(()=>go('p-calendrier'), 600);
+  if(creerDate){
+    // Venu depuis le calendrier → fermer la modale et rafraîchir le cal
+    setTimeout(()=>{ fermerCreer(); rendreCal(); }, 400);
+  } else {
+    setTimeout(()=>go('p-calendrier'), 600);
+  }
 }
 
 function copierGenPanel(){
@@ -6298,16 +6251,42 @@ function ouvrirEdit(id){
 }
 
 function fermerEdit(e){
-  // Si appelé par un clic sur le fond : vérifier que c'est bien le fond
   if(e && e.type==='click' && e.target!==document.getElementById('ov-edit')) return;
   document.getElementById('ov-edit').classList.remove('on');
   document.querySelector('.scroll').style.overflow='';
-  // Reset zone script dans la modale
   const _esz = document.getElementById('edit-script-zone');
   if(_esz){ _esz.style.display = 'none'; }
   const _esw = document.getElementById('edit-script-wrap');
   if(_esw){ _esw.innerHTML = ''; }
   editId=null;
+}
+
+function dupliquerPost(){
+  if(!editId) return;
+  const b  = getBiblio();
+  const it = b.find(i=>i.id===editId);
+  if(!it) return;
+
+  fermerEdit();
+
+  // Calculer la date du lendemain du post source
+  let dateDs = dateAujourdhui();
+  try{
+    const d = new Date((it.date||dateAujourdhui())+'T12:00:00');
+    d.setDate(d.getDate()+1);
+    dateDs = d.toISOString().split('T')[0];
+  }catch(e){}
+
+  // Ouvrir la modale Créer avec le contenu pré-rempli
+  setTimeout(()=>{
+    ouvrirCreer(dateDs, {
+      reseau:      it.reseau      || 'LinkedIn',
+      format:      it.typeContenu || 'Post texte',
+      texte:       it.texte       || '',
+      legende:     it.legende     || '',
+      duplication: String(it.id),
+    });
+  }, 250);
 }
 
 function setReseau(r){
@@ -6507,196 +6486,156 @@ function rendreSemaine(){
 
 
 // ══════════════════════════════════════════
-// MODALE CRÉATION POST DEPUIS CALENDRIER
-// ══════════════════════════════════════════
-let creerDate = null;
+// ══════════════════════════════════════════════════════════════
+// MODALE CRÉATION / DUPLICATION POST DEPUIS CALENDRIER
+// Réutilise exactement gen-panel — même logique que l'onglet Générer
+// ══════════════════════════════════════════════════════════════
+let creerDate   = null;
+let creerModeId = null; // null=création, id=duplication
 
-function ouvrirCreer(ds){
-  creerDate = ds;
-  const date = new Date(ds + 'T12:00:00');
-  const opts = { weekday:'long', day:'numeric', month:'long' };
-  const dateStr = date.toLocaleDateString('fr-FR', opts);
-  const maj = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+function ouvrirCreer(ds, opts){
+  opts = opts || {};
+  creerDate   = ds;
+  creerModeId = opts.duplication || null;
 
-  // Afficher la date en badge
-  document.getElementById('creer-date-badge').textContent = '📅 ' + maj;
-  document.getElementById('creer-date').value = ds;
+  // Déplacer gen-panel dans la modale si pas déjà fait
+  const panel = document.getElementById('gen-panel');
+  const zone  = document.getElementById('creer-panel-zone');
+  if(panel && zone && panel.parentElement !== zone){
+    zone.appendChild(panel);
+  }
+  if(panel){ panel.style.display = 'block'; panel.classList.add('on'); }
 
-  // Reset du formulaire
-  resetCreerPiliers();
-  document.getElementById('creer-sujet').value = '';
-  document.getElementById('creer-result').textContent = '';
-  document.getElementById('creer-result').classList.remove('on');
-  document.getElementById('creer-legende').value = '';
-  document.getElementById('creer-legende-zone').classList.remove('on');
-  document.getElementById('creer-actions').style.display = 'none';
-  document.getElementById('lbl-creer-texte').style.display = 'none';
-  document.getElementById('creer-loader').classList.remove('on');
+  // Titre de la modale
+  const titreHd = document.getElementById('creer-titre-hd');
+  if(titreHd) titreHd.textContent = opts.duplication ? '📋 Dupliquer ce post' : '✨ Nouveau post';
 
-  // Réseau par défaut : LinkedIn
-  setCreerReseau(document.querySelector('#creer-reseaux .chip'), 'LinkedIn');
-  // Format par défaut : Post texte
-  document.querySelectorAll('#creer-formats .chip').forEach(c => c.classList.remove('on'));
-  document.querySelector('#creer-formats .chip[data-fmt="Post texte"]').classList.add('on');
-  // Afficher les formats selon le réseau
-  majCreerFormats('LinkedIn');
+  // Reset complet
+  resetGenPanel();
+
+  // Pré-remplir la date
+  const genDate = document.getElementById('gen-date');
+  if(genDate) genDate.value = ds;
+
+  // Pré-remplir réseau
+  const reseau = opts.reseau || 'LinkedIn';
+  const reseauChips = document.querySelectorAll('#gen-reseaux .chip');
+  reseauChips.forEach(c => {
+    const r = c.textContent.includes('LinkedIn') ? 'LinkedIn' : 'Instagram';
+    c.classList.toggle('on', r === reseau);
+  });
+  majGenFormats(reseau);
+  genPilier = null;
+
+  // Pré-remplir pilier si fourni
+  if(opts.pilier){
+    setTimeout(()=>{
+      const pc = document.querySelector(`#gen-piliers .pilier-chip[onclick*="${opts.pilier}"]`);
+      if(pc) setGenPilier(pc, opts.pilier);
+    }, 30);
+  }
+
+  // Pré-remplir format si fourni
+  if(opts.format){
+    majGenFormats(reseau);
+    setTimeout(()=>{
+      const fc = document.querySelector(`#gen-formats .chip[data-fmt="${opts.format}"]`);
+      if(fc){ document.querySelectorAll('#gen-formats .chip').forEach(c=>c.classList.remove('on')); fc.classList.add('on'); }
+    }, 60);
+  }
+
+  // Si duplication : afficher le contenu source
+  if(opts.texte){
+    const result  = document.getElementById('gen-result');
+    const legZone = document.getElementById('gen-legende-zone');
+    const actions = document.getElementById('gen-post-actions');
+    const lbl     = document.getElementById('lbl-gen-texte');
+
+    result.dataset.reseau      = reseau;
+    result.dataset.format      = opts.format || 'Post texte';
+    result.dataset.date        = ds;
+    result.dataset.isCarrousel = '0';
+
+    const parsed = splitTexteLegende(opts.texte);
+    if(parsed.isCarrousel){
+      lbl.style.display = 'block'; lbl.textContent = 'Aperçu carrousel';
+      result.dataset.isCarrousel = '1';
+      result.dataset.slides      = JSON.stringify(parsed.slides);
+      const cvId = 'gen-cv-inline';
+      let cvDiv = document.getElementById(cvId);
+      if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv, result.nextSibling); }
+      afficherCarrousel(parsed.slides, parsed.legende, reseau, cvId);
+      document.getElementById('gen-legende').value = parsed.legende || opts.legende || '';
+    } else if(opts.texte.includes('SCRIPT:') || opts.texte.includes('| Temps |') || opts.texte.includes('| Durée |')){
+      lbl.style.display = 'block'; lbl.textContent = opts.format === 'Stories' ? 'Script stories' : opts.format === 'Réel' ? 'Script Réel' : 'Script vidéo';
+      result.dataset.scriptTexte = opts.texte;
+      const cvId = 'gen-script-inline';
+      let cvDiv = document.getElementById(cvId);
+      if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv, result.nextSibling); }
+      cvDiv.innerHTML = '';
+      afficherResultatScript(opts.texte, opts.format || 'Réel', cvId);
+      document.getElementById('gen-legende').value = opts.legende || '';
+    } else {
+      lbl.style.display = 'block'; lbl.textContent = 'Texte du post';
+      result.textContent = parsed.texte || opts.texte;
+      result.classList.add('on');
+      document.getElementById('gen-legende').value = parsed.legende || opts.legende || '';
+    }
+    legZone.classList.add('on');
+    actions.style.display = 'flex';
+  }
 
   document.getElementById('ov-creer').classList.add('on');
   document.querySelector('.scroll').style.overflow = 'hidden';
+  const zone2 = document.getElementById('creer-panel-zone');
+  if(zone2) setTimeout(()=>zone2.scrollTop=0, 50);
 }
 
 function fermerCreer(e){
   if(e && e.type === 'click' && e.target !== document.getElementById('ov-creer')) return;
+
+  // Remettre gen-panel dans p-generer
+  const panel    = document.getElementById('gen-panel');
+  const pGenerer = document.getElementById('p-generer');
+  if(panel && pGenerer && panel.parentElement !== pGenerer){
+    const bigBtns = document.getElementById('gen-bigbtns');
+    if(bigBtns && bigBtns.nextSibling) pGenerer.insertBefore(panel, bigBtns.nextSibling);
+    else pGenerer.appendChild(panel);
+  }
+  if(panel){ panel.classList.remove('on'); panel.style.display = ''; }
+
   document.getElementById('ov-creer').classList.remove('on');
   document.querySelector('.scroll').style.overflow = '';
-  creerDate = null;
+  creerDate   = null;
+  creerModeId = null;
 }
 
-function setCreerReseau(chip, reseau){
-  document.querySelectorAll('#creer-reseaux .chip').forEach(c => c.classList.remove('on'));
-  chip.classList.add('on');
-  majCreerFormats(reseau);
+function resetGenPanel(){
+  resetGenPiliers();
+  const gs = document.getElementById('gen-sujet'); if(gs) gs.value = '';
+  const gr = document.getElementById('gen-result');
+  if(gr){ gr.textContent=''; gr.classList.remove('on'); gr.dataset.scriptTexte=''; gr.dataset.isCarrousel='0'; }
+  const ci = document.getElementById('gen-cv-inline');    if(ci) ci.innerHTML='';
+  const cs = document.getElementById('gen-script-inline'); if(cs) cs.innerHTML='';
+  const lz = document.getElementById('gen-legende-zone'); if(lz) lz.classList.remove('on');
+  const gl = document.getElementById('gen-legende');       if(gl) gl.value='';
+  const ga = document.getElementById('gen-post-actions');  if(ga) ga.style.display='none';
+  const gt = document.getElementById('lbl-gen-texte');     if(gt) gt.style.display='none';
+  const gc = document.getElementById('gen-source-chip');   if(gc) gc.style.display='none';
+  const bs = document.querySelector('#gen-post-actions .btn-rose');
+  if(bs){ bs.innerHTML='💾 Sauvegarder dans le calendrier'; bs.disabled=false; bs.style.cssText=''; }
+  actuTexte = '';
+  const cb = document.getElementById('cb-actu'); if(cb) cb.checked=false;
 }
 
-function majCreerFormats(reseau){
-  const zone = document.getElementById('creer-formats');
-  const liFormats = [
-    {fmt:'Post texte', ic:'📝'},
-    {fmt:'Carrousel',  ic:'🎠', badge:'📐 3:4'},
-    {fmt:'Vidéo',      ic:'🎬'},
-    {fmt:'Photo',      ic:'🖼️'},
-  ];
-  const igFormats = [
-    {fmt:'Photo',      ic:'🖼️'},
-    {fmt:'Carrousel',  ic:'🎠', badge:'📐 3:4'},
-    {fmt:'Réel',       ic:'🎬'},
-    {fmt:'Post texte', ic:'📝'},
-  ];
-  const fmts = reseau === 'LinkedIn' ? liFormats : igFormats;
-  zone.innerHTML = fmts.map((f, i) =>
-    `<div class="chip${i===0?' on':''}" data-fmt="${f.fmt}"
-      onclick="this.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));this.classList.add('on');">
-      ${f.ic} ${f.fmt}
-    </div>`
-  ).join('');
-}
-
-function getCreerReseau(){
-  const el = document.querySelector('#creer-reseaux .chip.on');
-  return el ? el.textContent.trim().replace(/^[^ ]+ /, '') : 'LinkedIn';
-}
-
-function getCreerFormat(){
-  const el = document.querySelector('#creer-formats .chip.on');
-  return el ? el.dataset.fmt : 'Post texte';
-}
-
-async function genCreerPost(){
-  if(!verifierCleIA()) return;
-  const reseau = getCreerReseau();
-  const format = getCreerFormat();
-  const sujet  = document.getElementById('creer-sujet').value.trim();
-
-  const loader  = document.getElementById('creer-loader');
-  const loaderTxt = document.getElementById('creer-loader-txt');
-  const result  = document.getElementById('creer-result');
-  const legZone = document.getElementById('creer-legende-zone');
-  const actions = document.getElementById('creer-actions');
-
-  loader.classList.add('on');
-  loaderTxt.textContent = 'Génération en cours…';
-  result.classList.remove('on');
-  legZone.classList.remove('on');
-  actions.style.display = 'none';
-
-  try{
-    const matiere = matiereSemaine();
-    const body = {
-      action:          'generer_post',
-      ia:              CFG.ia || 'claude',
-      cle_ia:          CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
-      reseau,
-      format,
-      pilier:          creerPilier || 'autorite',
-      sujet,
-      matiere,
-      anti_redondance: contexteAntiRedondance(),
-    };
-    if(!CFG.as){ throw new Error('URL Apps Script manquante — configure Mon Compte'); }
-    const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
-    const j = await r.json();
-    if(j.erreur) throw new Error(j.erreur);
-    const {texte:t, legende:l} = splitTexteLegende(j.texte||'');
-
-    loader.classList.remove('on');
-    document.getElementById('lbl-creer-texte').style.display = 'block';
-    if(j.texte && splitTexteLegende(j.texte).isCarrousel){
-      const parsed = splitTexteLegende(j.texte);
-      const cvId = 'creer-cv-inline';
-      let cvDiv = document.getElementById(cvId);
-      if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv,result.nextSibling); }
-      afficherCarrousel(parsed.slides, parsed.legende, reseau, cvId);
-      document.getElementById('creer-legende').value = parsed.legende;
-    } else {
-      result.textContent = t;
-      result.classList.add('on');
-      document.getElementById('creer-legende').value = l;
-    }
-    legZone.classList.add('on');
-    actions.style.display = 'flex';
-    toast('✅ Post généré !','ok');
-  } catch(err){
-    loader.classList.remove('on');
-    toast('❌ Erreur : ' + err.message, 'err');
-  }
-}
-
-async function genCreerLegende(){
-  if(!verifierCleIA()) return;
-  const texte  = document.getElementById('creer-result').textContent;
-  const reseau = getCreerReseau();
-  if(!texte){ toast('⚠️ Génère d’abord le texte du post','err'); return; }
-
-  const loader = document.getElementById('creer-loader');
-  const loaderTxt = document.getElementById('creer-loader-txt');
-  loader.classList.add('on');
-  loaderTxt.textContent = 'Régénération de la légende…';
-  try{
-    const prompt = `Voici un post ${reseau} :\n\n${texte}\n\nGénère uniquement la légende optimisée pour ${reseau} avec les hashtags les plus pertinents. Réponds uniquement avec la légende, sans préambule.`;
-    const leg = await appelIA(prompt);
-    document.getElementById('creer-legende').value = leg.trim();
-    toast('✅ Légende régénérée !','ok');
-  } catch(e){ toast('❌ Erreur','err'); }
-  loader.classList.remove('on');
-}
-
-async function sauvegarderCreer(){
-  const texte   = document.getElementById('creer-result').textContent.trim();
-  const legende = document.getElementById('creer-legende').value.trim();
-  const reseau  = getCreerReseau();
-  const format  = getCreerFormat();
-  const date    = creerDate || dateAujourdhui();
-
-  if(!texte){ toast('⚠️ Aucun contenu à sauvegarder','err'); return; }
-
-  const id = Date.now();
-  await sauvegarderEtSyncPost({
-    id, reseau, typeContenu: format, texte, legende,
-    date, dateProg:date, dateGen:dateAujourdhui(),
-    dateAffiche: new Date(date + 'T12:00:00').toLocaleDateString('fr-FR'),
-    statut: 'À relire'
-  });
-  fermerCreer();
-  rendreCal();
-  toast('💾 Post ajouté au calendrier !','ok');
-}
-
-function copierCreer(){
-  const t = document.getElementById('creer-result').textContent;
-  const l = document.getElementById('creer-legende').value;
-  navigator.clipboard.writeText(l ? t + '\n\n' + l : t)
-    .then(() => toast('✅ Copié !','ok'));
-}
+// Stubs de compatibilité (appelés depuis anciens contextes)
+function setCreerReseau(chip, reseau){ if(chip) chip.classList.add('on'); }
+function majCreerFormats(r){ majGenFormats(r); }
+function getCreerReseau(){ return getGenReseau(); }
+function getCreerFormat(){ return getGenFormat(); }
+function genCreerPost(){ genUnPost(); }
+function sauvegarderCreer(){ sauvegarderGenPanel(); }
+function copierCreer(){ copierGenPanel(); }
 
 let _jourDs = null;
 function ouvrirJour(ds, items){

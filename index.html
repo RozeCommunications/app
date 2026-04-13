@@ -1671,50 +1671,49 @@
       </div>
 
       <!-- Sélecteur de style Post Photo -->
+      <!-- Zone personnalisation post Photo — toujours en mode fond coloré -->
       <div id="gen-photo-style-zone" style="display:none;margin-top:.8rem;">
-        <span class="creer-lbl" style="margin-top:0;">Style visuel du post photo</span>
-        <div style="display:flex;gap:.5rem;margin-top:.4rem;flex-wrap:wrap;" id="gen-photo-style-btns">
-          <button class="cv-fond-opt on" id="gps-brute" onclick="setPhotoStyle('brute',this)">📷 Photo brute</button>
-          <button class="cv-fond-opt"    id="gps-titre" onclick="setPhotoStyle('titre',this)">✍️ Photo + titre</button>
-          <button class="cv-fond-opt"    id="gps-fond"  onclick="setPhotoStyle('fond',this)" >🎨 Fond coloré</button>
+        <span class="creer-lbl" style="margin-top:0;">Personnaliser le visuel</span>
+
+        <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-top:.5rem;">
+          <!-- Couleur du fond -->
+          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.82rem;color:var(--blanc-doux);background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.45rem .8rem;">
+            🎨 Fond
+            <input type="color" id="photo-fond-couleur" value="#E8186D"
+              style="width:28px;height:28px;border:none;background:none;cursor:pointer;border-radius:4px;padding:0;"
+              oninput="majFondPhotoCouleur(this.value)"/>
+          </label>
+          <!-- Couleur du surlignage stabilo -->
+          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.82rem;color:var(--blanc-doux);background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.45rem .8rem;" title="Couleur du mot surligné">
+            🖊️ Stabilo
+            <input type="color" id="photo-stabilo-couleur" value="#ffffff"
+              style="width:28px;height:28px;border:none;background:none;cursor:pointer;border-radius:4px;padding:0;"
+              oninput="majStabiloCouleur(this.value)"/>
+          </label>
+          <!-- Import image de fond -->
+          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.82rem;color:var(--blanc-doux);background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.45rem .8rem;">
+            🖼️ Image
+            <input type="file" id="photo-fond-file" accept="image/*" style="display:none;" onchange="majFondPhotoImage(this)"/>
+          </label>
         </div>
 
-        <!-- Options fond coloré : couleur + import image -->
-        <div id="gen-photo-fond-opts" style="display:none;margin-top:.7rem;">
-          <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.4rem;">Personnaliser le fond</div>
-          <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
-            <!-- Sélecteur couleur -->
-            <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.78rem;color:var(--blanc-doux);background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.4rem .7rem;">
-              🎨 Couleur
-              <input type="color" id="photo-fond-couleur" value="#E8186D"
-                style="width:28px;height:28px;border:none;background:none;cursor:pointer;border-radius:4px;padding:0;"
-                oninput="majFondPhotoCouleur(this.value)"/>
-            </label>
-            <!-- Import image de fond -->
-            <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.78rem;color:var(--blanc-doux);background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.4rem .7rem;">
-              🖼️ Image de fond
-              <input type="file" id="photo-fond-file" accept="image/*" style="display:none;" onchange="majFondPhotoImage(this)"/>
-            </label>
-          </div>
-          <!-- Sélecteur texture -->
-          <div style="display:flex;gap:.4rem;margin-top:.5rem;flex-wrap:wrap;" id="photo-fond-textures">
-            <button class="cv-fond-opt on" id="pft-uni"     onclick="setPhotoFondTexture('uni',this)"    title="Uni"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--c1-tmp,#E8186D);margin-right:3px;"></span>Uni</button>
-            <button class="cv-fond-opt"    id="pft-degrade" onclick="setPhotoFondTexture('degrade',this)" title="Dégradé"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:linear-gradient(135deg,var(--c1-tmp,#E8186D),#111);margin-right:3px;"></span>Dégradé</button>
-            <button class="cv-fond-opt"    id="pft-grain"   onclick="setPhotoFondTexture('grain',this)"   title="Grain">🌾 Grain</button>
-            <button class="cv-fond-opt"    id="pft-beton"   onclick="setPhotoFondTexture('beton',this)"   title="Matière">🪨 Matière</button>
-          </div>
+        <!-- Textures -->
+        <div style="display:flex;gap:.4rem;margin-top:.5rem;flex-wrap:wrap;" id="photo-fond-textures">
+          <button class="cv-fond-opt on" id="pft-uni"     onclick="setPhotoFondTexture('uni',this)">Uni</button>
+          <button class="cv-fond-opt"    id="pft-degrade" onclick="setPhotoFondTexture('degrade',this)">Dégradé</button>
+          <button class="cv-fond-opt"    id="pft-grain"   onclick="setPhotoFondTexture('grain',this)">Grain</button>
+          <button class="cv-fond-opt"    id="pft-beton"   onclick="setPhotoFondTexture('beton',this)">Matière</button>
         </div>
 
         <div id="gen-photo-preview-zone" style="margin-top:.7rem;border-radius:10px;overflow:hidden;aspect-ratio:3/4;max-width:180px;"></div>
-        <div id="gen-photo-add-msg" style="display:none;font-size:.72rem;color:#888;margin-top:.4rem;font-style:italic;">📎 Ajoute une photo dans la Q7 pour activer ce style</div>
       </div>
 
       <!-- Actions post généré -->
       <div class="edit-actions" id="gen-post-actions" style="display:none;">
         <button class="btn btn-rose" onclick="sauvegarderGenPanel()">💾 Sauvegarder</button>
-
         <button class="btn btn-outline" onclick="copierGenPanel()">📋 Copier</button>
         <button class="btn btn-ghost" id="btn-publier-gen" onclick="publierSurReseau()" style="font-size:.78rem;">🚀 Publier →</button>
+        <button class="btn" onclick="supprimerGenPanel()" aria-label="Supprimer ce post généré" title="Supprimer" style="background:rgba(255,60,60,.1);color:#ff6b6b;border:1px solid rgba(255,60,60,.2);padding:.6rem .9rem;font-size:1rem;">🗑️</button>
       </div>
     </div>
 
@@ -4447,15 +4446,16 @@ function renderPreviewFondColore(){
   const preview=document.getElementById('gen-photo-preview-zone'); if(!preview) return;
   const c1=fondsPhotoCouleurCourante();
   const tcoul=estCouleurClaire(c1)?'#111111':'#FFFFFF';
-  const stabilo=estCouleurClaire(c1)?ajusterLum(c1,-35):ajusterLum(c1,45);
   const bg=calculerBgPhoto();
   const titre=(genPhotoTitre||'Ton titre ici').substring(0,60);
   const fondCss=photoFondImageSrc?'position:relative;overflow:hidden;':'background:'+bg+';';
   const imgHtml=photoFondImageSrc
-    ?'<img src="'+photoFondImageSrc+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7;"/><div style="position:absolute;inset:0;background:rgba(0,0,0,.35);"></div>'
+    ?'<img src="'+photoFondImageSrc+'" alt="Fond personnalisé" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7;"/><div style="position:absolute;inset:0;background:rgba(0,0,0,.35);"></div>'
     :'';
   const coulTxt=photoFondImageSrc?'#fff':tcoul;
-  const coulStabilo=photoFondImageSrc?'rgba(255,255,255,.5)':stabilo;
+  const coulStabilo = photoFondImageSrc
+    ? (photoStabiloCouleur || 'rgba(255,255,255,.55)')
+    : stabiloCouleurCourante(c1);
   preview.innerHTML='<div style="width:100%;height:100%;'+fondCss+'border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:1rem 1.1rem;box-sizing:border-box;">'
     +imgHtml
     +'<div style="position:relative;z-index:1;font-family:var(--ptit-tmp,serif);font-size:.92rem;font-weight:700;color:'+coulTxt+';line-height:1.5;">'
@@ -4463,50 +4463,33 @@ function renderPreviewFondColore(){
     +'</div></div>';
 }
 
-function setPhotoStyle(style,btn){
-  genPhotoStyle=style;
-  document.querySelectorAll('#gen-photo-style-btns .cv-fond-opt').forEach(b=>b.classList.remove('on'));
-  if(btn) btn.classList.add('on');
+// Variable couleur stabilo (indépendante du fond)
+let photoStabiloCouleur = null;
+
+function majStabiloCouleur(valeur){
+  photoStabiloCouleur = valeur;
+  renderPreviewFondColore();
+}
+
+function stabiloCouleurCourante(fondCouleur){
+  if(photoStabiloCouleur) return photoStabiloCouleur;
+  return estCouleurClaire(fondCouleur||'#E8186D') ? '#222222' : '#ffffff';
+}
+
+function initPhotoZone(){
+  const c1 = CFG.couleur1||'#E8186D';
+  const pFond = document.getElementById('photo-fond-couleur');
+  if(pFond && !photoFondCouleur) pFond.value = c1;
+  const pSt = document.getElementById('photo-stabilo-couleur');
+  if(pSt && !photoStabiloCouleur) pSt.value = stabiloCouleurCourante(c1);
   document.documentElement.style.setProperty('--ptit-tmp',"'"+(CFG.policeTitre||'Playfair Display')+"',serif");
-  document.documentElement.style.setProperty('--c1-tmp',fondsPhotoCouleurCourante());
+  document.documentElement.style.setProperty('--c1-tmp', fondsPhotoCouleurCourante());
+  renderPreviewFondColore();
+}
 
-  const preview=document.getElementById('gen-photo-preview-zone');
-  const addMsg=document.getElementById('gen-photo-add-msg');
-  const fondOpts=document.getElementById('gen-photo-fond-opts');
-  const hasPhoto=!!(photoSlide1&&photoSlide1.src);
-  const c1=CFG.couleur1||'#E8186D';
-  const c2=CFG.couleur2||'#111111';
-
-  if(fondOpts) fondOpts.style.display=style==='fond'?'block':'none';
-  const picker=document.getElementById('photo-fond-couleur');
-  if(picker&&!photoFondCouleur) picker.value=c1;
-
-  if(style==='brute'){
-    if(hasPhoto){
-      addMsg.style.display='none';
-      preview.innerHTML='<img src="'+photoSlide1.src+'" alt="Photo du post" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:10px;"/>';
-    } else {
-      addMsg.style.display='block';
-      preview.innerHTML='<div style="width:100%;height:100%;background:var(--gris-input);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;">🖼️</div>';
-    }
-  } else if(style==='titre'){
-    if(hasPhoto){
-      addMsg.style.display='none';
-      preview.innerHTML='<div style="position:relative;width:100%;height:100%;border-radius:10px;overflow:hidden;">'
-        +'<img src="'+photoSlide1.src+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"/>'
-        +'<div style="position:absolute;inset:0;background:rgba(0,0,0,.42);"></div>'
-        +'<div style="position:relative;z-index:1;padding:1rem;display:flex;flex-direction:column;justify-content:flex-end;height:100%;box-sizing:border-box;">'
-        +'<div style="font-family:var(--ptit-tmp,serif);font-size:.9rem;font-weight:700;color:#fff;line-height:1.4;">'
-        +rendreTitreStabilo((genPhotoTitre||'').substring(0,60),c1,'#fff')
-        +'</div></div></div>';
-    } else {
-      addMsg.style.display='block';
-      preview.innerHTML='<div style="width:100%;height:100%;background:var(--gris-input);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;">✍️</div>';
-    }
-  } else {
-    addMsg.style.display='none';
-    renderPreviewFondColore();
-  }
+function setPhotoStyle(style, btn){
+  genPhotoStyle = 'fond';
+  initPhotoZone();
 }
 
 // Générer le hook de titre pour le post Photo via l'IA
@@ -5496,17 +5479,17 @@ async function genUnPost(){
       document.getElementById('gen-legende').value = l;
       if(format !== 'Stories') legZone.classList.add('on');
       actions.style.display='flex';
-      // Sélecteur de style Photo
+      // Zone personnalisation Photo
       const psZone = document.getElementById('gen-photo-style-zone');
       if(format === 'Photo' && psZone){
         psZone.style.display='block';
         genPhotoTitre = t.split('\n')[0].replace(/^[#*]+\s*/,'').substring(0,80);
-        genHookPhoto(t).then(hook => { genPhotoTitre = hook; setPhotoStyle(genPhotoStyle, document.getElementById('gps-'+genPhotoStyle)); });
-
-        setPhotoStyle('brute', document.getElementById('gps-brute'));
+        genPhotoStyle = 'fond';
+        initPhotoZone();
+        // Générer un hook optimisé en arrière-plan et rafraîchir le preview
+        genHookPhoto(t).then(hook => { genPhotoTitre = hook; renderPreviewFondColore(); });
       } else if(psZone){
         psZone.style.display='none';
-
       }
     }
 
@@ -5619,6 +5602,33 @@ async function sauvegarderGenPanel(){
   } else {
     setTimeout(()=>go('p-calendrier'), 600);
   }
+}
+
+function supprimerGenPanel(){
+  // Vider le résultat généré et masquer les actions — pas de sauvegarde
+  const result   = document.getElementById('gen-result');
+  const legZone  = document.getElementById('gen-legende-zone');
+  const actions  = document.getElementById('gen-post-actions');
+  const lbl      = document.getElementById('lbl-gen-texte');
+  const psZone   = document.getElementById('gen-photo-style-zone');
+  const cvInline = document.getElementById('gen-cv-inline');
+  const csSrc    = document.getElementById('gen-source-chip');
+  if(result){  result.textContent=''; result.classList.remove('on'); result.dataset.scriptTexte=''; result.dataset.isCarrousel='0'; }
+  if(cvInline) cvInline.innerHTML='';
+  if(legZone)  legZone.classList.remove('on');
+  const leg = document.getElementById('gen-legende');
+  if(leg) leg.value='';
+  if(actions)  actions.style.display='none';
+  if(lbl)      lbl.style.display='none';
+  if(psZone)   psZone.style.display='none';
+  if(csSrc)    csSrc.style.display='none';
+  // Réinitialiser le bouton Sauvegarder
+  const btnSave = document.querySelector('#gen-post-actions .btn-rose');
+  if(btnSave){ btnSave.innerHTML='💾 Sauvegarder dans le calendrier'; btnSave.disabled=false; btnSave.style.cssText=''; }
+  // Réactiver le bouton Générer
+  const btnGen = document.getElementById('btn-gen-post');
+  if(btnGen){ btnGen.disabled=false; btnGen.innerHTML='✨ Générer'; }
+  toast('🗑️ Post supprimé', 'ok');
 }
 
 function copierGenPanel(){
@@ -6835,6 +6845,11 @@ function fermerCreer(e){
 }
 
 function resetGenPanel(){
+  // Réinitialiser les états photo
+  photoFondCouleur  = null;
+  photoFondTexture  = 'uni';
+  photoFondImageSrc = null;
+  photoStabiloCouleur = null;
   resetGenPiliers();
   const gs = document.getElementById('gen-sujet'); if(gs) gs.value = '';
   const gr = document.getElementById('gen-result');

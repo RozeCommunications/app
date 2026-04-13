@@ -2,7 +2,11 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="description" content="Roze Assistant — Génère tes contenus réseaux sociaux en 5 min/semaine."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="Roze"/>
@@ -95,6 +99,7 @@
     .script-legende-box{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:10px;padding:.8rem 1rem;margin-top:.8rem;}
     .script-legende-lbl{font-size:.7rem;font-weight:600;color:var(--gris-clair);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.4rem;}
     .script-legende-txt{font-size:.82rem;line-height:1.7;white-space:pre-wrap;color:var(--blanc-doux);}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
     html{height:100%;}
     body{font-family:'DM Sans',sans-serif;background:var(--anthracite);color:var(--blanc);height:100%;overflow:hidden;display:flex;flex-direction:column;padding-top:var(--safe-top);}
@@ -654,7 +659,7 @@
     .pc-item{display:flex;flex-direction:column;align-items:center;gap:.1rem;}
     .pc-val{font-family:'Montserrat',sans-serif;font-size:1.3rem;font-weight:400;color:var(--blanc);}
     .pc-val.pc-prets{color:var(--succes);}
-    .pc-lbl{font-size:.64rem;color:#bbbbbb;text-align:center;white-space:nowrap;}
+    .pc-lbl{font-size:.68rem;color:#bbbbbb;text-align:center;white-space:nowrap;}
     .pc-sep{width:1px;height:32px;align-self:center;background:var(--gris-border);margin:0;flex-shrink:0;}
     .pc-barre-wrap{height:4px;background:var(--gris-moyen);border-radius:2px;overflow:hidden;}
     .pc-barre{height:100%;background:linear-gradient(90deg,var(--rose),var(--succes));border-radius:2px;transition:width .6s ease;width:0%;}
@@ -746,8 +751,8 @@
     .cv-slide:active{transform:scale(.97);}
     .cv-slide.active{border-color:var(--rose);}
     .cv-slide-inner{width:100%;height:100%;display:flex;flex-direction:column;padding:20px 14px 14px;box-sizing:border-box;position:relative;justify-content:center;}
-    .cv-slide-num{position:absolute;top:8px;right:10px;font-size:.6rem;font-weight:700;opacity:.5;}
-    .cv-slide-type{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;opacity:.7;}
+    .cv-slide-num{position:absolute;top:8px;right:10px;font-size:.68rem;font-weight:700;opacity:.5;}
+    .cv-slide-type{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;opacity:.7;}
     .cv-slide-titre{font-size:.82rem;font-weight:700;line-height:1.3;margin-bottom:6px;}
     .cv-slide-corps{font-size:.68rem;line-height:1.5;flex:1;overflow:hidden;}
     .cv-slide-logo{position:absolute;bottom:8px;right:10px;max-width:40px;max-height:20px;object-fit:contain;opacity:.8;}
@@ -849,7 +854,7 @@
     .sem-mini-jours::-webkit-scrollbar{display:none;}
     .smj{flex-shrink:0;width:44px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:.45rem .2rem;border-radius:10px;background:var(--gris-input);}
     .smj.today{background:var(--rose);box-shadow:0 2px 8px var(--rose-glow);}
-    .smj-jour{font-size:.58rem;font-weight:700;color:var(--gris-clair);text-transform:uppercase;letter-spacing:.04em;}
+    .smj-jour{font-size:.68rem;font-weight:700;color:var(--gris-clair);text-transform:uppercase;letter-spacing:.04em;}
     .smj.today .smj-jour,.smj.today .smj-num{color:#fff;}
     .smj-num{font-size:.82rem;font-weight:700;color:var(--blanc-doux);}
     .smj-dots{display:flex;gap:2px;min-height:8px;align-items:center;flex-wrap:wrap;justify-content:center;}
@@ -861,7 +866,7 @@
     .kpi-row{display:flex;gap:.6rem;margin-bottom:.8rem;}
     .kpi{flex:1;background:var(--gris-carte);border-radius:12px;padding:.7rem .4rem;display:flex;flex-direction:column;align-items:center;gap:3px;}
     .kpi-val{font-size:1.25rem;font-weight:800;color:var(--rose);font-family:'Playfair Display',serif;line-height:1;}
-    .kpi-lbl{font-size:.58rem;color:var(--gris-clair);text-align:center;line-height:1.35;font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
+    .kpi-lbl{font-size:.68rem;color:var(--gris-clair);text-align:center;line-height:1.35;font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
     /* ── Desktop/tablette ≥ 520px ── */
     @media(min-width:520px){
       /* Fond sombre sur toute la fenêtre */
@@ -1143,7 +1148,7 @@
     }
     /* Badge thème (Vente / Valeur / Lifestyle) */
     .pc-story-typo-badge{
-      font-size:.58rem;
+      font-size:.68rem;
       font-weight:800;
       letter-spacing:.08em;
       text-transform:uppercase;
@@ -1390,7 +1395,7 @@
           <span class="pc-section-lbl">📝 Posts cette semaine</span>
           <span class="pc-streak-inline">
             <span style="font-size:.9rem;">🔥</span><span id="streak-acc">0</span>
-            <span id="streak-acc-lbl" style="font-size:.62rem;color:#bbbbbb;">sem. consécutive</span>
+            <span id="streak-acc-lbl" style="font-size:.68rem;color:#bbbbbb;">sem. consécutive</span>
           </span>
         </div>
         <div class="pc-sep-titre"></div>
@@ -1515,7 +1520,7 @@
           </div>
         </div>
         <div id="q7-preview" style="display:none;margin-top:.5rem;position:relative;">
-          <img id="q7-img" src="" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;border:1px solid var(--gris-border);"/>
+          <img id="q7-img" src="" alt="Aperçu de la photo" role="img" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;border:1px solid var(--gris-border);"/>
           <button onclick="q7EffacerPhoto()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.85rem;">✕</button>
         </div>
       </div>
@@ -1625,7 +1630,7 @@
       <!-- Sujet (optionnel) -->
       <span class="creer-lbl">Sujet <span style="color:#888;font-weight:400;">(optionnel — sinon l'IA choisit)</span></span>
       <div class="creer-sujet-row">
-        <input type="text" id="gen-sujet" placeholder="Ex : mon retour sur le dernier salon pro…"/>
+        <input type="text" id="gen-sujet" placeholder="Ex : mon dernier atelier, une victoire client, une actu de mon secteur…"/>
       </div>
 
       <!-- Actu web -->
@@ -1665,18 +1670,45 @@
       <div id="gen-photo-style-zone" style="display:none;margin-top:.8rem;">
         <span class="creer-lbl" style="margin-top:0;">Style visuel du post photo</span>
         <div style="display:flex;gap:.5rem;margin-top:.4rem;flex-wrap:wrap;" id="gen-photo-style-btns">
-          <button class="cv-fond-opt on" id="gps-brute"   onclick="setPhotoStyle('brute',this)"  >📷 Photo brute</button>
-          <button class="cv-fond-opt"    id="gps-titre"   onclick="setPhotoStyle('titre',this)"  >✍️ Photo + titre</button>
-          <button class="cv-fond-opt"    id="gps-fond"    onclick="setPhotoStyle('fond',this)"   >🎨 Fond coloré</button>
+          <button class="cv-fond-opt on" id="gps-brute" onclick="setPhotoStyle('brute',this)">📷 Photo brute</button>
+          <button class="cv-fond-opt"    id="gps-titre" onclick="setPhotoStyle('titre',this)">✍️ Photo + titre</button>
+          <button class="cv-fond-opt"    id="gps-fond"  onclick="setPhotoStyle('fond',this)" >🎨 Fond coloré</button>
         </div>
+
+        <!-- Options fond coloré : couleur + import image -->
+        <div id="gen-photo-fond-opts" style="display:none;margin-top:.7rem;">
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.4rem;">Personnaliser le fond</div>
+          <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+            <!-- Sélecteur couleur -->
+            <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.78rem;color:var(--blanc-doux);background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.4rem .7rem;">
+              🎨 Couleur
+              <input type="color" id="photo-fond-couleur" value="#E8186D"
+                style="width:28px;height:28px;border:none;background:none;cursor:pointer;border-radius:4px;padding:0;"
+                oninput="majFondPhotoCouleur(this.value)"/>
+            </label>
+            <!-- Import image de fond -->
+            <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.78rem;color:var(--blanc-doux);background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.4rem .7rem;">
+              🖼️ Image de fond
+              <input type="file" id="photo-fond-file" accept="image/*" style="display:none;" onchange="majFondPhotoImage(this)"/>
+            </label>
+          </div>
+          <!-- Sélecteur texture -->
+          <div style="display:flex;gap:.4rem;margin-top:.5rem;flex-wrap:wrap;" id="photo-fond-textures">
+            <button class="cv-fond-opt on" id="pft-uni"     onclick="setPhotoFondTexture('uni',this)"    title="Uni"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--c1-tmp,#E8186D);margin-right:3px;"></span>Uni</button>
+            <button class="cv-fond-opt"    id="pft-degrade" onclick="setPhotoFondTexture('degrade',this)" title="Dégradé"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:linear-gradient(135deg,var(--c1-tmp,#E8186D),#111);margin-right:3px;"></span>Dégradé</button>
+            <button class="cv-fond-opt"    id="pft-grain"   onclick="setPhotoFondTexture('grain',this)"   title="Grain">🌾 Grain</button>
+            <button class="cv-fond-opt"    id="pft-beton"   onclick="setPhotoFondTexture('beton',this)"   title="Matière">🪨 Matière</button>
+          </div>
+        </div>
+
         <div id="gen-photo-preview-zone" style="margin-top:.7rem;border-radius:10px;overflow:hidden;aspect-ratio:3/4;max-width:180px;"></div>
-        <div id="gen-photo-add-msg" style="display:none;font-size:.75rem;color:#888;margin-top:.4rem;font-style:italic;">📎 Ajoute une photo dans la Q7 pour activer ce style</div>
+        <div id="gen-photo-add-msg" style="display:none;font-size:.72rem;color:#888;margin-top:.4rem;font-style:italic;">📎 Ajoute une photo dans la Q7 pour activer ce style</div>
       </div>
 
       <!-- Actions post généré -->
       <div class="edit-actions" id="gen-post-actions" style="display:none;">
         <button class="btn btn-rose" onclick="sauvegarderGenPanel()">💾 Sauvegarder</button>
-        <button class="btn btn-ghost" id="btn-regen-style" onclick="regenStylePhoto()" style="display:none;">🎨 Régénérer le style</button>
+
         <button class="btn btn-outline" onclick="copierGenPanel()">📋 Copier</button>
         <button class="btn btn-ghost" id="btn-publier-gen" onclick="publierSurReseau()" style="font-size:.78rem;">🚀 Publier →</button>
       </div>
@@ -1756,9 +1788,9 @@
     <div class="titre"><h2>Mon <em>calendrier</em></h2><p>Visualise, édite et planifie</p></div>
     <div class="cal-top">
       <div class="cal-nav">
-        <button class="cal-btn" onclick="navCal(-1)">‹</button>
+        <button class="cal-btn" onclick="navCal(-1)" aria-label="Période précédente">‹</button>
         <div class="cal-per" id="cal-per">—</div>
-        <button class="cal-btn" onclick="navCal(1)">›</button>
+        <button class="cal-btn" onclick="navCal(1)" aria-label="Période suivante">›</button>
       </div>
       <div class="vue-tog">
         <button class="vue-b on" id="b-mois" onclick="changeVue('mois',this)">Mois</button>
@@ -1844,9 +1876,9 @@
           <label class="lbl" style="margin-top:.6rem;">Prénom</label>
           <input type="text" id="cfg-prenom" placeholder="Ex : Martine" autocomplete="given-name" style="font-size:16px;"/>
           <label class="lbl">Nom</label>
-          <input type="text" id="cfg-nom" placeholder="Ex : Dupont" autocomplete="family-name" style="font-size:16px;"/>
+          <input type="text" id="cfg-nom" placeholder="Ex : Dupont" autocomplete="family-name" autocomplete="family-name" style="font-size:16px;"/>
           <label class="lbl">Entreprise</label>
-          <input type="text" id="cfg-entreprise" placeholder="Ex : Roze Communications" style="font-size:16px;"/>
+          <input type="text" id="cfg-entreprise" placeholder="Ex : Roze Communications" autocomplete="organization" style="font-size:16px;"/>
           <label class="lbl">Métier</label>
           <input type="text" id="cfg-metier" placeholder="Ex : Plombier, Avocat, Coach sportif, Boulangers…" style="font-size:16px;"/>
           <label class="lbl" style="margin-top:.6rem;">
@@ -2045,6 +2077,7 @@
 
     <div style="margin-top:1.6rem;">
       <button class="btn btn-rose btn-full" id="btn-sauvegarder" onclick="sauvegarderCompte()" style="padding:1rem;font-size:.95rem;letter-spacing:.02em;">💾 Sauvegarder Mon Compte</button>
+    <p style="text-align:center;margin-top:1.2rem;font-size:.72rem;color:var(--gris-clair);">En utilisant Roze Assistant, tu acceptes nos <button onclick="document.getElementById('p-legal').style.display='block'" style="background:none;border:none;color:var(--rose-clair);text-decoration:underline;cursor:pointer;font-size:.72rem;padding:0;">conditions d'utilisation et politique de confidentialité</button>.</p>
       <button class="btn btn-ghost" style="width:100%;margin-top:.5rem;font-size:.78rem;color:var(--gris-clair);" onclick="seDeconnecter()">↩️ Se déconnecter</button>
     </div>
     
@@ -2245,7 +2278,7 @@
     <div class="sheet-handle"></div>
     <div class="sheet-hd">
       <h3 id="jour-titre">Posts du jour</h3>
-      <button class="sheet-close" onclick="fermerJour()">✕</button>
+      <button class="sheet-close" onclick="fermerJour()" aria-label="Fermer">✕</button>
     </div>
     <div id="jour-liste" style="display:flex;flex-direction:column;gap:.6rem;margin-top:.4rem;"></div>
     <button class="btn btn-ghost btn-full" style="margin-top:1rem;" onclick="ouvrirCreerDepuisJour()">＋ Ajouter un post</button>
@@ -2257,7 +2290,7 @@
     <div class="sheet-handle"></div>
     <div class="sheet-hd">
       <h3 id="edit-titre">Éditer le post</h3>
-      <button class="sheet-close" onclick="fermerEdit()">✕</button>
+      <button class="sheet-close" onclick="fermerEdit()"><span aria-hidden="true">✕</span><span class="sr-only">Fermer</span></button>
     </div>
     <div class="sheet-meta" id="edit-meta"></div>
 
@@ -2311,7 +2344,7 @@
       <button class="btn btn-rose" onclick="sauvegarderEdit()">💾 Sauvegarder</button>
       <button class="btn btn-outline" onclick="copierEdit()">Copier</button>
       <button class="btn btn-ghost" onclick="dupliquerPost()" title="Dupliquer ce post">📋 Dupliquer</button>
-      <button class="btn" style="background:rgba(255,50,50,.12);color:#ff6b6b;border:1px solid rgba(255,50,50,.25);margin-top:0;" onclick="supprimerPost()">🗑️</button>
+      <button class="btn" style="background:rgba(255,50,50,.12);color:#ff6b6b;border:1px solid rgba(255,50,50,.25);margin-top:0;" onclick="supprimerPost()" aria-label="Supprimer ce post">🗑️</button>
     </div>
 
     <!-- Toggle statut -->
@@ -2326,7 +2359,7 @@
     <div class="sheet-handle"></div>
     <div class="sheet-hd">
       <h3 id="story-modal-titre">Story du jour</h3>
-      <button class="sheet-close" onclick="fermerStory()">✕</button>
+      <button class="sheet-close" onclick="fermerStory()" aria-label="Fermer">✕</button>
     </div>
     <div class="sheet-meta" id="story-modal-meta"></div>
     <!-- Sujet configuré -->
@@ -2353,7 +2386,7 @@
     <div class="sheet-handle"></div>
     <div class="sheet-hd" style="flex-shrink:0;">
       <h3 id="creer-titre-hd">✨ Nouveau post</h3>
-      <button class="sheet-close" onclick="fermerCreer()">✕</button>
+      <button class="sheet-close" onclick="fermerCreer()"><span aria-hidden="true">✕</span><span class="sr-only">Fermer</span></button>
     </div>
     <!-- Contenu scrollable : gen-panel est déplacé ici dynamiquement via JS -->
     <div id="creer-panel-zone" style="flex:1;overflow-y:auto;padding:0 1rem 1.5rem;"></div>
@@ -2369,6 +2402,23 @@
     <h2 id="sm-titre">Bravo <em id="sm-prenom"></em> !</h2>
     <p id="sm-message">Tu publies avec régularité depuis 1 mois. C'est exactement ce qui fait la différence sur les réseaux sociaux.</p>
     <button class="btn btn-rose" style="width:100%;" onclick="fermerStreakModal()">Continuer sur ma lancée 🚀</button>
+  </div>
+</div>
+
+  <!-- ══ MENTIONS LÉGALES (obligatoires - RGPD France) ══ -->
+<div id="p-legal" style="display:none;padding:1.2rem;max-width:600px;margin:0 auto;">
+  <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;">Mentions légales & Confidentialité</h2>
+  <div style="font-size:.82rem;line-height:1.75;color:var(--gris-clair);">
+    <p><strong style="color:var(--blanc-doux);">Éditeur</strong><br/>Roze Communications — Rozenn Cazoulat<br/>Trégor, Côtes-d'Armor, France<br/>contact@roze-communications.com</p>
+    <p style="margin-top:.8rem;"><strong style="color:var(--blanc-doux);">Données personnelles</strong><br/>
+    Vos données (profil, contenus générés) sont stockées dans votre propre Google Sheets personnel. Roze Assistant n'héberge pas vos données et n'y accède pas. Vous en êtes le seul propriétaire.<br/>
+    Conformément au RGPD et à la loi Informatique et Libertés, vous disposez d'un droit d'accès, de rectification et de suppression de vos données.</p>
+    <p style="margin-top:.8rem;"><strong style="color:var(--blanc-doux);">Intelligence artificielle</strong><br/>
+    Les contenus générés sont produits par l'API Claude d'Anthropic via votre propre clé API. Roze Assistant n'a pas accès à votre clé API qui est stockée localement sur votre appareil.</p>
+    <p style="margin-top:.8rem;"><strong style="color:var(--blanc-doux);">Cookies</strong><br/>
+    Cette application n'utilise pas de cookies tiers. Les données de configuration sont stockées en localStorage sur votre appareil uniquement.</p>
+    <p style="margin-top:.8rem;"><strong style="color:var(--blanc-doux);">Contact & exercice des droits</strong><br/>
+    contact@roze-communications.com</p>
   </div>
 </div>
 
@@ -2557,7 +2607,7 @@ async function sqpGenerer(){
   loader.classList.add('on');
   result.classList.remove('on');
 
-  const matiere  = matiereSemaine();
+  const matiere  = (await matiereSemaineEnrichie()).matiere;
   const angleBloc = saisie ? '\nANGLE / CONTEXTE SAISI : ' + saisie + '\n' : '';
 
 
@@ -2744,21 +2794,7 @@ function go(id, btn){
 }
 
 
-function goStories(){
-  // Naviguer vers Mon Compte et scroller jusqu'à la section Stories
-  go('p-compte');
-  setTimeout(()=>{
-    const el = document.querySelector('.compte-section h3');
-    // Trouver la section "Stories Instagram"
-    const all = document.querySelectorAll('.compte-section h3');
-    for(const h of all){
-      if(h.textContent.includes('Stories')){
-        h.scrollIntoView({behavior:'smooth', block:'start'});
-        break;
-      }
-    }
-  }, 200);
-}
+
 
 function scrollGuide(){ go('p-compte'); setTimeout(()=>document.getElementById('guide-pwa').scrollIntoView({behavior:'smooth'}),300); }
 
@@ -2890,7 +2926,7 @@ function fermerStreakModal(){
 }
 
 async function enrSemaine(){
-  if(!CFG.as){ toast('⚙️ URL Google Sheets manquante — va dans Mon Compte → Connexions','err'); return; }
+  if(!CFG.as){ toast('⚙️ Configure d\'abord l\'URL Google Sheets dans Mon Compte → Connexions','err'); return; }
   const d={
     action: 'enregistrer_semaine',
     semaine: getSemaineCourante(),
@@ -3014,19 +3050,9 @@ function setCreerPilier(chip, pilier){
   if(autreZone) autreZone.classList.toggle('on', pilier==='autre');
 }
 
-function getGenPilierBloc(){
-  return buildPilierBloc(
-    genPilier,
-    (document.getElementById('gen-pilier-autre')||{}).value||''
-  );
-}
 
-function getCreerPilierBloc(){
-  return buildPilierBloc(
-    creerPilier,
-    (document.getElementById('creer-pilier-autre')||{}).value||''
-  );
-}
+
+
 
 function buildPilierBloc(pilier, autreTexte){
   if(!pilier) return '';
@@ -3377,8 +3403,8 @@ function toggleSourceDetail(){
 }
 
 function regenStylePhoto(){
-  // Régénérer uniquement le style visuel — ne touche pas au texte ni à la légende
-  if(genPhotoStyle){
+  if(genPhotoStyle === 'fond') renderPreviewFondColore();
+  else if(genPhotoStyle){
     const activeBtn = document.getElementById('gps-' + genPhotoStyle);
     setPhotoStyle(genPhotoStyle, activeBtn);
   }
@@ -3764,6 +3790,24 @@ function majCompteurMotsInterdits() {
 }
 
 
+
+// ── Rendu titre avec accent [ACCENT]...[/ACCENT] ──
+// Applique la couleur de charte sur le groupe marqué
+function rendreTitreAccent(titre, couleurAccent){
+  if(!titre) return '';
+  return titre.replace(/\[ACCENT\](.*?)\[\/ACCENT\]/g, function(_, mot){
+    return '<span style="color:' + couleurAccent + ';">' + escapeHtml(mot) + '</span>';
+  }).replace(/\[ACCENT\]|\[\/ACCENT\]/g,'');
+  // Fallback : si balises non fermées, les retirer proprement
+}
+
+// ── Nettoyer le sousTitre des codes FORMAT ──
+// [FORMAT:A] etc. sont des instructions pour le viewer — on les masque dans l'affichage
+function nettoyerSousTitre(st){
+  if(!st) return '';
+  return st.replace(/\[FORMAT:[A-Z]\]/gi, '').trim();
+}
+
 function afficherCarrousel(slides, legende, reseau, containerId){
   carrouselCourant = { slides, legende, reseau };
   cvSlideActive = 0;
@@ -3809,8 +3853,8 @@ function afficherCarrousel(slides, legende, reseau, containerId){
             <div class="cv-slide-inner" style="position:relative;z-index:1;font-family:'${pcorp}',sans-serif;color:${i===0&&photoSlide1 ? meilleureTexteCouleur('#000000',c1,c2) : texteSlide(fondSlide(s.num, slides.length, c1, c2))};">
 
 
-              <div class="cv-slide-titre" style="font-family:'${ptit}',serif;font-size:${i===0 ? fontSizeTitre(s.titre, .82, 48).rem+'rem' : ''};${(i===0&&photoSlide1) ? 'color:'+meilleureTexteCouleur('#000000',c1,c2)+';border-bottom:3px solid '+couleurSoulignement(meilleureTexteCouleur('#000000',c1,c2),c1,c2)+';padding-bottom:4px;' : ''}">${s.titre||''}</div>
-              ${s.sousTitre ? '<div style="font-size:.65rem;opacity:.7;margin-bottom:4px;">' + s.sousTitre + '</div>' : ''}
+              <div class="cv-slide-titre" style="font-family:'${ptit}',serif;font-size:${i===0 ? fontSizeTitre(s.titre, .82, 48).rem+'rem' : ''};${(i===0&&photoSlide1) ? 'color:'+meilleureTexteCouleur('#000000',c1,c2)+';border-bottom:3px solid '+couleurSoulignement(meilleureTexteCouleur('#000000',c1,c2),c1,c2)+';padding-bottom:4px;' : ''}">${rendreTitreAccent(s.titre||'', c1)}</div>
+              ${s.sousTitre ? '<div style="font-size:.65rem;opacity:.7;margin-bottom:4px;">' + escapeHtml(nettoyerSousTitre(s.sousTitre)) + '</div>' : ''}
               <div class="cv-slide-corps">${s.corps||''}</div>
               ${(s.type === 'cta' && CFG.logoUrl) ? '<img class="cv-slide-logo" src="' + CFG.logoUrl + '" alt="logo"/>' : ''}
             </div>
@@ -3869,8 +3913,8 @@ function ouvrirCarrouselFullscreen(){
       <div class="cv-fs-slide" style="background:${fond};">
         <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};width:100%;height:100%;box-sizing:border-box;padding:40px 28px 28px;display:flex;flex-direction:column;justify-content:center;">
 
-          <div style="font-family:'${ptit}',serif;font-size:${idx===0 ? fontSizeTitre(s.titre, 1.15, 44).rem+'rem' : '1.15rem'};font-weight:700;line-height:1.3;margin-bottom:8px;">${s.titre||''}</div>
-          ${s.sousTitre?`<div style="font-size:.8rem;opacity:.7;margin-bottom:8px;">${s.sousTitre}</div>`:''}
+          <div style="font-family:'${ptit}',serif;font-size:${idx===0 ? fontSizeTitre(s.titre, 1.15, 44).rem+'rem' : '1.15rem'};font-weight:700;line-height:1.3;margin-bottom:8px;">${rendreTitreAccent(s.titre||'', c1)}</div>
+          ${s.sousTitre?`<div style="font-size:.8rem;opacity:.7;margin-bottom:8px;">${escapeHtml(nettoyerSousTitre(s.sousTitre))}</div>`:''}
           <div style="font-size:.85rem;line-height:1.6;">${s.corps||''}</div>
           ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="position:absolute;bottom:16px;right:16px;max-width:60px;max-height:28px;object-fit:contain;opacity:.8;"/>`:''
         }</div>
@@ -3922,7 +3966,7 @@ function afficherTooltipCanva(reseau){
   tip.id = 'canva-tooltip';
   tip.innerHTML = `
     <div class="cv-tip-inner">
-      <button class="cv-tip-close" onclick="document.getElementById('canva-tooltip').remove()">✕</button>
+      <button class="cv-tip-close" onclick="document.getElementById('canva-tooltip').remove()" aria-label="Fermer">✕</button>
       <div class="cv-tip-titre">🎨 Importer dans Canva</div>
       <ol class="cv-tip-steps">
         <li>Télécharge tes slides en ${isIG ? 'PNG' : 'PDF'} ci-dessous 👇</li>
@@ -3998,10 +4042,6 @@ function majFondsSlides(){
   });
 }
 
-function copierLegendeCv(){
-  if(!carrouselCourant) return;
-  navigator.clipboard.writeText(carrouselCourant.legende).then(()=>toast('✅ Légende copiée !','ok'));
-}
 
 // ══════════════════════════════════════════
 // EXPORT PNG (Instagram) — html2canvas
@@ -4041,7 +4081,7 @@ async function exporterPNG(){
       ${photoHtml}
       <div style="position:relative;z-index:2;display:flex;flex-direction:column;height:100%;width:100%;">
         
-        <div style="font-family:'${ptit}',serif;font-size:${isSlide1Photo ? fontSizeTitre(s.titre, .82, 72).px : (s.type==='hook'?72:54)}px;font-weight:700;line-height:1.25;margin-bottom:${isSlide1Photo?'8px':'24px'};${isSlide1Photo?'border-bottom:6px solid '+soulCoul+';padding-bottom:12px;':''}">${s.titre||''}</div>
+        <div style="font-family:'${ptit}',serif;font-size:${isSlide1Photo ? fontSizeTitre(s.titre, .82, 72).px : (s.type==='hook'?72:54)}px;font-weight:700;line-height:1.25;margin-bottom:${isSlide1Photo?'8px':'24px'};${isSlide1Photo?'border-bottom:6px solid '+soulCoul+';padding-bottom:12px;':''}">${rendreTitreAccent(s.titre||'', c1)}</div>
         ${s.sousTitre?`<div style="font-size:32px;opacity:.7;margin-bottom:24px;">${s.sousTitre}</div>`:''}
         <div style="font-size:${s.type==='hook'?36:32}px;line-height:1.65;flex:1;">${isSlide1Photo ? '' : (s.corps||'')}</div>
         ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="max-width:160px;max-height:60px;object-fit:contain;opacity:.8;margin-top:auto;"/>` : ''}
@@ -4102,7 +4142,7 @@ async function exporterPDF(){
     const div = document.createElement('div');
     div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;background:${fond};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;`;
     div.innerHTML = `
-      <div style="font-family:'${ptit}',serif;font-size:${s.type==='hook'?72:54}px;font-weight:700;line-height:1.2;margin-bottom:24px;">${s.titre||''}</div>
+      <div style="font-family:'${ptit}',serif;font-size:${s.type==='hook'?72:54}px;font-weight:700;line-height:1.2;margin-bottom:24px;">${rendreTitreAccent(s.titre||'', c1)}</div>
       ${s.sousTitre?`<div style="font-size:32px;opacity:.7;margin-bottom:24px;">${s.sousTitre}</div>`:''}
       <div style="font-size:${s.type==='hook'?36:32}px;line-height:1.65;flex:1;">${s.corps||''}</div>
       ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="max-width:160px;max-height:60px;object-fit:contain;opacity:.8;margin-top:auto;"/>` : ''}
@@ -4191,12 +4231,7 @@ function couleurSoulignement(texteCouleur, c1, c2){
     .reduce((best, c) => ratioContraste(texteCouleur, c) > ratioContraste(texteCouleur, best) ? c : best, opts[0]);
 }
 
-function ouvrirDriveExplorer(){
-  const exp = document.getElementById('drive-explorer');
-  const visible = exp.style.display !== 'none';
-  exp.style.display = visible ? 'none' : 'block';
-  if(!visible) afficherDossiersDrive();
-}
+
 
 function fermerDriveExplorer(){
   document.getElementById('drive-explorer').style.display = 'none';
@@ -4327,55 +4362,121 @@ function q7EffacerPhoto(){
 let genPhotoStyle = 'brute'; // style actif
 let genPhotoTitre = '';      // titre hook extrait du post
 
-function setPhotoStyle(style, btn){
-  genPhotoStyle = style;
+// ── Variables état fond photo ──
+let photoFondCouleur  = null;  // null = utiliser CFG.couleur1
+let photoFondTexture  = 'uni'; // uni | degrade | grain | beton
+let photoFondImageSrc = null;  // URL image importée
+
+function rendreTitreStabilo(titre, couleurStabilo, couleurTexte){
+  const mots = titre.trim().split(' ').filter(Boolean);
+  if(!mots.length) return escapeHtml(titre);
+  const dernierMot = mots.pop();
+  const avant = mots.join(' ');
+  const rgb = hexToRgbPhoto(couleurStabilo);
+  const bgS = rgb ? 'rgba('+rgb.r+','+rgb.g+','+rgb.b+',.52)' : 'rgba(232,24,109,.52)';
+  return (avant ? escapeHtml(avant)+' ' : '')
+    + '<span style="background:'+bgS+';border-radius:3px;padding:1px 5px 2px;-webkit-box-decoration-break:clone;">'+escapeHtml(dernierMot)+'</span>';
+}
+
+function hexToRgbPhoto(hex){
+  const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex||'');
+  return r?{r:parseInt(r[1],16),g:parseInt(r[2],16),b:parseInt(r[3],16)}:null;
+}
+
+function fondsPhotoCouleurCourante(){ return photoFondCouleur||CFG.couleur1||'#E8186D'; }
+
+function calculerBgPhoto(){
+  if(photoFondImageSrc) return null;
+  const c = fondsPhotoCouleurCourante();
+  if(photoFondTexture==='degrade') return 'linear-gradient(135deg,'+c+','+ajusterLum(c,-30)+')';
+  if(photoFondTexture==='grain')   return c;
+  if(photoFondTexture==='beton')   return 'radial-gradient(ellipse at 30% 20%,'+c+','+ajusterLum(c,-40)+')';
+  return c;
+}
+
+function majFondPhotoCouleur(valeur){
+  photoFondCouleur=valeur; photoFondImageSrc=null;
+  document.documentElement.style.setProperty('--c1-tmp',valeur);
+  if(genPhotoStyle==='fond') renderPreviewFondColore();
+}
+
+function majFondPhotoImage(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{ photoFondImageSrc=e.target.result; if(genPhotoStyle==='fond') renderPreviewFondColore(); };
+  reader.readAsDataURL(file);
+}
+
+function setPhotoFondTexture(texture,btn){
+  photoFondTexture=texture; photoFondImageSrc=null;
+  document.querySelectorAll('#photo-fond-textures .cv-fond-opt').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  if(genPhotoStyle==='fond') renderPreviewFondColore();
+}
+
+function renderPreviewFondColore(){
+  const preview=document.getElementById('gen-photo-preview-zone'); if(!preview) return;
+  const c1=fondsPhotoCouleurCourante();
+  const tcoul=estCouleurClaire(c1)?'#111111':'#FFFFFF';
+  const stabilo=estCouleurClaire(c1)?ajusterLum(c1,-35):ajusterLum(c1,45);
+  const bg=calculerBgPhoto();
+  const titre=(genPhotoTitre||'Ton titre ici').substring(0,60);
+  const fondCss=photoFondImageSrc?'position:relative;overflow:hidden;':'background:'+bg+';';
+  const imgHtml=photoFondImageSrc
+    ?'<img src="'+photoFondImageSrc+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7;"/><div style="position:absolute;inset:0;background:rgba(0,0,0,.35);"></div>'
+    :'';
+  const coulTxt=photoFondImageSrc?'#fff':tcoul;
+  const coulStabilo=photoFondImageSrc?'rgba(255,255,255,.5)':stabilo;
+  preview.innerHTML='<div style="width:100%;height:100%;'+fondCss+'border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:1rem 1.1rem;box-sizing:border-box;">'
+    +imgHtml
+    +'<div style="position:relative;z-index:1;font-family:var(--ptit-tmp,serif);font-size:.92rem;font-weight:700;color:'+coulTxt+';line-height:1.5;">'
+    +rendreTitreStabilo(titre,coulStabilo,coulTxt)
+    +'</div></div>';
+}
+
+function setPhotoStyle(style,btn){
+  genPhotoStyle=style;
   document.querySelectorAll('#gen-photo-style-btns .cv-fond-opt').forEach(b=>b.classList.remove('on'));
   if(btn) btn.classList.add('on');
-  document.documentElement.style.setProperty('--ptit-tmp', "'" + (CFG.policeTitre||'Playfair Display') + "',serif");
+  document.documentElement.style.setProperty('--ptit-tmp',"'"+(CFG.policeTitre||'Playfair Display')+"',serif");
+  document.documentElement.style.setProperty('--c1-tmp',fondsPhotoCouleurCourante());
 
-  const preview  = document.getElementById('gen-photo-preview-zone');
-  const addMsg   = document.getElementById('gen-photo-add-msg');
-  const hasPhoto = !!(photoSlide1 && photoSlide1.src);
-  const c1 = CFG.couleur1 || '#E8186D';
-  const c2 = CFG.couleur2 || '#111111';
-  const ptit = CFG.policeTitre || 'Playfair Display';
-  const tcoul = estCouleurClaire(c1) ? '#111111' : '#FFFFFF';
-  const soulCoul = couleurSoulignement(tcoul, c1, c2);
+  const preview=document.getElementById('gen-photo-preview-zone');
+  const addMsg=document.getElementById('gen-photo-add-msg');
+  const fondOpts=document.getElementById('gen-photo-fond-opts');
+  const hasPhoto=!!(photoSlide1&&photoSlide1.src);
+  const c1=CFG.couleur1||'#E8186D';
+  const c2=CFG.couleur2||'#111111';
 
-  if(style === 'brute'){
+  if(fondOpts) fondOpts.style.display=style==='fond'?'block':'none';
+  const picker=document.getElementById('photo-fond-couleur');
+  if(picker&&!photoFondCouleur) picker.value=c1;
+
+  if(style==='brute'){
     if(hasPhoto){
       addMsg.style.display='none';
-      preview.innerHTML = '<img src="'+photoSlide1.src+'" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:10px;"/>';
+      preview.innerHTML='<img src="'+photoSlide1.src+'" alt="Photo du post" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:10px;"/>';
     } else {
       addMsg.style.display='block';
-      preview.innerHTML = '<div style="width:100%;height:100%;background:var(--gris-input);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;">🖼️</div>';
+      preview.innerHTML='<div style="width:100%;height:100%;background:var(--gris-input);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;">🖼️</div>';
     }
-  } else if(style === 'titre'){
+  } else if(style==='titre'){
     if(hasPhoto){
       addMsg.style.display='none';
-      preview.innerHTML = '<div style="position:relative;width:100%;height:100%;border-radius:10px;overflow:hidden;">'
-        + '<img src="'+photoSlide1.src+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;"/>'
-        + '<div style="position:absolute;inset:0;background:rgba(0,0,0,0.42);"></div>'
-        + '<div style="position:relative;z-index:1;padding:1rem;display:flex;flex-direction:column;justify-content:flex-end;height:100%;box-sizing:border-box;">'
-        + '<div style="font-family:var(--ptit-tmp,serif);font-size:.9rem;font-weight:700;color:'+meilleureTexteCouleur('#000000',c1,c2)+';border-bottom:2.5px solid '+soulCoul+';padding-bottom:4px;line-height:1.3;">'+escapeHtml(genPhotoTitre.substring(0,60))+'</div>'
-        + '</div></div>';
+      preview.innerHTML='<div style="position:relative;width:100%;height:100%;border-radius:10px;overflow:hidden;">'
+        +'<img src="'+photoSlide1.src+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"/>'
+        +'<div style="position:absolute;inset:0;background:rgba(0,0,0,.42);"></div>'
+        +'<div style="position:relative;z-index:1;padding:1rem;display:flex;flex-direction:column;justify-content:flex-end;height:100%;box-sizing:border-box;">'
+        +'<div style="font-family:var(--ptit-tmp,serif);font-size:.9rem;font-weight:700;color:#fff;line-height:1.4;">'
+        +rendreTitreStabilo((genPhotoTitre||'').substring(0,60),c1,'#fff')
+        +'</div></div></div>';
     } else {
       addMsg.style.display='block';
-      preview.innerHTML = '<div style="width:100%;height:100%;background:var(--gris-input);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;">✍️</div>';
+      preview.innerHTML='<div style="width:100%;height:100%;background:var(--gris-input);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;">✍️</div>';
     }
-  } else { // fond coloré
+  } else {
     addMsg.style.display='none';
-    // Choisir un style de fond aléatoire parmi les styles carrousel
-    const styles = ['uni','degrade','grain','beton'];
-    const fondStyle = styles[Math.floor(Date.now()/10000) % styles.length];
-    let bg = '';
-    if(fondStyle === 'degrade') bg = 'linear-gradient(135deg,'+c1+','+ajusterLum(c1,-25)+')';
-    else if(fondStyle === 'grain') bg = c1;
-    else if(fondStyle === 'beton') bg = 'radial-gradient(ellipse at 30% 20%,'+c1+','+ajusterLum(c1,-35)+')';
-    else bg = c1;
-    preview.innerHTML = '<div style="width:100%;height:100%;background:'+bg+';border-radius:10px;display:flex;flex-direction:column;justify-content:flex-end;padding:1rem;box-sizing:border-box;">'
-      + '<div style="font-family:var(--ptit-tmp,serif);font-size:.9rem;font-weight:700;color:'+tcoul+';border-bottom:2.5px solid '+soulCoul+';padding-bottom:4px;line-height:1.3;">'+escapeHtml(genPhotoTitre.substring(0,60))+'</div>'
-      + '</div>';
+    renderPreviewFondColore();
   }
 }
 
@@ -4452,9 +4553,7 @@ async function q7ImporterPhoto(){
   }
 }
 
-function driveRetour(){
-  afficherDossiersDrive();
-}
+
 
 // ══════════════════════════════════════════
 // LECTURE FICHIER ROZE_MODELES
@@ -4820,21 +4919,77 @@ function matiereSemaine(){
   // Récupère depuis les champs si dispo, sinon depuis le brouillon sauvegardé
   const draft = lsJ('roze_draft') || {};
   const qv = (id) => (document.getElementById(id)||{}).value?.trim() || draft[id] || '';
-  return [
-    'Anecdote : '     + qv('q1'),
-    'Retour client : '+ qv('q2'),
-    'Frein entendu : '+ qv('q3'),
-    'Observation : '  + qv('q4'),
-    'Fierté : '       + qv('q5'),
-    'Offre en avant : '+ qv('q6'),
-    'Photo disponible : '+ qv('q7'),
-    'Intention éditoriale : '+ qv('q8'),
-  ].filter(l => !l.endsWith(': ')).join('\n');
+  const lignes = [
+    'Anecdote : '              + qv('q1'),
+    'Retour client : '         + qv('q2'),
+    'Frein entendu : '         + qv('q3'),
+    'Observation : '           + qv('q4'),
+    'Fierté : '                + qv('q5'),
+    'Offre en avant : '        + qv('q6'),
+    'Photo disponible : '      + qv('q7'),
+    'Intention éditoriale : '  + qv('q8'),
+  ].filter(l => !l.endsWith(': '));
+  return lignes.join('\n');
+}
+
+// ── Matière enrichie : semaine courante + fallback S-1/S-2/S-3 ──
+// Appelée avant chaque génération pour s'assurer qu'on a du contenu.
+// Si la semaine courante est vide, va chercher la plus récente non vide.
+// Retourne { matiere, source } où source = 'courante' | 'S.XX-YYYY' | 'vide'
+async function matiereSemaineEnrichie(){
+  const courante = matiereSemaine();
+
+  // Si la semaine courante a du contenu → l'utiliser directement
+  if(courante && courante.trim().length > 20){
+    return { matiere: courante, source: 'courante' };
+  }
+
+  // Semaine vide → interroger le Sheets pour remonter S-1/S-2/S-3
+  if(!CFG.as) return { matiere: courante, source: 'vide' };
+
+  try{
+    const r = await fetch(CFG.as, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'lire_matiere_recente' })
+    });
+    const j = await r.json();
+
+    if(!j.vide && j.matiere && j.matiere.trim().length > 10){
+      // Indiquer à l'utilisateur quelle semaine est utilisée
+      afficherBandeauMatiere(j.semaineTrouvee);
+      return { matiere: j.matiere, source: j.semaineTrouvee };
+    }
+  }catch(e){
+    console.warn('Fallback matière échoué :', e.message);
+  }
+
+  return { matiere: courante, source: 'vide' };
+}
+
+// Bandeau discret sous le bouton Générer quand on utilise une semaine passée
+function afficherBandeauMatiere(semaine){
+  const existant = document.getElementById('bandeau-matiere');
+  if(existant) existant.remove();
+  if(!semaine) return;
+  const btn = document.getElementById('btn-gen-post');
+  if(!btn) return;
+  const bandeau = document.createElement('div');
+  bandeau.id = 'bandeau-matiere';
+  bandeau.style.cssText = 'font-size:.72rem;color:var(--gris-clair);background:rgba(232,24,109,.06);border:1px solid rgba(232,24,109,.18);border-radius:8px;padding:.4rem .8rem;margin-top:.4rem;line-height:1.5;';
+  bandeau.innerHTML = '📅 Matière de la semaine non renseignée — l\'IA s\'appuie sur <strong style="color:var(--rose-clair);">' + semaine + '</strong> (dernière semaine disponible)';
+  btn.insertAdjacentElement('afterend', bandeau);
+}
+
+function masquerBandeauMatiere(){
+  const b = document.getElementById('bandeau-matiere');
+  if(b) b.remove();
 }
 
 // ── Autosave brouillon questions (debounce 1.5s) ──
 let _autosaveTimer = null;
 function autosaveDraft(){
+  // Si l'utilisateur commence à remplir → masquer le bandeau matière
+  masquerBandeauMatiere();
   clearTimeout(_autosaveTimer);
   _autosaveTimer = setTimeout(()=>{
     const draft = {};
@@ -4890,9 +5045,7 @@ function setIA(ia, save=true){
   if(cGemini) cGemini.classList.toggle('on', ia==='gemini');
 }
 
-function getCleAPI(){
-  return CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api;
-}
+
 
 // Appel unifié — route vers Claude ou Gemini
 async function appelIA(prompt){
@@ -4971,9 +5124,9 @@ function traduireErreurIA(err) {
 // Vérification clé présente selon IA sélectionnée
 function verifierCleIA(){
   if(CFG.ia === 'gemini'){
-    if(!CFG.apiGemini){ toast('⚙️ Clé API manquante — va dans Mon Compte → Connexions', 'err'); return false; }
+    if(!CFG.apiGemini){ toast('🔑 Ta clé API est manquante. Va dans Mon Compte → Connexions.','err'); return false; }
   } else {
-    if(!CFG.api){ toast('⚙️ Clé API manquante — va dans Mon Compte → Connexions', 'err'); return false; }
+    if(!CFG.api){ toast('🔑 Ta clé API est manquante. Va dans Mon Compte → Connexions.','err'); return false; }
   }
   return true;
 }
@@ -5233,7 +5386,9 @@ async function genUnPost(){
   if(btnGen){ btnGen.disabled=true; btnGen.innerHTML='<span class="sablier-anim">⏳</span> Génération…'; }
 
   try{
-    const mat = matiereSemaine();
+    // Matière enrichie : semaine courante si renseignée, sinon S-1/S-2/S-3
+    const { matiere: mat, source: matSource } = await matiereSemaineEnrichie();
+    if(matSource === 'courante') masquerBandeauMatiere();
 
     // Si toggle actu activé OU pilier=expertise → lancer la recherche web
     const cbActu = document.getElementById('cb-actu');
@@ -5318,13 +5473,11 @@ async function genUnPost(){
         psZone.style.display='block';
         genPhotoTitre = t.split('\n')[0].replace(/^[#*]+\s*/,'').substring(0,80);
         genHookPhoto(t).then(hook => { genPhotoTitre = hook; setPhotoStyle(genPhotoStyle, document.getElementById('gps-'+genPhotoStyle)); });
-        const brs = document.getElementById('btn-regen-style');
-        if(brs) brs.style.display='inline-flex';
+
         setPhotoStyle('brute', document.getElementById('gps-brute'));
       } else if(psZone){
         psZone.style.display='none';
-        const brs2 = document.getElementById('btn-regen-style');
-        if(brs2) brs2.style.display='none';
+
       }
     }
 
@@ -5334,7 +5487,7 @@ async function genUnPost(){
     result.dataset.isCarrousel = parsed.isCarrousel ? '1' : '0';
     if(parsed.isCarrousel) result.dataset.slides = JSON.stringify(parsed.slides);
 
-    if(btnGen){ btnGen.disabled=false; btnGen.innerHTML='✨ Générer ce post'; }
+    if(btnGen){ btnGen.disabled=false; btnGen.innerHTML='✨ Générer'; }
     afficherChipSource(); // Afficher chip source si actu disponible
     // Sauvegarder la stat de l'actu pour éviter répétition ce mois
     if(actuTexte) ajouterStatMois(actuTexte.substring(0,120));
@@ -5347,7 +5500,7 @@ async function genUnPost(){
 
   }catch(e){
     inlineLoader.classList.remove('on');
-    if(btnGen){ btnGen.disabled=false; btnGen.textContent='✨ Générer ce post'; }
+    if(btnGen){ btnGen.disabled=false; btnGen.textContent='✨ Générer'; }
     toast('❌ Erreur : ' + e.message,'err');
     return;
   }
@@ -5418,8 +5571,7 @@ async function sauvegarderGenPanel(){
   // Reset panneau
   const _psz = document.getElementById('gen-photo-style-zone');
   if(_psz) _psz.style.display='none';
-  const _brs2 = document.getElementById('btn-regen-style');
-  if(_brs2) _brs2.style.display='none';
+
   const _chip = document.getElementById('gen-source-chip');
   if(_chip) _chip.style.display='none';
   result.textContent=''; result.classList.remove('on');
@@ -5457,7 +5609,7 @@ async function genSemaine(){
   toast('⏳ Ton IA génère la semaine en cours…','ok');
 
   try{
-    const mat = matiereSemaine();
+    const { matiere: mat } = await matiereSemaineEnrichie();
     const lundi = lundiSem(new Date());
     const jours = Array.from({length:7},(_,i)=>{ const d=new Date(lundi.getTime()+i*86400000); return d.toISOString().split('T')[0]; });
 
@@ -5743,7 +5895,7 @@ async function genererStoryPanel(){
     loaderTxt.textContent = '📱 Génération du script story…';
     const sujet = (document.getElementById('gsp-sujet').value || '').trim();
     const datePub = document.getElementById('gsp-date').value || dateAujourdhui();
-    const mat = matiereSemaine();
+    const { matiere: mat } = await matiereSemaineEnrichie();
 
     const body = {
       action:     'generer_post',
@@ -6341,7 +6493,7 @@ async function regenPost(){
       format:          it.typeContenu,
       pilier:          it.pilier||'autorite',
       sujet:           '',
-      matiere:         matiereSemaine(),
+      matiere:         (await matiereSemaineEnrichie()).matiere,
       anti_redondance: contexteAntiRedondance(),
     };
     const r = await fetch(CFG.as, {method:'POST', body:JSON.stringify(body)});
@@ -6376,7 +6528,7 @@ async function genDepuisSujet(){
       format:          it.typeContenu,
       pilier:          it.pilier||'autorite',
       sujet:           sujet,
-      matiere:         matiereSemaine(),
+      matiere:         (await matiereSemaineEnrichie()).matiere,
       anti_redondance: contexteAntiRedondance(),
     };
     const r = await fetch(CFG.as, {method:'POST', body:JSON.stringify(body)});
@@ -6786,7 +6938,7 @@ function sauvegarderCompte(){
   });
   syncStories();
   construireStoriesUI();
-  const nomAffiche = [CFG.prenom, CFG.nom].filter(Boolean).join(' '); const el_nc = document.getElementById('nom-client'); if(el_nc && !el_nc.onclick) el_nc.textContent = nomAffiche || 'Se repérer ›';
+
   syncConfigVersSheets(); // Envoie la config locale vers Sheets
 
   // Si l'URL AS vient d'être saisie ou modifiée → relire le Sheets
@@ -6911,7 +7063,7 @@ async function genScriptPanel(idx, dateStr){
   if(!zone) return;
   zone.textContent = '⏳ Ton IA rédige ta story…';
 
-  const matiere = matiereSemaine();
+  const matiere = (await matiereSemaineEnrichie()).matiere;
 
   // Génération via Apps Script — profil lu depuis Sheets
   const body = {
@@ -7055,7 +7207,7 @@ async function genStoryTexte(){
   const zone = document.getElementById('story-modal-exemple-txt');
   zone.textContent = '⏳ Ton IA rédige ta story…';
 
-  const matiere = matiereSemaine();
+  const matiere = (await matiereSemaineEnrichie()).matiere;
 
   // Génération via Apps Script — profil lu depuis Sheets
   const body = {

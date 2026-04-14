@@ -3596,7 +3596,46 @@ function ajusterLum(hex, pct){
 }
 
 function texteSlide(fond){
-  return estCouleurClaire(fond) ? '#111111' : '#FFFFFF';
+  // Contraste WCAG simplifié : choisir noir ou blanc selon le fond réel
+  if(!fond || !fond.startsWith('#')) return '#FFFFFF';
+  const rgb = hexToRgbPhoto(fond);
+  if(!rgb) return '#FFFFFF';
+  // Luminance relative
+  const lum = (c) => { c = c/255; return c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
+  const L = 0.2126*lum(rgb.r) + 0.7152*lum(rgb.g) + 0.0722*lum(rgb.b);
+  // Ratio contre blanc et noir
+  const ratioNoir  = (L + 0.05) / 0.05;
+  const ratioBlanc = 1.05 / (L + 0.05);
+  return ratioBlanc > ratioNoir ? '#FFFFFF' : '#111111';
+}
+
+// Couleur accent contrastée par rapport au fond réel de la slide
+function accentSlide(c1, fondSlide){
+  if(!fondSlide || !fondSlide.startsWith('#')) return c1;
+  const rgb1 = hexToRgbPhoto(c1);
+  const rgbF = hexToRgbPhoto(fondSlide);
+  if(!rgb1 || !rgbF) return c1;
+  const lum = (c) => { c = c/255; return c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
+  const L1 = 0.2126*lum(rgb1.r) + 0.7152*lum(rgb1.g) + 0.0722*lum(rgb1.b);
+  const LF = 0.2126*lum(rgbF.r) + 0.7152*lum(rgbF.g) + 0.0722*lum(rgbF.b);
+  const ratio = (Math.max(L1, LF) + 0.05) / (Math.min(L1, LF) + 0.05);
+  // Si contraste insuffisant (<3) → utiliser une variante plus contrastée
+  if(ratio < 3){
+    // Tenter une version plus lumineuse ou plus sombre de c1
+    const clair  = ajusterLum(c1, +40);
+    const sombre = ajusterLum(c1, -40);
+    const rC = hexToRgbPhoto(clair);
+    const rS = hexToRgbPhoto(sombre);
+    const lC = 0.2126*lum(rC.r)+0.7152*lum(rC.g)+0.0722*lum(rC.b);
+    const lS = 0.2126*lum(rS.r)+0.7152*lum(rS.g)+0.0722*lum(rS.b);
+    const ratioC = (Math.max(lC,LF)+0.05)/(Math.min(lC,LF)+0.05);
+    const ratioS = (Math.max(lS,LF)+0.05)/(Math.min(lS,LF)+0.05);
+    if(ratioC > ratioS && ratioC >= 3) return clair;
+    if(ratioS >= 3) return sombre;
+    // Dernier recours : blanc ou noir pur
+    return texteSlide(fondSlide) === '#FFFFFF' ? '#FFD700' : '#333333';
+  }
+  return c1;
 }
 
 // ══════════════════════════════════════════
@@ -3881,7 +3920,7 @@ function afficherCarrousel(slides, legende, reseau, containerId){
             <div class="cv-slide-inner" style="position:relative;z-index:1;font-family:'${pcorp}',sans-serif;color:${i===0&&photoSlide1 ? meilleureTexteCouleur('#000000',c1,c2) : texteSlide(fondSlide(s.num, slides.length, c1, c2))};">
 
 
-              <div class="cv-slide-titre" style="font-family:'${ptit}',serif;font-size:${i===0 ? fontSizeTitre(s.titre, .82, 48).rem+'rem' : ''};${(i===0&&photoSlide1) ? 'color:'+meilleureTexteCouleur('#000000',c1,c2)+';border-bottom:3px solid '+couleurSoulignement(meilleureTexteCouleur('#000000',c1,c2),c1,c2)+';padding-bottom:4px;' : ''}">${rendreTitreAccent(s.titre||'', c1)}</div>
+              <div class="cv-slide-titre" style="font-family:'${ptit}',serif;font-size:${i===0 ? fontSizeTitre(s.titre, .82, 48).rem+'rem' : ''};${(i===0&&photoSlide1) ? 'color:'+meilleureTexteCouleur('#000000',c1,c2)+';border-bottom:3px solid '+couleurSoulignement(meilleureTexteCouleur('#000000',c1,c2),c1,c2)+';padding-bottom:4px;' : ''}">${rendreTitreAccent(s.titre||'', accentSlide(c1, fondSlide(s.num,slides.length,c1,c2)), fondSlide(s.num,slides.length,c1,c2))}</div>
               ${s.sousTitre ? '<div style="font-size:.65rem;opacity:.7;margin-bottom:4px;">' + escapeHtml(nettoyerSousTitre(s.sousTitre)) + '</div>' : ''}
               <div class="cv-slide-corps">${nettoyerCorpsSlide(s.corps||'')}</div>
               ${(s.type === 'cta' && CFG.logoUrl) ? '<img class="cv-slide-logo" src="' + CFG.logoUrl + '" alt="logo"/>' : ''}
@@ -3941,7 +3980,7 @@ function ouvrirCarrouselFullscreen(){
       <div class="cv-fs-slide" style="background:${fond};">
         <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};width:100%;height:100%;box-sizing:border-box;padding:40px 28px 28px;display:flex;flex-direction:column;justify-content:center;">
 
-          <div style="font-family:'${ptit}',serif;font-size:${idx===0 ? fontSizeTitre(s.titre, 1.15, 44).rem+'rem' : '1.15rem'};font-weight:700;line-height:1.3;margin-bottom:8px;">${rendreTitreAccent(s.titre||'', c1)}</div>
+          <div style="font-family:'${ptit}',serif;font-size:${idx===0 ? fontSizeTitre(s.titre, 1.15, 44).rem+'rem' : '1.15rem'};font-weight:700;line-height:1.3;margin-bottom:8px;">${rendreTitreAccent(s.titre||'', accentSlide(c1, fond), fond)}</div>
           ${s.sousTitre?`<div style="font-size:.8rem;opacity:.7;margin-bottom:8px;">${escapeHtml(nettoyerSousTitre(s.sousTitre))}</div>`:''}
           <div style="font-size:.85rem;line-height:1.6;">${nettoyerCorpsSlide(s.corps||'')}</div>
           ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="position:absolute;bottom:16px;right:16px;max-width:60px;max-height:28px;object-fit:contain;opacity:.8;"/>`:''
@@ -4109,7 +4148,7 @@ async function exporterPNG(){
       ${photoHtml}
       <div style="position:relative;z-index:2;display:flex;flex-direction:column;height:100%;width:100%;">
         
-        <div style="font-family:'${ptit}',serif;font-size:${isSlide1Photo ? fontSizeTitre(s.titre, .82, 72).px : (s.type==='hook'?72:54)}px;font-weight:700;line-height:1.25;margin-bottom:${isSlide1Photo?'8px':'24px'};${isSlide1Photo?'border-bottom:6px solid '+soulCoul+';padding-bottom:12px;':''}">${rendreTitreAccent(s.titre||'', c1)}</div>
+        <div style="font-family:'${ptit}',serif;font-size:${isSlide1Photo ? fontSizeTitre(s.titre, .82, 72).px : (s.type==='hook'?72:54)}px;font-weight:700;line-height:1.25;margin-bottom:${isSlide1Photo?'8px':'24px'};${isSlide1Photo?'border-bottom:6px solid '+soulCoul+';padding-bottom:12px;':''}">${rendreTitreAccent(s.titre||'', accentSlide(c1, fond), fond)}</div>
         ${s.sousTitre?`<div style="font-size:32px;opacity:.7;margin-bottom:24px;">${s.sousTitre}</div>`:''}
         <div style="font-size:${s.type==='hook'?36:32}px;line-height:1.65;flex:1;">${isSlide1Photo ? '' : (s.corps||'')}</div>
         ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="max-width:160px;max-height:60px;object-fit:contain;opacity:.8;margin-top:auto;"/>` : ''}
@@ -4170,7 +4209,7 @@ async function exporterPDF(){
     const div = document.createElement('div');
     div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;background:${fond};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;`;
     div.innerHTML = `
-      <div style="font-family:'${ptit}',serif;font-size:${s.type==='hook'?72:54}px;font-weight:700;line-height:1.2;margin-bottom:24px;">${rendreTitreAccent(s.titre||'', c1)}</div>
+      <div style="font-family:'${ptit}',serif;font-size:${s.type==='hook'?72:54}px;font-weight:700;line-height:1.2;margin-bottom:24px;">${rendreTitreAccent(s.titre||'', accentSlide(c1, fond), fond)}</div>
       ${s.sousTitre?`<div style="font-size:32px;opacity:.7;margin-bottom:24px;">${s.sousTitre}</div>`:''}
       <div style="font-size:${s.type==='hook'?36:32}px;line-height:1.65;flex:1;">${s.corps||''}</div>
       ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="max-width:160px;max-height:60px;object-fit:contain;opacity:.8;margin-top:auto;"/>` : ''}
@@ -4863,18 +4902,24 @@ async function syncPostsDepuisSheets(){
 
     // Posts locaux non encore dans le Sheets (en attente de sync)
     const local = getBiblio();
+    // IDs marqués comme supprimés localement (ne pas les réimporter depuis Sheets)
+    const supprimes = new Set((lsJ('roze_supprimes') || []).map(String));
+
     const clesSheets = new Set(postsSheets.map(p =>
       (p.date||'')+'|'+(p.reseau||'')+'|'+(p.typeContenu||'')+'|'+String(p.texte||'').substring(0,50)
     ));
     const postsLocauxEnAttente = local.filter(p => {
-      // Post récent non encore dans le Sheets
+      if(supprimes.has(String(p.id))) return false; // exclu : supprimé
       const cle = (p.date||'')+'|'+(p.reseau||'')+'|'+(p.typeContenu||'')+'|'+String(p.texte||'').substring(0,50);
       return !clesSheets.has(cle);
     });
 
-    // Reconstruire : posts du Sheets + posts locaux non encore synchronisés
+    // Exclure du Sheets les posts dont le texte correspond à un id supprimé
+    const postsSheetsFiltres = postsSheets.filter(p => !supprimes.has(String(p.id)));
+
+    // Reconstruire : posts du Sheets filtrés + posts locaux non encore synchronisés
     const postsReconstruits = [
-      ...postsSheets.map(p => ({
+      ...postsSheetsFiltres.map(p => ({
         id:          parseInt(p.id) || Date.now(),
         reseau:      p.reseau      || '',
         typeContenu: p.typeContenu || 'Post texte',
@@ -5475,8 +5520,26 @@ async function genUnPost(){
       result.textContent = t;
       result.classList.add('on');
       document.getElementById('lbl-gen-texte').style.display='block';
-      document.getElementById('lbl-gen-texte').textContent='Texte du post';
-      document.getElementById('gen-legende').value = l;
+      // Pour un post Texte : on n'affiche PAS l'encart "Texte du post"
+      // Le texte + hashtags va directement dans la légende
+      if(format === 'Post texte'){
+        // Fusionner texte + légende dans la zone légende
+        const texteFinal = t.trim();
+        const legendeFinal = l ? texteFinal + '\n\n' + l : texteFinal;
+        document.getElementById('gen-legende').value = legendeFinal;
+        document.getElementById('lbl-gen-texte').style.display = 'none';
+        // gen-result reste caché pour post texte
+        result.classList.remove('on');
+        result.textContent = t; // stocké en dataset pour sauvegarder
+        // Renommer le label de la zone légende
+        const lblLeg = document.querySelector('#gen-legende-zone .creer-lbl');
+        if(lblLeg) lblLeg.textContent = 'Ton post';
+      } else {
+        document.getElementById('lbl-gen-texte').textContent = 'Texte du post';
+        const lblLeg2 = document.querySelector('#gen-legende-zone .creer-lbl');
+        if(lblLeg2) lblLeg2.textContent = 'Légende & hashtags';
+        document.getElementById('gen-legende').value = l;
+      }
       if(format !== 'Stories') legZone.classList.add('on');
       actions.style.display='flex';
       // Zone personnalisation Photo
@@ -5549,7 +5612,10 @@ async function sauvegarderGenPanel(){
   let texte = '';
   let slides = null;
 
-  if(isCarrousel){
+  if(format === 'Post texte'){
+    // Post texte : tout est dans gen-legende (texte + hashtags)
+    texte = legende; // legende contient déjà le texte complet
+  } else if(isCarrousel){
     // Récupérer les slides depuis le dataset ou depuis le viewer inline
     try{ slides = JSON.parse(result.dataset.slides||'null'); }catch(e){}
     if(!slides && typeof carrouselCourant !== 'undefined' && carrouselCourant){
@@ -5632,9 +5698,22 @@ function supprimerGenPanel(){
 }
 
 function copierGenPanel(){
-  const t = document.getElementById('gen-result').textContent;
-  const l = document.getElementById('gen-legende').value;
-  navigator.clipboard.writeText(l ? t+'\n\n'+l : t).then(()=>toast('✅ Copié !','ok'));
+  const result  = document.getElementById('gen-result');
+  const legende = document.getElementById('gen-legende').value.trim();
+  const fmt     = (result.dataset.format || getGenFormat());
+  let texte;
+  if(fmt === 'Post texte'){
+    // Tout est déjà dans la légende (texte + hashtags fusionnés)
+    texte = legende;
+  } else if(result.dataset.isCarrousel === '1'){
+    texte = legende;
+  } else if(result.dataset.scriptTexte){
+    texte = result.dataset.scriptTexte + (legende ? '\n\n' + legende : '');
+  } else {
+    texte = result.textContent.trim() + (legende ? '\n\n' + legende : '');
+  }
+  if(!texte){ toast('⚠️ Rien à copier','err'); return; }
+  navigator.clipboard.writeText(texte).then(()=>toast('✅ Copié !','ok'));
 }
 
 async function genSemaine(){
@@ -6178,14 +6257,21 @@ async function syncStatutVersSheets(post) {
 }
 
 // Sync suppression vers Sheets
-async function syncSuppressionVersSheets(id) {
-  if(!CFG.as || !navigator.onLine) return;
+async function syncSuppressionVersSheets(id, texte) {
+  if(!CFG.as) return;
+  // Marquer l'id comme supprimé localement pour éviter la réapparition lors de la sync
+  const supprimes = lsJ('roze_supprimes') || [];
+  if(!supprimes.includes(String(id))) supprimes.push(String(id));
+  localStorage.setItem('roze_supprimes', JSON.stringify(supprimes.slice(-100)));
+
+  if(!navigator.onLine) return;
   try {
     await fetch(CFG.as, {
       method: 'POST',
       body: JSON.stringify({
         action: 'supprimer_post',
-        id:     id
+        id:     String(id),
+        texte:  String(texte||'').substring(0,50)
       })
     });
   } catch(e) { /* silencieux */ }
@@ -6358,9 +6444,12 @@ function toggleStatut(id){
 function supprimerPost(){
   if(!editId) return;
   const id = editId;
-  const b=getBiblio(); setBiblio(b.filter(i=>i.id!==id));
+  const b  = getBiblio();
+  const it = b.find(i=>i.id===id);
+  setBiblio(b.filter(i=>i.id!==id));
   fermerEdit(); rendreCal(); toast('🗑️ Post supprimé','ok');
-  syncSuppressionVersSheets(id); // Sync silencieuse vers Sheets
+  // Envoyer aussi le texte pour que le Sheets retrouve le bon post
+  syncSuppressionVersSheets(id, it ? it.texte : '');
 }
 
 function dateAujourdhui(){ return new Date().toISOString().split('T')[0]; }
@@ -6863,6 +6952,9 @@ function resetGenPanel(){
   const gc = document.getElementById('gen-source-chip');   if(gc) gc.style.display='none';
   const bs = document.querySelector('#gen-post-actions .btn-rose');
   if(bs){ bs.innerHTML='💾 Sauvegarder dans le calendrier'; bs.disabled=false; bs.style.cssText=''; }
+  // Remettre le label légende par défaut
+  const lblLeg = document.querySelector('#gen-legende-zone .creer-lbl');
+  if(lblLeg) lblLeg.textContent = 'Légende & hashtags';
   actuTexte = '';
   const cb = document.getElementById('cb-actu'); if(cb) cb.checked=false;
 }

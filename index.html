@@ -3568,9 +3568,16 @@ function styleFondSlide(numSlide, totalSlides, c1, c2){
     // Fond uni couleur secondaire
     return `background:${c2 || '#222222'};`;
   }
-  if(style === 'grain'){
-    // Grain subtil CSS — fond de couleur + bruit simulé via radial-gradient
-    return `background:${fond};background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E"),linear-gradient(160deg,${fond}ee 0%,${fond}cc 50%,${ajusterLum(fond,-15)}dd 100%);background-size:256px 256px,100% 100%;`;
+  if(style === 'photo'){
+    // Photo de fond (par slide ou globale)
+    const photoSrc = cvFondPhotoParSlide[numSlide-1] || cvFondPhotoSrc || null;
+    if(photoSrc){
+      // Retourner un style avec background-image + overlay semi-transparent pour lisibilité
+      return `position:relative;background:${fond};`;
+      // Note : l'image est injectée via un pseudo-element dans le HTML du slide
+    }
+    // Pas de photo → fallback uni
+    return `background:${fond};`;
   }
   if(style === 'beton'){
     // Béton/matière — dégradé radial foncé
@@ -3888,7 +3895,7 @@ function nettoyerSousTitre(st){
 }
 
 function afficherCarrousel(slides, legende, reseau, containerId){
-  carrouselCourant = { slides, legende, reseau };
+  carrouselCourant = { slides, legende, reseau, styleFond: styleFondActif, overrides: {...overridesSlide} };
   cvSlideActive = 0;
 
   const c1 = CFG.couleur1 || '#E8186D';
@@ -3926,7 +3933,7 @@ function afficherCarrousel(slides, legende, reseau, containerId){
               <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'uni')"     title="Uni 1" style="background:${c1}"></button>
               <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'uni2')"    title="Uni 2" style="background:${c2}"></button>
               <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'degrade')" title="Dégradé" style="background:linear-gradient(135deg,${c1},${c2})"></button>
-              <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'grain')"   title="Grain" style="background:${c1};opacity:.7"></button>
+              <label class="cv-slide-style-btn" title="Photo de fond" style="background:linear-gradient(135deg,#555,#222);cursor:pointer;font-size:8px;display:flex;align-items:center;justify-content:center;color:#fff;">🖼️<input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhotoSlide(this,${i})"/></label>
               <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'beton')"   title="Matière" style="background:${c2};opacity:.7"></button>
             </div>
             <div class="cv-slide-inner" style="position:relative;z-index:1;font-family:'${pcorp}',sans-serif;color:${i===0&&photoSlide1 ? meilleureTexteCouleur('#000000',c1,c2) : texteSlide(fondSlide(s.num, slides.length, c1, c2))};">
@@ -3945,7 +3952,7 @@ function afficherCarrousel(slides, legende, reseau, containerId){
         <button class="cv-fond-opt on" id="cvf-uni"     onclick="setStyleFond(this,'uni')"     title="Uni couleur principale"><span class="cv-fond-dot" style="background:${c1}"></span>Uni 1</button>
         <button class="cv-fond-opt"    id="cvf-uni2"    onclick="setStyleFond(this,'uni2')"    title="Uni couleur secondaire"><span class="cv-fond-dot" style="background:${c2}"></span>Uni 2</button>
         <button class="cv-fond-opt"    id="cvf-degrade" onclick="setStyleFond(this,'degrade')" title="Dégradé"><span class="cv-fond-dot" style="background:linear-gradient(135deg,${c1},${c2})"></span>Dégradé</button>
-        <button class="cv-fond-opt"    id="cvf-grain"   onclick="setStyleFond(this,'grain')"   title="Grain"><span class="cv-fond-dot" style="background:${c1};opacity:.9"></span>Grain</button>
+        <label class="cv-fond-opt" id="cvf-photo-fond" title="Photo de fond" style="cursor:pointer;"><span class="cv-fond-dot" style="background:linear-gradient(135deg,#555,#333);">🖼️</span>Photo<input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhoto(this)"/></label>
         <button class="cv-fond-opt"    id="cvf-beton"   onclick="setStyleFond(this,'beton')"   title="Matière"><span class="cv-fond-dot" style="background:radial-gradient(ellipse at 30% 20%,${c1},${c2})"></span>Matière</button>
         <button class="cv-fond-reset"  onclick="resetOverrides()" title="Annuler les overrides par slide">↺ Tout réinitialiser</button>
         ${photoSlide1 ? '<span style="font-size:.72rem;color:var(--succes);padding:.2rem .6rem;background:rgba(46,204,113,.1);border-radius:6px;border:1px solid rgba(46,204,113,.3);">🖼️ Slide 1 : ' + photoSlide1.nom.substring(0,20) + '…</span>' : ''}
@@ -4069,6 +4076,41 @@ function afficherTooltipCanva(reseau){
   document.body.appendChild(tip);
 }
 
+
+// ── Photo de fond carrousel (global) ──
+let cvFondPhotoSrc = null;
+
+function setCvFondPhoto(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    cvFondPhotoSrc = e.target.result;
+    // Activer visuellement le bouton
+    document.querySelectorAll('.cv-fond-btn').forEach(b=>b.classList.remove('on'));
+    const btn = document.getElementById('cvf-photo-fond');
+    if(btn) btn.classList.add('on');
+    // Appliquer à toutes les slides
+    majFondsSlides();
+    // Marquer le style global
+    styleFondActif = 'photo';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Photo de fond par slide ──
+const cvFondPhotoParSlide = {};
+
+function setCvFondPhotoSlide(input, slideIdx){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    cvFondPhotoParSlide[slideIdx] = e.target.result;
+    overridesSlide[slideIdx] = 'photo';
+    majFondsSlides();
+  };
+  reader.readAsDataURL(file);
+}
+
 function setStyleFond(btn, style){
   styleFondActif = style;
   overridesSlide = {}; // Appliquer à toutes = effacer les overrides
@@ -4101,22 +4143,47 @@ function majFondsSlides(){
     const slideEl = document.getElementById('cv-slide-' + i);
     if(!slideEl) return;
     if(i === 0 && photoSlide1){
-      // Slide 1 avec photo — pas de changement de fond, la photo reste
+      return; // Slide 1 avec photo — pas de changement de fond
+    }
+    const style = overridesSlide[i] || styleFondActif || 'uni';
+    const fond  = fondSlide(s.num, slides.length, c1, c2);
+
+    // Gestion photo de fond (globale ou par slide)
+    const photoSrc = cvFondPhotoParSlide[i] || (style === 'photo' ? cvFondPhotoSrc : null);
+    if(photoSrc){
+      slideEl.style.background = fond;
+      slideEl.style.backgroundImage = `url('${photoSrc}')`;
+      slideEl.style.backgroundSize  = 'cover';
+      slideEl.style.backgroundPosition = 'center';
+      // Overlay semi-transparent pour lisibilité
+      let overlay = slideEl.querySelector('.cv-photo-overlay');
+      if(!overlay){
+        overlay = document.createElement('div');
+        overlay.className = 'cv-photo-overlay';
+        overlay.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,.40);z-index:0;pointer-events:none;border-radius:inherit;';
+        slideEl.insertBefore(overlay, slideEl.firstChild);
+      }
+      const inner = slideEl.querySelector('.cv-slide-inner');
+      if(inner){ inner.style.color = '#ffffff'; inner.style.position = 'relative'; inner.style.zIndex = '1'; }
       return;
     }
+
+    // Supprimer l'overlay si plus de photo
+    const overlay = slideEl.querySelector('.cv-photo-overlay');
+    if(overlay) overlay.remove();
+
     const styleCSS = styleFondSlide(s.num, slides.length, c1, c2);
     const tmp = document.createElement('div');
     tmp.style.cssText = styleCSS;
     ['background', 'backgroundImage', 'backgroundSize'].forEach(prop => {
-      if(tmp.style[prop]) slideEl.style[prop] = tmp.style[prop];
+      slideEl.style[prop] = tmp.style[prop] || '';
     });
     const inner = slideEl.querySelector('.cv-slide-inner');
     if(inner){
-      const fond = fondSlide(s.num, slides.length, c1, c2);
-      const style = overridesSlide[i] || styleFondActif || 'uni';
-      const useDark = style === 'uni' || style === 'uni2';
       const fond2 = style === 'uni2' ? (c2 || '#222222') : fond;
-      inner.style.color = useDark ? texteSlide(fond2) : '#ffffff';
+      inner.style.color = texteSlide(fond2);
+      inner.style.position = '';
+      inner.style.zIndex = '';
     }
   });
 }
@@ -4467,12 +4534,27 @@ let photoFondImageSrc = null;  // URL image importée
 function rendreTitreStabilo(titre, couleurStabilo, couleurTexte){
   const mots = titre.trim().split(' ').filter(Boolean);
   if(!mots.length) return escapeHtml(titre);
-  const dernierMot = mots.pop();
-  const avant = mots.join(' ');
   const rgb = hexToRgbPhoto(couleurStabilo);
-  const bgS = rgb ? 'rgba('+rgb.r+','+rgb.g+','+rgb.b+',.52)' : 'rgba(232,24,109,.52)';
-  return (avant ? escapeHtml(avant)+' ' : '')
-    + '<span style="background:'+bgS+';border-radius:3px;padding:1px 5px 2px;-webkit-box-decoration-break:clone;">'+escapeHtml(dernierMot)+'</span>';
+  const bgS = rgb ? 'rgba('+rgb.r+','+rgb.g+','+rgb.b+',.58)' : 'rgba(232,24,109,.58)';
+  const spanOuvert = '<span style="background:'+bgS+';border-radius:3px;padding:1px 5px 2px;-webkit-box-decoration-break:clone;box-decoration-break:clone;">';
+
+  // Choisir le(s) mot(s) à surligner : dernier mot si ≥ 6 lettres
+  // Sinon : dernier mot + avant-dernier (pour que ce soit joli)
+  const dernierMot = mots[mots.length - 1];
+  const motSansAccent = dernierMot.replace(/[^a-zA-ZÀ-ÿ]/g, '');
+
+  if(motSansAccent.length >= 6 || mots.length === 1){
+    // Surligner uniquement le dernier mot
+    const avant = mots.slice(0, -1).join(' ');
+    return (avant ? escapeHtml(avant)+' ' : '')
+      + spanOuvert + escapeHtml(dernierMot) + '</span>';
+  } else {
+    // Dernier mot court : surligner dernier + avant-dernier
+    const avantAvant = mots.slice(0, -2).join(' ');
+    const avantDernier = mots[mots.length - 2];
+    return (avantAvant ? escapeHtml(avantAvant)+' ' : '')
+      + spanOuvert + escapeHtml(avantDernier) + ' ' + escapeHtml(dernierMot) + '</span>';
+  }
 }
 
 function hexToRgbPhoto(hex){
@@ -5308,6 +5390,25 @@ function nettoyerJsonNewlines(s){
   return result.join('');
 }
 
+
+// Nettoyer les artefacts IA dans le texte généré
+// [ligne vide] → saut de ligne, réflexions IA → supprimées
+function nettoyerTexteIA(texte){
+  if(!texte) return '';
+  return texte
+    // [ligne vide] → saut de ligne réel
+    .replace(/\[ligne vide\]/gi, '\n')
+    // Lignes de réflexion IA typiques à supprimer
+    .replace(/^(ok[,\s]|d'accord[,\s]|bien[,\s]|voici[,\s]|j'ai[,\s]|je\s+vais[,\s]|alors[,\s]|voilà[,\s]|parfait[,\s])[^\n]{0,200}\n?/gim, '')
+    .replace(/^(ok j'ai tous les éléments|j'ai bien compris|je vais créer|laisse-moi|je comprends)[^\n]*\n?/gim, '')
+    // Supprimer lignes commençant par LÉGENDE: ou CONSEIL: si restantes
+    .replace(/^LÉGENDE\s*:[^\n]*/gim, '')
+    .replace(/^CONSEIL\s*:[^\n]*/gim, '')
+    // Nettoyer les sauts de ligne multiples (> 2 consécutifs)
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 function splitTexteLegende(texte){
   if(!texte) return {texte:'', legende:''};
 
@@ -5512,9 +5613,10 @@ async function genUnPost(){
     inlineLoader.classList.remove('on');
     if(btnGen) btnGen.disabled=false;
 
-    const parsed = splitTexteLegende(texte);
+    const texteNet = nettoyerTexteIA(texte);
+    const parsed = splitTexteLegende(texteNet);
     const {legende:l} = parsed;
-    const t = parsed.isCarrousel ? texte : parsed.texte;
+    const t = parsed.isCarrousel ? texteNet : parsed.texte;
 
     // Formats tableau : Réel, Vidéo, Stories → affichage dédié
     if(format === 'Réel' || format === 'Vidéo' || format === 'Stories'){
@@ -5543,7 +5645,7 @@ async function genUnPost(){
       let cvDiv=document.getElementById(cvId);
       if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv, result.nextSibling); }
       afficherCarrousel(parsed.slides, l, reseau, cvId);
-      document.getElementById('gen-legende').value = l;
+      document.getElementById('gen-legende').value = nettoyerTexteIA(l);
       if(format !== 'Stories') legZone.classList.add('on');
       actions.style.display='flex';
     } else {
@@ -5564,6 +5666,16 @@ async function genUnPost(){
         // Renommer le label de la zone légende
         const lblLeg = document.querySelector('#gen-legende-zone .creer-lbl');
         if(lblLeg) lblLeg.textContent = 'Ton post';
+      } else if(format === 'Photo'){
+        // Photo : même logique que Post texte — texte + hashtags dans la légende
+        const texteFinal = t.trim();
+        const legendeFinal = l ? texteFinal + '\n\n' + l : texteFinal;
+        document.getElementById('gen-legende').value = legendeFinal;
+        document.getElementById('lbl-gen-texte').style.display = 'none';
+        result.classList.remove('on');
+        result.textContent = t;
+        const lblLeg3 = document.querySelector('#gen-legende-zone .creer-lbl');
+        if(lblLeg3) lblLeg3.textContent = 'Ton post';
       } else {
         document.getElementById('lbl-gen-texte').textContent = 'Texte du post';
         const lblLeg2 = document.querySelector('#gen-legende-zone .creer-lbl');
@@ -5642,16 +5754,23 @@ async function sauvegarderGenPanel(){
   let texte = '';
   let slides = null;
 
-  if(format === 'Post texte'){
-    // Post texte : tout est dans gen-legende (texte + hashtags)
-    texte = legende; // legende contient déjà le texte complet
+  if(format === 'Post texte' || format === 'Photo'){
+    // Post texte / Photo : tout est dans gen-legende (texte + hashtags fusionnés)
+    texte = legende;
   } else if(isCarrousel){
     // Récupérer les slides depuis le dataset ou depuis le viewer inline
     try{ slides = JSON.parse(result.dataset.slides||'null'); }catch(e){}
     if(!slides && typeof carrouselCourant !== 'undefined' && carrouselCourant){
       slides = carrouselCourant.slides;
     }
-    if(slides) texte = JSON.stringify({slides, legende});
+    if(slides) texte = JSON.stringify({
+      slides,
+      legende,
+      styleFond:      styleFondActif || 'uni',
+      overrides:      Object.keys(overridesSlide).length ? overridesSlide : undefined,
+      fondPhotoSrc:   cvFondPhotoSrc || undefined,
+      fondPhotoSlides: Object.keys(cvFondPhotoParSlide).length ? cvFondPhotoParSlide : undefined,
+    });
     else texte = result.textContent.trim();
   } else if(isScript){
     // Réel / Vidéo / Stories — le contenu est dans dataset.scriptTexte (gen-result est vide)
@@ -5732,7 +5851,7 @@ function copierGenPanel(){
   const legende = document.getElementById('gen-legende').value.trim();
   const fmt     = (result.dataset.format || getGenFormat());
   let texte;
-  if(fmt === 'Post texte'){
+  if(fmt === 'Post texte' || fmt === 'Photo'){
     // Tout est déjà dans la légende (texte + hashtags fusionnés)
     texte = legende;
   } else if(result.dataset.isCarrousel === '1'){
@@ -5779,7 +5898,7 @@ async function genSemaine(){
     // Sauvegarder chaque post
     for(let i=0;i<resultats.length;i++){
       const res = resultats[i];
-      const parsed = splitTexteLegende(res.texte||'');
+      const parsed = splitTexteLegende(nettoyerTexteIA(res.texte||''));
       const {legende:l} = parsed;
       const t = parsed.isCarrousel ? res.texte : parsed.texte;
       const date = res.date || posts[i]?.date || jours[i % jours.length];
@@ -6508,7 +6627,17 @@ function ouvrirEdit(id){
   if(editCarrousel){
     // Afficher le viewer carrousel + bouton téléchargement
     let slides = null;
-    try{ slides = JSON.parse(it.texte); if(slides && slides.slides) slides = slides.slides; }catch(e){}
+    let parsedCarrousel = null;
+    try{ parsedCarrousel = JSON.parse(it.texte); }catch(e){}
+    if(parsedCarrousel && parsedCarrousel.slides) slides = parsedCarrousel.slides;
+    else if(Array.isArray(parsedCarrousel)) slides = parsedCarrousel;
+    // Restaurer le style et les overrides sauvegardés
+    if(parsedCarrousel && parsedCarrousel.styleFond){
+      styleFondActif = parsedCarrousel.styleFond;
+      overridesSlide = parsedCarrousel.overrides || {};
+      cvFondPhotoSrc = parsedCarrousel.fondPhotoSrc || null;
+      Object.assign(cvFondPhotoParSlide, parsedCarrousel.fondPhotoSlides || {});
+    }
     if(slides && Array.isArray(slides)){
       if(editZoneWrap) editZoneWrap.style.display = 'block';
       if(editTextArea) editTextArea.style.display = 'none';
@@ -6666,7 +6795,7 @@ async function regenPost(){
     const r = await fetch(CFG.as, {method:'POST', body:JSON.stringify(body)});
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
-    const {texte:t,legende:l} = splitTexteLegende(j.texte||'');
+    const {texte:t,legende:l} = splitTexteLegende(nettoyerTexteIA(j.texte||''));
     document.getElementById('edit-texte').value=t;
     document.getElementById('edit-legende').value=l;
     toast('✅ Post régénéré !','ok');
@@ -6701,7 +6830,7 @@ async function genDepuisSujet(){
     const r = await fetch(CFG.as, {method:'POST', body:JSON.stringify(body)});
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
-    const {texte:t,legende:l} = splitTexteLegende(j.texte||'');
+    const {texte:t,legende:l} = splitTexteLegende(nettoyerTexteIA(j.texte||''));
     document.getElementById('edit-texte').value=t;
     document.getElementById('edit-legende').value=l;
     document.getElementById('sujet-manuel-zone').style.display='none';

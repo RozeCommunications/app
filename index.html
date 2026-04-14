@@ -4015,6 +4015,8 @@ function afficherCarrousel(slides, legende, reseau, containerId){
         </div>
       </div>
     </div>`;
+  // Appliquer les styles de fond réels après rendu DOM
+  setTimeout(function(){ majFondsSlides(); }, 10);
 }
 
 function cvSelectSlide(idx){
@@ -4116,7 +4118,7 @@ function ouvrirCarrouselFullscreen(){
     const fond = fondSlide(s.num, slides.length, c1, c2);
     const tcoul = texteSlide(fond);
     return `
-      <div class="cv-fs-slide" style="background:${fond};">
+      <div class="cv-fs-slide" id="cv-fs-slide-${idx}" style="${styleFondSlide(s.num, slides.length, c1, c2)}">
         <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};width:100%;height:100%;box-sizing:border-box;padding:40px 28px 28px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;">
 
           <div style="font-family:'${ptit}',serif;font-size:${idx===0 ? fontSizeTitre(s.titre, 1.15, 44).rem+'rem' : '1.15rem'};font-weight:700;line-height:1.3;margin-bottom:8px;">${rendreTitreAccent(s.titre||'', accentSlide(c1, fond), fond)}</div>
@@ -4136,6 +4138,14 @@ function ouvrirCarrouselFullscreen(){
   fsEl.innerHTML = `
     <button class="cv-fs-close" onclick="const fs=document.getElementById('cv-fullscreen');fs.classList.remove('on');document.querySelector('.scroll').style.overflow='';">✕</button>
     <div id="cv-fs-content">${rendreFSSlide(cvSlideActive)}</div>`;
+  // Appliquer le fond réel après rendu (pour que les dégradés fonctionnent)
+  setTimeout(() => {
+    const fsSlide = document.getElementById('cv-fs-slide-' + cvSlideActive);
+    if(fsSlide && carrouselCourant){
+      const _s = carrouselCourant.slides[cvSlideActive];
+      if(_s) appliqueFondCSS(fsSlide, styleFondSlide(_s.num, carrouselCourant.slides.length, CFG.couleur1||'#E8186D', CFG.couleur2||'#111111'));
+    }
+  }, 0);
   fsEl.classList.add('on');
   document.querySelector('.scroll').style.overflow='hidden';
 
@@ -4151,6 +4161,13 @@ function ouvrirCarrouselFullscreen(){
     const slides = carrouselCourant.slides;
     cvSlideActive = Math.max(0, Math.min(slides.length-1, cvSlideActive + dir));
     document.getElementById('cv-fs-content').innerHTML = rendreFSSlide(cvSlideActive);
+    setTimeout(function(){
+      var fsEl2 = document.getElementById('cv-fs-slide-' + cvSlideActive);
+      if(fsEl2 && carrouselCourant){
+        var _fs2 = carrouselCourant.slides[cvSlideActive];
+        if(_fs2) appliqueFondCSS(fsEl2, styleFondSlide(_fs2.num, carrouselCourant.slides.length, CFG.couleur1||'#E8186D', CFG.couleur2||'#111111'));
+      }
+    }, 10);
   };
 }
 
@@ -4233,15 +4250,32 @@ function setCvFondPhotoSlide(input, slideIdx){
 
 function setStyleFond(btn, style){
   styleFondActif = style;
-  overridesSlide = {}; // Appliquer à toutes = effacer les overrides
+  // NE PAS effacer les overrides par slide — le style global s'applique aux slides
+  // qui n'ont pas d'override individuel. Les persos par slide sont préservées.
   document.querySelectorAll('.cv-fond-opt').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
+  if(btn) btn.classList.add('on');
   majFondsSlides();
+}
+
+function appliquerFondAToutesSlides(btn, style){
+  // Appliquer UN style à toutes les slides ET effacer les overrides individuels
+  styleFondActif = style;
+  overridesSlide = {};
+  cvFondPhotoParSlide = {};
+  document.querySelectorAll('.cv-fond-opt').forEach(b => b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  majFondsSlides();
+  toast('✅ Style appliqué à toutes les slides', 'ok');
 }
 
 function setStyleSlide(slideIdx, btn, style){
   overridesSlide[slideIdx] = style;
   majFondsSlides();
+  // Mettre à jour les boutons du panneau d'édition si c'est la slide active
+  if(slideIdx === cvSlideActive){
+    document.querySelectorAll('#cv-edit-fond-btns .cv-fond-opt').forEach(b => b.classList.remove('on'));
+    if(btn && btn.classList) btn.classList.add('on');
+  }
 }
 
 function resetOverrides(){
@@ -4250,6 +4284,32 @@ function resetOverrides(){
   const uni = document.getElementById('cvf-uni');
   if(uni) uni.classList.add('on');
   majFondsSlides();
+}
+
+
+// ── Applique un string CSS de fond sur un élément DOM ──
+// Sépare les déclarations correctement sans shadowing de variable
+function appliqueFondCSS(el, cssString){
+  if(!el || !cssString) return;
+  // Effacer d'abord les anciens fonds
+  el.style.background = '';
+  el.style.backgroundImage = '';
+  el.style.backgroundSize = '';
+  el.style.backgroundPosition = '';
+
+  // Parser chaque déclaration
+  cssString.split(';').forEach(function(decl){
+    decl = decl.trim();
+    if(!decl) return;
+    const colonIdx = decl.indexOf(':');
+    if(colonIdx === -1) return;
+    const prop = decl.slice(0, colonIdx).trim();
+    const val  = decl.slice(colonIdx + 1).trim();
+    if(!prop || !val) return;
+    // Convertir kebab-case → camelCase
+    const camel = prop.replace(/-([a-z])/g, function(_, c){ return c.toUpperCase(); });
+    try { el.style[camel] = val; } catch(e){}
+  });
 }
 
 // Mise à jour des fonds directement en DOM — sans recréer le viewer
@@ -4292,12 +4352,9 @@ function majFondsSlides(){
     const overlay = slideEl.querySelector('.cv-photo-overlay');
     if(overlay) overlay.remove();
 
+    // Appliquer le fond — utiliser appliqueFondCSS pour éviter les conflits shorthand
     const styleCSS = styleFondSlide(s.num, slides.length, c1, c2);
-    const tmp = document.createElement('div');
-    tmp.style.cssText = styleCSS;
-    ['background', 'backgroundImage', 'backgroundSize'].forEach(prop => {
-      slideEl.style[prop] = tmp.style[prop] || '';
-    });
+    appliqueFondCSS(slideEl, styleCSS);
     const inner = slideEl.querySelector('.cv-slide-inner');
     if(inner){
       const fond2 = style === 'uni2' ? (c2 || '#222222') : fond;
@@ -4336,7 +4393,15 @@ async function exporterPNG(){
     const soulCoul   = isSlide1Photo ? couleurSoulignement(tcoulFinal, c1, c2) : null;
 
     const div = document.createElement('div');
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;overflow:hidden;${isSlide1Photo ? 'background:#000;' : styleFondSlide(s.num, slides.length, c1, c2)}font-family:'${pcorp}',sans-serif;color:${tcoulFinal};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;`;
+    // Appliquer les styles de base d'abord
+    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;overflow:hidden;font-family:'${pcorp}',sans-serif;color:${tcoulFinal};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;`;
+    // Appliquer le fond séparément pour éviter les conflits de shorthand CSS
+    if(isSlide1Photo){
+      div.style.background = '#000';
+    } else {
+      const fondCSS = styleFondSlide(s.num, slides.length, c1, c2);
+      appliqueFondCSS(div, fondCSS);
+    }
 
     const photoHtml = isSlide1Photo ? `
       <img src="${photoSlide1.src}" alt="photo" crossOrigin="anonymous"
@@ -4424,7 +4489,10 @@ async function exporterPDF(){
     const tcoul = texteSlide(fond);
 
     const div = document.createElement('div');
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;background:${fond};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;`;
+    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;font-family:'${pcorp}',sans-serif;color:${tcoul};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;`;
+    // Fond séparé pour préserver les dégradés
+    const fondPDFcss = styleFondSlide(s.num, slides.length, c1, c2);
+    appliqueFondCSS(div, fondPDFcss);
     div.innerHTML = `
       <div style="font-family:'${ptit}',serif;font-size:${s.type==='hook'?72:54}px;font-weight:700;line-height:1.2;margin-bottom:24px;">${rendreTitreAccent(s.titre||'', accentSlide(c1, fond), fond)}</div>
       ${s.sousTitre?`<div style="font-size:32px;opacity:.7;margin-bottom:24px;">${s.sousTitre}</div>`:''}

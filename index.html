@@ -754,6 +754,14 @@
     .cv-header .cv-actions{display:flex;gap:.5rem;}
     .cv-slides-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:12px;padding:1rem;scroll-snap-type:x mandatory;}
     .cv-slide{flex-shrink:0;width:180px;height:240px;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;scroll-snap-align:start;transition:transform .15s;border:2px solid transparent;}
+    /* Panneau d'édition d'une slide */
+    .cv-edit-panel{display:none;background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:12px;padding:.9rem 1rem;margin-top:.6rem;animation:fi .2s ease;}
+    .cv-edit-panel.on{display:block;}
+    .cv-edit-label{font-size:.72rem;color:var(--gris-clair);margin-bottom:.3rem;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+    .cv-edit-section{margin-bottom:.8rem;}
+    .cv-edit-textarea{width:100%;min-height:60px;font-size:.82rem;line-height:1.55;resize:vertical;font-family:'DM Sans',sans-serif;}
+    .cv-edit-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
+    .cv-stabilo-preview{display:inline-block;padding:2px 8px;border-radius:3px;font-size:.78rem;font-weight:700;}
     .cv-slide:active{transform:scale(.97);}
     .cv-slide.active{border-color:var(--rose);}
     .cv-slide-inner{width:100%;height:100%;display:flex;flex-direction:column;padding:20px 14px 14px;box-sizing:border-box;position:relative;justify-content:center;}
@@ -2078,7 +2086,7 @@
 
     <div style="margin-top:1.6rem;">
       <button class="btn btn-rose btn-full" id="btn-sauvegarder" onclick="sauvegarderCompte()" style="padding:1rem;font-size:.95rem;letter-spacing:.02em;">💾 Sauvegarder Mon Compte</button>
-    <p style="text-align:center;margin-top:1.2rem;font-size:.72rem;color:var(--gris-clair);">En utilisant Roze Assistant, tu acceptes nos <button onclick="document.getElementById('p-legal').style.display='block'" style="background:none;border:none;color:var(--rose-clair);text-decoration:underline;cursor:pointer;font-size:.72rem;padding:0;">conditions d'utilisation et politique de confidentialité</button>.</p>
+    <p style="text-align:center;margin-top:1.2rem;font-size:.72rem;color:var(--gris-clair);">En utilisant Roze Assistant, tu acceptes nos <button onclick="ouvrirLegal()" style="background:none;border:none;color:var(--rose-clair);text-decoration:underline;cursor:pointer;font-size:.72rem;padding:0;">conditions d'utilisation et politique de confidentialité</button>.</p>
       <button class="btn btn-ghost" style="width:100%;margin-top:.5rem;font-size:.78rem;color:var(--gris-clair);" onclick="seDeconnecter()">↩️ Se déconnecter</button>
     </div>
     
@@ -2407,8 +2415,15 @@
 </div>
 
   <!-- ══ MENTIONS LÉGALES (obligatoires - RGPD France) ══ -->
-<div id="p-legal" style="display:none;padding:1.2rem;max-width:600px;margin:0 auto;">
-  <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;">Mentions légales & Confidentialité</h2>
+<div class="overlay" id="ov-legal" onclick="fermerLegal(event)" style="display:none;align-items:flex-start;padding-top:3rem;">
+  <div class="sheet" style="max-height:85vh;overflow-y:auto;">
+    <div class="sheet-handle"></div>
+    <div class="sheet-hd">
+      <h3>Mentions légales & Confidentialité</h3>
+      <button class="sheet-close" onclick="fermerLegal()" aria-label="Fermer">✕</button>
+    </div>
+<div id="p-legal" style="padding:.4rem 0 1rem;">
+  <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;display:none;">Mentions légales & Confidentialité</h2>
   <div style="font-size:.82rem;line-height:1.75;color:var(--gris-clair);">
     <p><strong style="color:var(--blanc-doux);">Éditeur</strong><br/>Roze Communications — Rozenn Cazoulat<br/>Trégor, Côtes-d'Armor, France<br/>contact@roze-communications.com</p>
     <p style="margin-top:.8rem;"><strong style="color:var(--blanc-doux);">Données personnelles</strong><br/>
@@ -2420,6 +2435,8 @@
     Cette application n'utilise pas de cookies tiers. Les données de configuration sont stockées en localStorage sur votre appareil uniquement.</p>
     <p style="margin-top:.8rem;"><strong style="color:var(--blanc-doux);">Contact & exercice des droits</strong><br/>
     contact@roze-communications.com</p>
+  </div>
+</div>
   </div>
 </div>
 
@@ -3965,6 +3982,38 @@ function afficherCarrousel(slides, legende, reseau, containerId){
       </div>
       <div style="padding:.6rem 1rem;border-top:1px solid var(--gris-border);font-size:.78rem;color:#aaa;line-height:1.55;"
            id="cv-legende-txt">${legende.replace(/\n/g,'<br/>')}</div>
+      <!-- Panneau d'édition slide active -->
+      <div class="cv-edit-panel" id="cv-edit-panel">
+        <div class="cv-edit-section">
+          <span class="cv-edit-label">✏️ Titre de la slide</span>
+          <textarea class="cv-edit-textarea" id="cv-edit-titre" rows="2" oninput="appliquerEditSlide()"></textarea>
+        </div>
+        <div class="cv-edit-section">
+          <span class="cv-edit-label">📝 Corps</span>
+          <textarea class="cv-edit-textarea" id="cv-edit-corps" rows="3" oninput="appliquerEditSlide()"></textarea>
+        </div>
+        <div class="cv-edit-section">
+          <span class="cv-edit-label">🖊️ Mot surligné (stabilo) — laisse vide pour le dernier mot par défaut</span>
+          <div class="cv-edit-row">
+            <input type="text" id="cv-edit-stabilo-mot" placeholder="Ex : résultats" style="flex:1;font-size:.82rem;" oninput="appliquerEditSlide()"/>
+            <label style="display:flex;align-items:center;gap:.3rem;font-size:.78rem;cursor:pointer;">
+              Couleur
+              <input type="color" id="cv-edit-stabilo-couleur" style="width:28px;height:28px;border:none;background:none;cursor:pointer;border-radius:4px;padding:0;" oninput="appliquerEditSlide()"/>
+            </label>
+          </div>
+          <div style="margin-top:.4rem;"><span class="cv-stabilo-preview" id="cv-stabilo-preview">Aperçu stabilo</span></div>
+        </div>
+        <div class="cv-edit-section">
+          <span class="cv-edit-label">🎨 Style du fond de cette slide</span>
+          <div class="cv-edit-row" id="cv-edit-fond-btns">
+            <button class="cv-fond-opt" onclick="setStyleSlide(cvSlideActive,this,'uni')" title="Uni 1">Uni 1</button>
+            <button class="cv-fond-opt" onclick="setStyleSlide(cvSlideActive,this,'uni2')" title="Uni 2">Uni 2</button>
+            <button class="cv-fond-opt" onclick="setStyleSlide(cvSlideActive,this,'degrade')" title="Dégradé">Dégradé</button>
+            <button class="cv-fond-opt" onclick="setStyleSlide(cvSlideActive,this,'beton')" title="Matière">Matière</button>
+            <label class="cv-fond-opt" style="cursor:pointer;">🖼️ Photo<input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhotoSlide(this,cvSlideActive)"/></label>
+          </div>
+        </div>
+      </div>
     </div>`;
 }
 
@@ -3973,7 +4022,78 @@ function cvSelectSlide(idx){
   const el = document.getElementById('cv-slide-'+idx);
   if(el){ el.classList.add('active'); el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}); }
   cvSlideActive = idx;
+  ouvrirEditSlide(idx);
 }
+
+let overridesStabilo = {};
+
+function ouvrirEditSlide(idx){
+  if(!carrouselCourant) return;
+  const panel = document.getElementById('cv-edit-panel');
+  if(!panel) return;
+  panel.classList.add('on');
+  const s = carrouselCourant.slides[idx];
+  if(!s) return;
+  const titre = (s.titre||'').replace(/\[\/?accent\]/gi,'');
+  const el_t = document.getElementById('cv-edit-titre');
+  const el_c = document.getElementById('cv-edit-corps');
+  const el_m = document.getElementById('cv-edit-stabilo-mot');
+  const el_k = document.getElementById('cv-edit-stabilo-couleur');
+  if(el_t) el_t.value = titre;
+  if(el_c) el_c.value = s.corps||'';
+  const ov  = overridesStabilo[idx] || {};
+  const coul= ov.couleur || CFG.couleur1 || '#E8186D';
+  if(el_m) el_m.value = ov.mot || '';
+  if(el_k) el_k.value = coul;
+  majPreviewStabilo(ov.mot || 'Aperçu stabilo', coul);
+}
+
+function majPreviewStabilo(mot, couleur){
+  const prev = document.getElementById('cv-stabilo-preview');
+  if(!prev) return;
+  const rgb = hexToRgbPhoto(couleur);
+  const bg  = rgb ? 'rgba('+rgb.r+','+rgb.g+','+rgb.b+',.6)' : 'rgba(232,24,109,.6)';
+  prev.textContent = mot || 'Aperçu';
+  prev.style.background = bg;
+  prev.style.color = estCouleurClaire(couleur) ? '#111' : '#fff';
+}
+
+function appliquerEditSlide(){
+  const idx = cvSlideActive;
+  if(!carrouselCourant || idx === undefined || idx === null) return;
+  const s = carrouselCourant.slides[idx];
+  if(!s) return;
+  const titre = (document.getElementById('cv-edit-titre')||{}).value || '';
+  const corps = (document.getElementById('cv-edit-corps')||{}).value || '';
+  const mot   = ((document.getElementById('cv-edit-stabilo-mot')||{}).value || '').trim();
+  const coul  = (document.getElementById('cv-edit-stabilo-couleur')||{}).value || CFG.couleur1 || '#E8186D';
+  s.titre = titre;
+  s.corps = corps;
+  overridesStabilo[idx] = { mot, couleur: coul };
+  majPreviewStabilo(mot || 'Aperçu stabilo', coul);
+  // Mettre à jour le rendu de la slide
+  const slideEl = document.getElementById('cv-slide-' + idx);
+  if(!slideEl) return;
+  const fond   = fondSlide(s.num, carrouselCourant.slides.length, CFG.couleur1||'#E8186D', CFG.couleur2||'#111');
+  const tcoul  = texteSlide(fond);
+  let titreHtml;
+  if(mot && titre.includes(mot)){
+    const rgb = hexToRgbPhoto(coul);
+    const bg  = rgb ? 'rgba('+rgb.r+','+rgb.g+','+rgb.b+',.65)' : 'rgba(232,24,109,.65)';
+    const txtC = estCouleurClaire(coul) ? '#111' : '#fff';
+    titreHtml = escapeHtml(titre).replace(
+      escapeHtml(mot),
+      '<span style="background:'+bg+';border-radius:3px;padding:1px 5px 2px;-webkit-box-decoration-break:clone;color:'+txtC+';">'+escapeHtml(mot)+'</span>'
+    );
+  } else {
+    titreHtml = rendreTitreStabilo(titre, coul, tcoul);
+  }
+  const titreEl = slideEl.querySelector('.cv-slide-titre');
+  if(titreEl) titreEl.innerHTML = titreHtml;
+  const corpsEl = slideEl.querySelector('.cv-slide-corps');
+  if(corpsEl) corpsEl.textContent = corps;
+}
+
 
 function ouvrirCarrouselFullscreen(){
   if(!carrouselCourant) return;
@@ -3997,7 +4117,7 @@ function ouvrirCarrouselFullscreen(){
     const tcoul = texteSlide(fond);
     return `
       <div class="cv-fs-slide" style="background:${fond};">
-        <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};width:100%;height:100%;box-sizing:border-box;padding:40px 28px 28px;display:flex;flex-direction:column;justify-content:center;">
+        <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};width:100%;height:100%;box-sizing:border-box;padding:40px 28px 28px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;">
 
           <div style="font-family:'${ptit}',serif;font-size:${idx===0 ? fontSizeTitre(s.titre, 1.15, 44).rem+'rem' : '1.15rem'};font-weight:700;line-height:1.3;margin-bottom:8px;">${rendreTitreAccent(s.titre||'', accentSlide(c1, fond), fond)}</div>
           ${s.sousTitre?`<div style="font-size:.8rem;opacity:.7;margin-bottom:8px;">${escapeHtml(nettoyerSousTitre(s.sousTitre))}</div>`:''}
@@ -4216,7 +4336,7 @@ async function exporterPNG(){
     const soulCoul   = isSlide1Photo ? couleurSoulignement(tcoulFinal, c1, c2) : null;
 
     const div = document.createElement('div');
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;overflow:hidden;${isSlide1Photo ? 'background:#000;' : styleFondSlide(s.num, slides.length, c1, c2)}font-family:'${pcorp}',sans-serif;color:${tcoulFinal};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;`;
+    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;overflow:hidden;${isSlide1Photo ? 'background:#000;' : styleFondSlide(s.num, slides.length, c1, c2)}font-family:'${pcorp}',sans-serif;color:${tcoulFinal};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;`;
 
     const photoHtml = isSlide1Photo ? `
       <img src="${photoSlide1.src}" alt="photo" crossOrigin="anonymous"
@@ -4304,7 +4424,7 @@ async function exporterPDF(){
     const tcoul = texteSlide(fond);
 
     const div = document.createElement('div');
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;background:${fond};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;`;
+    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;background:${fond};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;`;
     div.innerHTML = `
       <div style="font-family:'${ptit}',serif;font-size:${s.type==='hook'?72:54}px;font-weight:700;line-height:1.2;margin-bottom:24px;">${rendreTitreAccent(s.titre||'', accentSlide(c1, fond), fond)}</div>
       ${s.sousTitre?`<div style="font-size:32px;opacity:.7;margin-bottom:24px;">${s.sousTitre}</div>`:''}
@@ -6974,6 +7094,17 @@ function rendreSemaine(){
 // ══════════════════════════════════════════════════════════════
 let creerDate   = null;
 let creerModeId = null; // null=création, id=duplication
+
+
+function ouvrirLegal(){
+  const ov = document.getElementById('ov-legal');
+  if(ov){ ov.style.display='flex'; document.querySelector('.scroll').style.overflow='hidden'; }
+}
+function fermerLegal(e){
+  if(e && e.type==='click' && e.target!==document.getElementById('ov-legal')) return;
+  const ov = document.getElementById('ov-legal');
+  if(ov){ ov.style.display='none'; document.querySelector('.scroll').style.overflow=''; }
+}
 
 function ouvrirCreer(ds, opts){
   opts = opts || {};

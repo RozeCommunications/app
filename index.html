@@ -755,8 +755,41 @@
     .cv-slides-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:12px;padding:1rem;scroll-snap-type:x mandatory;}
     .cv-slide{flex-shrink:0;width:180px;height:240px;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;scroll-snap-align:start;transition:transform .15s;border:2px solid transparent;}
     /* Panneau d'édition d'une slide */
-    .cv-edit-panel{display:none;background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:12px;padding:.9rem 1rem;margin-top:.6rem;animation:fi .2s ease;}
-    .cv-edit-panel.on{display:block;}
+    /* ── Modales d'édition (carrousel + photo) ── */
+    .cv-edit-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);align-items:flex-end;}
+    .cv-edit-overlay.on{display:flex;}
+    .cv-edit-panel{background:var(--anthracite);border:1px solid var(--gris-border);border-radius:20px 20px 0 0;width:100%;max-height:86vh;overflow-y:auto;padding:1rem 1.2rem 2.5rem;animation:su .28s ease;}
+    .cv-edit-handle{width:36px;height:4px;background:rgba(255,255,255,.18);border-radius:2px;margin:0 auto .8rem;}
+    .cv-edit-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;padding-bottom:.7rem;border-bottom:1px solid var(--gris-border);}
+    .cv-edit-hd h4{font-size:.92rem;font-weight:700;color:var(--blanc);margin:0;}
+    .cv-edit-close{background:none;border:none;color:var(--gris-clair);font-size:1.2rem;cursor:pointer;padding:.2rem .5rem;border-radius:6px;line-height:1;}
+    /* Sections */
+    .ed-section{margin-bottom:1rem;}
+    .ed-label{display:block;font-size:.72rem;font-weight:700;color:var(--gris-clair);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem;}
+    .ed-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
+    /* Chips de sélection */
+    .ed-chip{display:inline-flex;align-items:center;gap:.3rem;padding:.38rem .75rem;border-radius:20px;border:1px solid var(--gris-border);background:var(--gris-input);color:var(--blanc-doux);font-size:.78rem;font-weight:500;cursor:pointer;transition:all .15s;white-space:nowrap;}
+    .ed-chip.on{border-color:var(--rose);background:rgba(232,24,109,.15);color:var(--rose-clair);}
+    .ed-chip:hover{border-color:rgba(232,24,109,.5);}
+    /* Picker couleur inline */
+    .ed-color-swatch{width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.2);cursor:pointer;overflow:hidden;flex-shrink:0;}
+    .ed-color-swatch input[type=color]{width:200%;height:200%;margin:-50%;opacity:0;cursor:pointer;}
+    /* Gradient builder */
+    .ed-gradient-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.4rem;}
+    .ed-gradient-type{display:flex;gap:.3rem;flex-wrap:wrap;}
+    /* Toggle switch */
+    .ed-toggle{display:flex;align-items:center;gap:.6rem;cursor:pointer;}
+    .ed-toggle-track{width:38px;height:20px;border-radius:10px;background:var(--gris-border);position:relative;transition:background .2s;flex-shrink:0;}
+    .ed-toggle-track.on{background:var(--rose);}
+    .ed-toggle-thumb{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3);}
+    .ed-toggle-track.on .ed-toggle-thumb{left:21px;}
+    .ed-toggle-lbl{font-size:.82rem;color:var(--blanc-doux);}
+    /* Textures grid */
+    .ed-textures{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-top:.4rem;}
+    .ed-texture-btn{border-radius:8px;height:52px;border:2px solid transparent;cursor:pointer;font-size:.7rem;color:#fff;font-weight:600;transition:border-color .15s;display:flex;align-items:flex-end;padding:4px 6px;overflow:hidden;background-size:cover;background-position:center;}
+    .ed-texture-btn.on{border-color:var(--rose);}
+    /* Preview mini */
+    .ed-preview{border-radius:10px;overflow:hidden;aspect-ratio:4/5;margin-top:.6rem;max-width:140px;background:var(--gris-carte);}
     .cv-edit-label{font-size:.72rem;color:var(--gris-clair);margin-bottom:.3rem;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
     .cv-edit-section{margin-bottom:.8rem;}
     .cv-edit-textarea{width:100%;min-height:60px;font-size:.82rem;line-height:1.55;resize:vertical;font-family:'DM Sans',sans-serif;}
@@ -825,6 +858,7 @@
     .pilier-chip.on-exp{border-color:#3ddc84;background:rgba(61,220,132,.12);}
     .pilier-chip.on-exp .pn{color:#3ddc84;}
     .pilier-chip.on-aut2{border-color:var(--rose-clair);background:var(--rose-glow);}
+    .pilier-chip.on-act{border-color:#f97316;background:rgba(249,115,22,.12);color:#f97316;}
     .pilier-chip.on-aut2 .pn{color:var(--rose-clair);}
     .pilier-autre-input{margin-top:.4rem;display:none;}
     .pilier-autre-input.on{display:block;}
@@ -1626,7 +1660,7 @@
         <div class="pilier-chip" onclick="setGenPilier(this,'visibilite')"><span class="pi">🔭</span><span class="pn">Visibilité</span></div>
         <div class="pilier-chip" onclick="setGenPilier(this,'autorite')"><span class="pi">👑</span><span class="pn">Autorité</span></div>
         <div class="pilier-chip" onclick="setGenPilier(this,'expertise')"><span class="pi">🧠</span><span class="pn">Expertise</span></div>
-        <div class="pilier-chip" onclick="setGenPilier(this,'autre')"><span class="pi">✏️</span><span class="pn">Autre</span></div>
+        <div class="pilier-chip" onclick="setGenPilier(this,'activite')"><span class="pi">🏪</span><span class="pn">Activité</span></div>
       </div>
       <div class="pilier-autre-input" id="gen-pilier-autre-zone">
         <input type="text" id="gen-pilier-autre" placeholder="Ex : Série Excel 30 secondes, Lancement offre…" style="font-size:16px;"/>
@@ -1680,42 +1714,104 @@
         </div>
       </div>
 
-      <!-- Sélecteur de style Post Photo -->
-      <!-- Zone personnalisation post Photo — toujours en mode fond coloré -->
+      <!-- Zone personnalisation post Photo -->
       <div id="gen-photo-style-zone" style="display:none;margin-top:.8rem;">
         <span class="creer-lbl" style="margin-top:0;">Personnaliser le visuel</span>
 
-        <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-top:.5rem;">
-          <!-- Couleur du fond -->
-          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.82rem;color:var(--blanc-doux);background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.45rem .8rem;">
-            🎨 Fond
-            <input type="color" id="photo-fond-couleur" value="#E8186D"
-              style="width:28px;height:28px;border:none;background:none;cursor:pointer;border-radius:4px;padding:0;"
-              oninput="majFondPhotoCouleur(this.value)"/>
-          </label>
-          <!-- Couleur du surlignage stabilo -->
-          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.82rem;color:var(--blanc-doux);background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.45rem .8rem;" title="Couleur du mot surligné">
-            🖊️ Stabilo
-            <input type="color" id="photo-stabilo-couleur" value="#ffffff"
-              style="width:28px;height:28px;border:none;background:none;cursor:pointer;border-radius:4px;padding:0;"
-              oninput="majStabiloCouleur(this.value)"/>
-          </label>
-          <!-- Import image de fond -->
-          <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.82rem;color:var(--blanc-doux);background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.45rem .8rem;">
-            🖼️ Image
+        <!-- Type de fond -->
+        <div class="ed-row" style="margin-top:.5rem;margin-bottom:.6rem;">
+          <button class="ed-chip on" id="ph-fond-uni"     onclick="phFondType('uni',this)">Uni 1</button>
+          <button class="ed-chip"    id="ph-fond-custom"  onclick="phFondType('custom',this)">Autre couleur</button>
+          <button class="ed-chip"    id="ph-fond-degrade" onclick="phFondType('degrade',this)">Dégradé</button>
+          <button class="ed-chip"    id="ph-fond-beton"   onclick="phFondType('beton',this)">Matière</button>
+          <button class="ed-chip"    id="ph-fond-texture" onclick="phFondType('texture',this)">Texture</button>
+          <button class="ed-chip"    id="ph-fond-photo"   onclick="phFondType('photo',this)">📷 Photo</button>
+        </div>
+
+        <!-- Uni couleur charte (pas de config) -->
+        <div id="ph-cfg-uni" style="display:block;">
+          <p style="font-size:.75rem;color:var(--gris-clair);">Couleur principale de ta charte.</p>
+        </div>
+
+        <!-- Autre couleur libre -->
+        <div id="ph-cfg-custom" style="display:none;">
+          <div class="ed-row">
+            <span style="font-size:.8rem;color:var(--gris-clair);">Couleur</span>
+            <label class="ed-color-swatch"><input type="color" id="photo-fond-couleur" value="#E8186D" oninput="phApplyFond()"/></label>
+          </div>
+        </div>
+
+        <!-- Dégradé -->
+        <div id="ph-cfg-degrade" style="display:none;">
+          <div class="ed-row" style="margin-bottom:.5rem;">
+            <span style="font-size:.8rem;color:var(--gris-clair);">Couleur 1</span>
+            <label class="ed-color-swatch"><input type="color" id="ph-grad-c1" oninput="phApplyFond()"/></label>
+            <span style="font-size:.8rem;color:var(--gris-clair);">Couleur 2</span>
+            <label class="ed-color-swatch"><input type="color" id="ph-grad-c2" oninput="phApplyFond()"/></label>
+          </div>
+          <div class="ed-gradient-type">
+            <button class="ed-chip on" id="ph-grad-lin"  onclick="phGradType('linear',this)">Linéaire →</button>
+            <button class="ed-chip"    id="ph-grad-rad"  onclick="phGradType('radial',this)">Radial ◉</button>
+            <button class="ed-chip"    id="ph-grad-cir"  onclick="phGradType('circle',this)">Circulaire ○</button>
+            <button class="ed-chip"    id="ph-grad-diag" onclick="phGradType('diagonal',this)">Diagonal ↗</button>
+          </div>
+        </div>
+
+        <!-- Matière -->
+        <div id="ph-cfg-beton" style="display:none;">
+          <div class="ed-row">
+            <span style="font-size:.8rem;color:var(--gris-clair);">Couleur principale</span>
+            <label class="ed-color-swatch"><input type="color" id="ph-beton-c1" oninput="phApplyFond()"/></label>
+            <span style="font-size:.8rem;color:var(--gris-clair);">Couleur sombre</span>
+            <label class="ed-color-swatch"><input type="color" id="ph-beton-c2" oninput="phApplyFond()"/></label>
+          </div>
+        </div>
+
+        <!-- Textures CSS -->
+        <div id="ph-cfg-texture" style="display:none;">
+          <div class="ed-textures">
+            <button class="ed-texture-btn on" id="ph-tex-froisse" onclick="phTexture('froisse',this)"
+              style="background:repeating-linear-gradient(45deg,#2a2a2a,#2a2a2a 2px,#1a1a1a 2px,#1a1a1a 8px);">Froissé</button>
+            <button class="ed-texture-btn" id="ph-tex-pierre" onclick="phTexture('pierre',this)"
+              style="background:radial-gradient(ellipse at 20% 30%,#555 0%,#2a2a2a 40%,#1a1a1a 70%,#333 100%);">Pierre</button>
+            <button class="ed-texture-btn" id="ph-tex-lignes" onclick="phTexture('lignes',this)"
+              style="background:repeating-linear-gradient(0deg,transparent,transparent 18px,rgba(255,255,255,.07) 18px,rgba(255,255,255,.07) 19px),#1e1e1e;">Lignes</button>
+            <button class="ed-texture-btn" id="ph-tex-trame" onclick="phTexture('trame',this)"
+              style="background:repeating-linear-gradient(90deg,transparent,transparent 10px,rgba(255,255,255,.04) 10px,rgba(255,255,255,.04) 11px),repeating-linear-gradient(0deg,transparent,transparent 10px,rgba(255,255,255,.04) 10px,rgba(255,255,255,.04) 11px),#1c1c1c;">Trame</button>
+            <button class="ed-texture-btn" id="ph-tex-bois" onclick="phTexture('bois',this)"
+              style="background:repeating-linear-gradient(85deg,#3d2b1a,#3d2b1a 3px,#4a3520 3px,#4a3520 7px);">Bois</button>
+            <button class="ed-texture-btn" id="ph-tex-toile" onclick="phTexture('toile',this)"
+              style="background:repeating-linear-gradient(45deg,#1a1a1a 0px,#1a1a1a 2px,#232323 2px,#232323 8px),repeating-linear-gradient(-45deg,#1a1a1a 0px,#1a1a1a 2px,#232323 2px,#232323 8px);">Toile</button>
+          </div>
+          <div class="ed-row" style="margin-top:.5rem;">
+            <span style="font-size:.8rem;color:var(--gris-clair);">Teinte</span>
+            <label class="ed-color-swatch"><input type="color" id="ph-tex-couleur" value="#1a1a1a" oninput="phApplyFond()"/></label>
+          </div>
+        </div>
+
+        <!-- Photo -->
+        <div id="ph-cfg-photo" style="display:none;">
+          <label class="ed-chip" style="cursor:pointer;">
+            📷 Choisir une photo
             <input type="file" id="photo-fond-file" accept="image/*" style="display:none;" onchange="majFondPhotoImage(this)"/>
           </label>
         </div>
 
-        <!-- Textures -->
-        <div style="display:flex;gap:.4rem;margin-top:.5rem;flex-wrap:wrap;" id="photo-fond-textures">
-          <button class="cv-fond-opt on" id="pft-uni"     onclick="setPhotoFondTexture('uni',this)">Uni</button>
-          <button class="cv-fond-opt"    id="pft-degrade" onclick="setPhotoFondTexture('degrade',this)">Dégradé</button>
-          <button class="cv-fond-opt"    id="pft-grain"   onclick="setPhotoFondTexture('grain',this)">Grain</button>
-          <button class="cv-fond-opt"    id="pft-beton"   onclick="setPhotoFondTexture('beton',this)">Matière</button>
+        <!-- Stabilo toggle -->
+        <div style="margin-top:.8rem;padding-top:.7rem;border-top:1px solid var(--gris-border);">
+          <label class="ed-toggle" onclick="phToggleStabilo()">
+            <div class="ed-toggle-track on" id="ph-stabilo-track"><div class="ed-toggle-thumb"></div></div>
+            <span class="ed-toggle-lbl">Effet surligné (stabilo)</span>
+          </label>
+          <div id="ph-stabilo-cfg" style="margin-top:.5rem;">
+            <label style="display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--gris-clair);">
+              Couleur du stabilo
+              <label class="ed-color-swatch"><input type="color" id="photo-stabilo-couleur" value="#ffffff" oninput="majStabiloCouleur(this.value)"/></label>
+            </label>
+          </div>
         </div>
 
-        <div id="gen-photo-preview-zone" style="margin-top:.7rem;border-radius:10px;overflow:hidden;aspect-ratio:3/4;max-width:180px;"></div>
+        <div id="gen-photo-preview-zone" style="margin-top:.8rem;border-radius:10px;overflow:hidden;aspect-ratio:3/4;max-width:160px;"></div>
       </div>
 
       <!-- Actions post généré -->
@@ -2148,9 +2244,9 @@
       </div>
 
       <div class="aide-card">
-        <div class="ac-titre">✏️ Pilier Autre (personnalisé)</div>
-        <div class="ac-desc">Tu définis toi-même le thème. Utile pour les séries thématiques, les lancements d'offre ou les moments forts de ton agenda. Écris simplement le nom de ta série ou ton thème dans le champ.</div>
-        <div class="ac-ex">Exemple : "Série : 30 secondes pour comprendre Excel — épisode 1 sur 10".</div>
+        <div class="ac-titre">🏪 Pilier Activité</div>
+        <div class="ac-desc">3 niveaux selon ton objectif du moment : montrer ton activité au quotidien (coulisses, produits, savoir-faire), mettre en avant une offre ou un service spécifique, ou annoncer une promotion ou un événement limité.</div>
+        <div class="ac-ex">Exemples : "Voici comment je choisis mes matières premières", "Cette semaine je mets en avant mon offre [X]", "Jusqu'au dimanche, -20% sur [produit]".</div>
       </div>
 
       <div class="aide-card">
@@ -2220,9 +2316,9 @@
       </div>
 
       <div class="aide-card">
-        <div class="ac-titre">✏️ Pilier Autre (personnalisé)</div>
-        <div class="ac-desc">Tu définis toi-même le thème. Utile pour les séries thématiques, les lancements d'offre ou les moments forts de ton agenda. L'IA maintient la cohérence de ta série d'un post à l'autre.</div>
-        <div class="ac-ex">Exemple : "Série : 30 secondes pour comprendre Excel — épisode 1 sur 10".</div>
+        <div class="ac-titre">🏪 Pilier Activité</div>
+        <div class="ac-desc">3 niveaux selon ton objectif du moment : montrer ton activité au quotidien (coulisses, produits, savoir-faire), mettre en avant une offre ou un service spécifique, ou annoncer une promotion ou un événement limité.</div>
+        <div class="ac-ex">Exemples : "Voici comment je choisis mes matières premières", "Cette semaine je mets en avant mon offre [X]", "Jusqu'au dimanche, -20% sur [produit]".</div>
       </div>
 
       <div class="pilier-conseil">
@@ -2441,6 +2537,126 @@
 </div>
 
   <!-- ══ SE REPÉRER ══ (page aide, non indexée dans la nav) -->
+
+<!-- ══ MODALE ÉDITION SLIDE CARROUSEL ══ -->
+<div class="cv-edit-overlay" id="cv-edit-overlay" onclick="fermerEditSlide(event)">
+  <div class="cv-edit-panel" id="cv-edit-panel">
+    <div class="cv-edit-handle"></div>
+    <div class="cv-edit-hd">
+      <h4 id="cv-edit-slide-titre-hd">Slide 1</h4>
+      <button class="cv-edit-close" onclick="fermerEditSlide()" aria-label="Fermer">✕</button>
+    </div>
+
+    <!-- Texte -->
+    <div class="ed-section">
+      <span class="ed-label">✏️ Titre</span>
+      <textarea class="cv-edit-textarea" id="cv-edit-titre" rows="2" oninput="appliquerEditSlide()"></textarea>
+    </div>
+    <div class="ed-section">
+      <span class="ed-label">📝 Corps</span>
+      <textarea class="cv-edit-textarea" id="cv-edit-corps" rows="3" oninput="appliquerEditSlide()"></textarea>
+    </div>
+
+    <!-- Stabilo toggle + config -->
+    <div class="ed-section">
+      <label class="ed-toggle" onclick="edToggleStabilo()">
+        <div class="ed-toggle-track on" id="ed-stabilo-track"><div class="ed-toggle-thumb"></div></div>
+        <span class="ed-toggle-lbl">Effet surligné (stabilo)</span>
+      </label>
+      <div id="ed-stabilo-cfg" style="margin-top:.6rem;">
+        <div class="ed-row">
+          <input type="text" id="cv-edit-stabilo-mot" placeholder="Mot à surligner (vide = dernier mot)" style="flex:1;font-size:.82rem;" oninput="appliquerEditSlide()"/>
+          <label class="ed-color-swatch" title="Couleur du stabilo">
+            <input type="color" id="cv-edit-stabilo-couleur" oninput="appliquerEditSlide()"/>
+          </label>
+        </div>
+        <div style="margin-top:.5rem;"><span class="cv-stabilo-preview" id="cv-stabilo-preview">Aperçu</span></div>
+      </div>
+    </div>
+
+    <!-- Fond -->
+    <div class="ed-section">
+      <span class="ed-label">🎨 Fond de cette slide</span>
+      <!-- Type de fond -->
+      <div class="ed-row" style="margin-bottom:.6rem;">
+        <button class="ed-chip on" id="ed-fond-uni"     onclick="edFondType('uni',this)">Uni 1</button>
+        <button class="ed-chip"    id="ed-fond-custom"  onclick="edFondType('custom',this)">Autre couleur</button>
+        <button class="ed-chip"    id="ed-fond-degrade" onclick="edFondType('degrade',this)">Dégradé</button>
+        <button class="ed-chip"    id="ed-fond-beton"   onclick="edFondType('beton',this)">Matière</button>
+        <button class="ed-chip"    id="ed-fond-texture" onclick="edFondType('texture',this)">Texture</button>
+        <button class="ed-chip"    id="ed-fond-photo"   onclick="edFondType('photo',this)">📷 Photo</button>
+      </div>
+
+      <!-- Uni custom : 1 couleur libre -->
+      <div id="ed-cfg-custom" style="display:none;">
+        <div class="ed-row">
+          <span style="font-size:.8rem;color:var(--gris-clair);">Couleur</span>
+          <label class="ed-color-swatch"><input type="color" id="ed-col-custom" oninput="edApplyFond()"/></label>
+        </div>
+      </div>
+
+      <!-- Dégradé -->
+      <div id="ed-cfg-degrade" style="display:none;">
+        <div class="ed-row" style="margin-bottom:.5rem;">
+          <span style="font-size:.8rem;color:var(--gris-clair);">Couleur 1</span>
+          <label class="ed-color-swatch"><input type="color" id="ed-grad-c1" oninput="edApplyFond()"/></label>
+          <span style="font-size:.8rem;color:var(--gris-clair);">Couleur 2</span>
+          <label class="ed-color-swatch"><input type="color" id="ed-grad-c2" oninput="edApplyFond()"/></label>
+        </div>
+        <div class="ed-gradient-type">
+          <button class="ed-chip on" id="ed-grad-lin" onclick="edGradType('linear',this)">Linéaire →</button>
+          <button class="ed-chip"    id="ed-grad-rad" onclick="edGradType('radial',this)">Radial ◉</button>
+          <button class="ed-chip"    id="ed-grad-cir" onclick="edGradType('circle',this)">Circulaire ○</button>
+          <button class="ed-chip"    id="ed-grad-diag" onclick="edGradType('diagonal',this)">Diagonal ↗</button>
+        </div>
+      </div>
+
+      <!-- Matière (radial avec couleurs libres) -->
+      <div id="ed-cfg-beton" style="display:none;">
+        <div class="ed-row">
+          <span style="font-size:.8rem;color:var(--gris-clair);">Couleur principale</span>
+          <label class="ed-color-swatch"><input type="color" id="ed-beton-c1" oninput="edApplyFond()"/></label>
+          <span style="font-size:.8rem;color:var(--gris-clair);">Couleur sombre</span>
+          <label class="ed-color-swatch"><input type="color" id="ed-beton-c2" oninput="edApplyFond()"/></label>
+        </div>
+      </div>
+
+      <!-- Textures CSS -->
+      <div id="ed-cfg-texture" style="display:none;">
+        <div class="ed-textures">
+          <button class="ed-texture-btn on" id="ed-tex-froisse" onclick="edTexture('froisse',this)"
+            style="background:repeating-linear-gradient(45deg,#2a2a2a,#2a2a2a 2px,#1a1a1a 2px,#1a1a1a 8px);">Froissé</button>
+          <button class="ed-texture-btn" id="ed-tex-pierre" onclick="edTexture('pierre',this)"
+            style="background:radial-gradient(ellipse at 20% 30%,#555 0%,#2a2a2a 40%,#1a1a1a 70%,#333 100%);">Pierre</button>
+          <button class="ed-texture-btn" id="ed-tex-lignes" onclick="edTexture('lignes',this)"
+            style="background:repeating-linear-gradient(0deg,transparent,transparent 18px,rgba(255,255,255,.07) 18px,rgba(255,255,255,.07) 19px),#1e1e1e;">Lignes</button>
+          <button class="ed-texture-btn" id="ed-tex-trame" onclick="edTexture('trame',this)"
+            style="background:repeating-linear-gradient(90deg,transparent,transparent 10px,rgba(255,255,255,.04) 10px,rgba(255,255,255,.04) 11px),repeating-linear-gradient(0deg,transparent,transparent 10px,rgba(255,255,255,.04) 10px,rgba(255,255,255,.04) 11px),#1c1c1c;">Trame</button>
+          <button class="ed-texture-btn" id="ed-tex-bois" onclick="edTexture('bois',this)"
+            style="background:repeating-linear-gradient(85deg,#3d2b1a,#3d2b1a 3px,#4a3520 3px,#4a3520 7px);">Bois</button>
+          <button class="ed-texture-btn" id="ed-tex-toile" onclick="edTexture('toile',this)"
+            style="background:repeating-linear-gradient(45deg,#1a1a1a 0px,#1a1a1a 2px,#232323 2px,#232323 8px),repeating-linear-gradient(-45deg,#1a1a1a 0px,#1a1a1a 2px,#232323 2px,#232323 8px);">Toile</button>
+        </div>
+        <div class="ed-row" style="margin-top:.5rem;">
+          <span style="font-size:.8rem;color:var(--gris-clair);">Teinte</span>
+          <label class="ed-color-swatch"><input type="color" id="ed-tex-couleur" value="#1a1a1a" oninput="edApplyFond()"/></label>
+        </div>
+      </div>
+
+      <!-- Photo de fond -->
+      <div id="ed-cfg-photo" style="display:none;">
+        <label class="ed-chip" style="cursor:pointer;">
+          📷 Choisir une photo
+          <input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhotoSlide(this,cvSlideActive)"/>
+        </label>
+        <p style="font-size:.72rem;color:var(--gris-clair);margin-top:.4rem;">Un filtre semi-transparent est automatiquement appliqué pour garantir la lisibilité du texte.</p>
+      </div>
+
+      <!-- Prévisualisation -->
+      <div class="ed-preview" id="ed-fond-preview"></div>
+    </div>
+  </div>
+</div>
 
 <div id="toast"></div>
 
@@ -3041,7 +3257,7 @@ const PILIER_CLASSES = {
   visibilite: 'on-vis',
   autorite:   'on-aut',
   expertise:  'on-exp',
-  autre:      'on-aut2'
+  activite:   'on-act'
 };
 
 // État courant
@@ -3055,7 +3271,7 @@ function setGenPilier(chip, pilier){
   chip.classList.add(PILIER_CLASSES[pilier]||'on-aut2');
   genPilier = pilier;
   const autreZone = document.getElementById('gen-pilier-autre-zone');
-  if(autreZone) autreZone.classList.toggle('on', pilier==='autre');
+  if(autreZone) autreZone.classList.toggle('on', pilier==='activite');
 }
 
 function setCreerPilier(chip, pilier){
@@ -3065,7 +3281,7 @@ function setCreerPilier(chip, pilier){
   chip.classList.add(PILIER_CLASSES[pilier]||'on-aut2');
   creerPilier = pilier;
   const autreZone = document.getElementById('creer-pilier-autre-zone');
-  if(autreZone) autreZone.classList.toggle('on', pilier==='autre');
+  if(autreZone) autreZone.classList.toggle('on', pilier==='activite');
 }
 
 
@@ -3093,12 +3309,24 @@ SOURCES : connaissances métier + données du profil + éventuellement une donn�
 Thèmes possibles : "Les N choses que [cible] devrait savoir sur [sujet]", "La seule façon de [résultat] selon [profession]", "Cette astuce permet de [bénéfice concret]", erreur fréquente + bonne pratique, série pédagogique sur un sujet précis.
 Ton : pédagogique, précis, concret. Chaque post doit apporter quelque chose d'actionnable immédiatement.`,
 
-    autre: `PILIER PERSONNALISÉ : ${autreTexte||'Série ou thème défini par l’utilisateur'}
-Respecter la cohérence de ce pilier personnalisé dans le ton, le sujet et la structure. Si c'est une série, assurer la continuité avec les posts précédents du même pilier.`
+        activite: `PILIER : ACTIVITÉ
+Objectif : montrer l'activité, mettre en avant une offre ou annoncer une promotion — selon le sujet fourni.
+
+NIVEAU 1 — MONTRER L'ACTIVITÉ (si aucun sujet de vente n'est mentionné) :
+Contenu : coulisses, produits en situation, savoir-faire, journée type, avant/après, process.
+Ton : incarné, humain, pas de vente. Donne envie de travailler avec ce professionnel.
+
+NIVEAU 2 — METTRE EN AVANT UNE OFFRE (si un produit/service spécifique est mentionné) :
+Partir de la situation vécue par le client → décrire le bénéfice → invitation douce.
+Jamais de prix ni de CTA commercial direct.
+
+NIVEAU 3 — PROMOTION DIRECTE (si le sujet mentionne un prix, une date ou "promo") :
+Annoncer l'événement dès le hook. Être direct. CTA vers l'achat, la réservation ou le déplacement en boutique.
+Urgence réelle uniquement — jamais artificielle.`
   };
   return `
 
-${instructions[pilier]||instructions.autre}
+${instructions[pilier]||instructions.activite}
 `;
 }
 
@@ -3106,7 +3334,7 @@ ${instructions[pilier]||instructions.autre}
 function resetGenPiliers(){
   genPilier = null;
   document.querySelectorAll('#gen-piliers .pilier-chip').forEach(c=>c.className='pilier-chip');
-  const z=document.getElementById('gen-pilier-autre-zone'); if(z) z.classList.remove('on');
+  const z=document.getElementById('gen-pilier-autre-zone'); if(z) z.classList.remove('on'); // zone saisie libre activite
 }
 function resetCreerPiliers(){ resetGenPiliers(); }
 
@@ -3580,6 +3808,11 @@ function styleFondSlide(numSlide, totalSlides, c1, c2){
   const fond = fondSlide(numSlide, totalSlides, c1, c2);
   // Override par slide prioritaire sur le style global
   const style = overridesSlide[numSlide-1] || styleFondActif || 'uni';
+  // CSS custom (défini par edApplyFond)
+  if(style === '__custom__'){
+    const css = (overridesSlide['__css__'] || {})[numSlide-1];
+    if(css) return css;
+  }
 
   if(style === 'uni2'){
     // Fond uni couleur secondaire
@@ -3982,38 +4215,6 @@ function afficherCarrousel(slides, legende, reseau, containerId){
       </div>
       <div style="padding:.6rem 1rem;border-top:1px solid var(--gris-border);font-size:.78rem;color:#aaa;line-height:1.55;"
            id="cv-legende-txt">${legende.replace(/\n/g,'<br/>')}</div>
-      <!-- Panneau d'édition slide active -->
-      <div class="cv-edit-panel" id="cv-edit-panel">
-        <div class="cv-edit-section">
-          <span class="cv-edit-label">✏️ Titre de la slide</span>
-          <textarea class="cv-edit-textarea" id="cv-edit-titre" rows="2" oninput="appliquerEditSlide()"></textarea>
-        </div>
-        <div class="cv-edit-section">
-          <span class="cv-edit-label">📝 Corps</span>
-          <textarea class="cv-edit-textarea" id="cv-edit-corps" rows="3" oninput="appliquerEditSlide()"></textarea>
-        </div>
-        <div class="cv-edit-section">
-          <span class="cv-edit-label">🖊️ Mot surligné (stabilo) — laisse vide pour le dernier mot par défaut</span>
-          <div class="cv-edit-row">
-            <input type="text" id="cv-edit-stabilo-mot" placeholder="Ex : résultats" style="flex:1;font-size:.82rem;" oninput="appliquerEditSlide()"/>
-            <label style="display:flex;align-items:center;gap:.3rem;font-size:.78rem;cursor:pointer;">
-              Couleur
-              <input type="color" id="cv-edit-stabilo-couleur" style="width:28px;height:28px;border:none;background:none;cursor:pointer;border-radius:4px;padding:0;" oninput="appliquerEditSlide()"/>
-            </label>
-          </div>
-          <div style="margin-top:.4rem;"><span class="cv-stabilo-preview" id="cv-stabilo-preview">Aperçu stabilo</span></div>
-        </div>
-        <div class="cv-edit-section">
-          <span class="cv-edit-label">🎨 Style du fond de cette slide</span>
-          <div class="cv-edit-row" id="cv-edit-fond-btns">
-            <button class="cv-fond-opt" onclick="setStyleSlide(cvSlideActive,this,'uni')" title="Uni 1">Uni 1</button>
-            <button class="cv-fond-opt" onclick="setStyleSlide(cvSlideActive,this,'uni2')" title="Uni 2">Uni 2</button>
-            <button class="cv-fond-opt" onclick="setStyleSlide(cvSlideActive,this,'degrade')" title="Dégradé">Dégradé</button>
-            <button class="cv-fond-opt" onclick="setStyleSlide(cvSlideActive,this,'beton')" title="Matière">Matière</button>
-            <label class="cv-fond-opt" style="cursor:pointer;">🖼️ Photo<input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhotoSlide(this,cvSlideActive)"/></label>
-          </div>
-        </div>
-      </div>
     </div>`;
   // Appliquer les styles de fond réels après rendu DOM
   setTimeout(function(){ majFondsSlides(); }, 10);
@@ -4029,11 +4230,20 @@ function cvSelectSlide(idx){
 
 let overridesStabilo = {};
 
+function fermerEditSlide(e){
+  if(e && e.type === 'click' && e.target !== document.getElementById('cv-edit-overlay')) return;
+  const ov = document.getElementById('cv-edit-overlay');
+  if(ov) ov.classList.remove('on');
+}
+
 function ouvrirEditSlide(idx){
   if(!carrouselCourant) return;
-  const panel = document.getElementById('cv-edit-panel');
-  if(!panel) return;
-  panel.classList.add('on');
+  const ovEl = document.getElementById('cv-edit-overlay');
+  if(!ovEl) return;
+  ovEl.classList.add('on');
+  // Titre de la modale
+  const hd = document.getElementById('cv-edit-slide-titre-hd');
+  if(hd) hd.textContent = 'Slide ' + (idx + 1) + ' / ' + carrouselCourant.slides.length;
   const s = carrouselCourant.slides[idx];
   if(!s) return;
   const titre = (s.titre||'').replace(/\[\/?accent\]/gi,'');
@@ -4043,11 +4253,25 @@ function ouvrirEditSlide(idx){
   const el_k = document.getElementById('cv-edit-stabilo-couleur');
   if(el_t) el_t.value = titre;
   if(el_c) el_c.value = s.corps||'';
-  const ov  = overridesStabilo[idx] || {};
-  const coul= ov.couleur || CFG.couleur1 || '#E8186D';
-  if(el_m) el_m.value = ov.mot || '';
+  const ovSt = overridesStabilo[idx] || {};
+  const coul = ovSt.couleur || CFG.couleur1 || '#E8186D';
+  if(el_m) el_m.value = ovSt.mot || '';
   if(el_k) el_k.value = coul;
-  majPreviewStabilo(ov.mot || 'Aperçu stabilo', coul);
+  majPreviewStabilo(ovSt.mot || 'Aperçu stabilo', coul);
+  // Init fond actif dans la modale
+  const fondTypeBtn = document.getElementById('ed-fond-'+edFondTypeActif);
+  document.querySelectorAll('#cv-edit-panel .ed-chip[id^="ed-fond-"]').forEach(b=>b.classList.remove('on'));
+  if(fondTypeBtn) fondTypeBtn.classList.add('on');
+  ['custom','degrade','beton','texture','photo','uni'].forEach(t=>{
+    const el=document.getElementById('ed-cfg-'+t);
+    if(el) el.style.display=(t===edFondTypeActif)?'block':'none';
+  });
+  // Init stabilo toggle
+  edStabiloActif = !!(ovSt.actif !== false);
+  const edTr=document.getElementById('ed-stabilo-track');
+  if(edTr) edTr.classList.toggle('on', edStabiloActif);
+  const edCfg=document.getElementById('ed-stabilo-cfg');
+  if(edCfg) edCfg.style.display=edStabiloActif?'block':'none';
 }
 
 function majPreviewStabilo(mot, couleur){
@@ -4071,7 +4295,7 @@ function appliquerEditSlide(){
   const coul  = (document.getElementById('cv-edit-stabilo-couleur')||{}).value || CFG.couleur1 || '#E8186D';
   s.titre = titre;
   s.corps = corps;
-  overridesStabilo[idx] = { mot, couleur: coul };
+  overridesStabilo[idx] = { mot, couleur: coul, actif: edStabiloActif };
   majPreviewStabilo(mot || 'Aperçu stabilo', coul);
   // Mettre à jour le rendu de la slide
   const slideEl = document.getElementById('cv-slide-' + idx);
@@ -4079,7 +4303,10 @@ function appliquerEditSlide(){
   const fond   = fondSlide(s.num, carrouselCourant.slides.length, CFG.couleur1||'#E8186D', CFG.couleur2||'#111');
   const tcoul  = texteSlide(fond);
   let titreHtml;
-  if(mot && titre.includes(mot)){
+  if(!edStabiloActif){
+    // Stabilo désactivé : titre en texte simple
+    titreHtml = escapeHtml(titre);
+  } else if(mot && titre.includes(mot)){
     const rgb = hexToRgbPhoto(coul);
     const bg  = rgb ? 'rgba('+rgb.r+','+rgb.g+','+rgb.b+',.65)' : 'rgba(232,24,109,.65)';
     const txtC = estCouleurClaire(coul) ? '#111' : '#fff';
@@ -4087,8 +4314,10 @@ function appliquerEditSlide(){
       escapeHtml(mot),
       '<span style="background:'+bg+';border-radius:3px;padding:1px 5px 2px;-webkit-box-decoration-break:clone;color:'+txtC+';">'+escapeHtml(mot)+'</span>'
     );
-  } else {
+  } else if(edStabiloActif) {
     titreHtml = rendreTitreStabilo(titre, coul, tcoul);
+  } else {
+    titreHtml = escapeHtml(titre);
   }
   const titreEl = slideEl.querySelector('.cv-slide-titre');
   if(titreEl) titreEl.innerHTML = titreHtml;
@@ -4248,6 +4477,205 @@ function setCvFondPhotoSlide(input, slideIdx){
   reader.readAsDataURL(file);
 }
 
+
+// ════════════════════════════════════════════════════════
+// ÉDITEUR FOND — Modale carrousel + Zone photo
+// Variables d'état partagées
+// ════════════════════════════════════════════════════════
+
+// État modale carrousel
+let edFondTypeActif  = 'uni';       // uni|custom|degrade|beton|texture|photo
+let edGradTypeActif  = 'linear';    // linear|radial|circle|diagonal
+let edTexTypeActif   = 'froisse';
+let edStabiloActif   = true;
+
+// État zone photo
+let phFondTypeActif  = 'uni';
+let phGradTypeActif  = 'linear';
+let phTexTypeActif   = 'froisse';
+let phStabiloActif   = true;
+
+// ── Utilitaires CSS gradient / texture ──
+function cssGradient(type, c1, c2){
+  const dark = c2 || ajusterLum(c1, -35);
+  switch(type){
+    case 'radial':    return 'radial-gradient(ellipse at center, '+c1+' 0%, '+dark+' 100%)';
+    case 'circle':    return 'radial-gradient(circle, '+c1+' 0%, '+dark+' 100%)';
+    case 'diagonal':  return 'linear-gradient(45deg, '+c1+' 0%, '+dark+' 100%)';
+    default:          return 'linear-gradient(135deg, '+c1+' 0%, '+dark+' 100%)';
+  }
+}
+
+function cssTexture(type, teinte){
+  const t = teinte || '#1a1a1a';
+  const t2 = ajusterLum(t, 8);
+  const t3 = ajusterLum(t, -8);
+  switch(type){
+    case 'pierre': return 'radial-gradient(ellipse at 20% 30%,'+ajusterLum(t,25)+' 0%,'+t+' 40%,'+t3+' 70%,'+t2+' 100%)';
+    case 'lignes': return 'repeating-linear-gradient(0deg,transparent,transparent 18px,rgba(255,255,255,.07) 18px,rgba(255,255,255,.07) 19px),'+t;
+    case 'trame':  return 'repeating-linear-gradient(90deg,transparent,transparent 10px,rgba(255,255,255,.04) 10px,rgba(255,255,255,.04) 11px),repeating-linear-gradient(0deg,transparent,transparent 10px,rgba(255,255,255,.04) 10px,rgba(255,255,255,.04) 11px),'+t;
+    case 'bois':   return 'repeating-linear-gradient(85deg,'+t2+','+t2+' 3px,'+t+' 3px,'+t+' 7px)';
+    case 'toile':  return 'repeating-linear-gradient(45deg,'+t+' 0px,'+t+' 2px,'+t2+' 2px,'+t2+' 8px),repeating-linear-gradient(-45deg,'+t+' 0px,'+t+' 2px,'+t2+' 2px,'+t2+' 8px)';
+    default:       return 'repeating-linear-gradient(45deg,'+t2+','+t2+' 2px,'+t+' 2px,'+t+' 8px)';
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// MODALE CARROUSEL — logique fond
+// ════════════════════════════════════════════════════════
+
+function edFondType(type, btn){
+  edFondTypeActif = type;
+  document.querySelectorAll('#cv-edit-panel .ed-chip[id^="ed-fond-"]').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  ['custom','degrade','beton','texture','photo','uni'].forEach(t=>{
+    const el = document.getElementById('ed-cfg-'+t);
+    if(el) el.style.display = (t===type) ? 'block' : 'none';
+  });
+  // Init couleurs par défaut
+  const c1 = CFG.couleur1||'#E8186D', c2 = CFG.couleur2||'#111111';
+  if(type==='degrade'){ setV2('ed-grad-c1',c1); setV2('ed-grad-c2',c2); }
+  if(type==='beton')  { setV2('ed-beton-c1',c1); setV2('ed-beton-c2',ajusterLum(c1,-40)); }
+  if(type==='custom') { setV2('ed-col-custom',c1); }
+  edApplyFond();
+}
+
+function edGradType(type, btn){
+  edGradTypeActif = type;
+  document.querySelectorAll('#ed-cfg-degrade .ed-chip').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  edApplyFond();
+}
+
+function edTexture(type, btn){
+  edTexTypeActif = type;
+  document.querySelectorAll('#ed-cfg-texture .ed-texture-btn').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  edApplyFond();
+}
+
+function edApplyFond(){
+  if(!carrouselCourant || cvSlideActive === undefined) return;
+  const c1 = CFG.couleur1||'#E8186D', c2 = CFG.couleur2||'#111111';
+  let bg = '';
+
+  switch(edFondTypeActif){
+    case 'uni':     bg = c1; break;
+    case 'custom':  bg = gv('ed-col-custom') || c1; break;
+    case 'degrade': bg = cssGradient(edGradTypeActif, gv('ed-grad-c1')||c1, gv('ed-grad-c2')||c2); break;
+    case 'beton':   bg = 'radial-gradient(ellipse at 30% 20%,'+(gv('ed-beton-c1')||c1)+' 0%,'+(gv('ed-beton-c2')||ajusterLum(c1,-40))+' 100%)'; break;
+    case 'texture': bg = cssTexture(edTexTypeActif, gv('ed-tex-couleur')); break;
+    case 'photo':   bg = null; break;
+  }
+
+  // Stocker le CSS custom dans overridesSlide
+  overridesSlide[cvSlideActive] = bg ? '__custom__' : 'photo';
+  overridesSlide['__css__'] = overridesSlide['__css__'] || {};
+  if(bg) overridesSlide['__css__'][cvSlideActive] = 'background:'+bg+';';
+
+  // Appliquer sur la slide
+  const slideEl = document.getElementById('cv-slide-'+cvSlideActive);
+  if(slideEl && bg) appliqueFondCSS(slideEl, 'background:'+bg+';');
+
+  // Mettre à jour le preview
+  const prev = document.getElementById('ed-fond-preview');
+  if(prev) prev.style.background = bg || '#333';
+}
+
+function edToggleStabilo(){
+  edStabiloActif = !edStabiloActif;
+  const track = document.getElementById('ed-stabilo-track');
+  if(track) track.classList.toggle('on', edStabiloActif);
+  const cfg = document.getElementById('ed-stabilo-cfg');
+  if(cfg) cfg.style.display = edStabiloActif ? 'block' : 'none';
+  appliquerEditSlide();
+}
+
+// ════════════════════════════════════════════════════════
+// ZONE PHOTO POST — logique fond
+// ════════════════════════════════════════════════════════
+
+function phFondType(type, btn){
+  phFondTypeActif = type;
+  document.querySelectorAll('#gen-photo-style-zone .ed-chip[id^="ph-fond-"]').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  ['uni','custom','degrade','beton','texture','photo'].forEach(t=>{
+    const el = document.getElementById('ph-cfg-'+t);
+    if(el) el.style.display = (t===type) ? 'block' : 'none';
+  });
+  const c1 = CFG.couleur1||'#E8186D', c2 = CFG.couleur2||'#111111';
+  if(type==='degrade'){ setV2('ph-grad-c1',c1); setV2('ph-grad-c2',c2); }
+  if(type==='beton')  { setV2('ph-beton-c1',c1); setV2('ph-beton-c2',ajusterLum(c1,-40)); }
+  if(type==='custom') { const p=document.getElementById('photo-fond-couleur'); if(p) p.value=c1; }
+  if(type==='photo')  { photoFondImageSrc=null; }
+  phApplyFond();
+}
+
+function phGradType(type, btn){
+  phGradTypeActif = type;
+  document.querySelectorAll('#ph-cfg-degrade .ed-chip').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  phApplyFond();
+}
+
+function phTexture(type, btn){
+  phTexTypeActif = type;
+  document.querySelectorAll('#ph-cfg-texture .ed-texture-btn').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  phApplyFond();
+}
+
+function phApplyFond(){
+  const c1 = fondsPhotoCouleurCourante();
+  const c2 = CFG.couleur2||'#111111';
+  let bg = '';
+  switch(phFondTypeActif){
+    case 'uni':     bg = CFG.couleur1||'#E8186D'; photoFondCouleur=bg; photoFondTexture='uni'; break;
+    case 'custom':  bg = (document.getElementById('photo-fond-couleur')||{}).value||c1; photoFondCouleur=bg; photoFondTexture='uni'; break;
+    case 'degrade': bg = cssGradient(phGradTypeActif, gv('ph-grad-c1')||c1, gv('ph-grad-c2')||c2); photoFondCouleur=null; photoFondTexture='degrade'; break;
+    case 'beton':   bg = 'radial-gradient(ellipse at 30% 20%,'+(gv('ph-beton-c1')||c1)+' 0%,'+(gv('ph-beton-c2')||ajusterLum(c1,-40))+' 100%)'; photoFondCouleur=null; photoFondTexture='beton'; break;
+    case 'texture': bg = cssTexture(phTexTypeActif, gv('ph-tex-couleur')); photoFondTexture='texture'; break;
+    case 'photo':   break;
+  }
+  if(bg) { photoFondImageSrc=null; }
+  renderPreviewFondColoreAvecBg(bg);
+}
+
+function renderPreviewFondColoreAvecBg(bgOverride){
+  const preview = document.getElementById('gen-photo-preview-zone'); if(!preview) return;
+  const c1 = fondsPhotoCouleurCourante();
+  const bg = bgOverride || calculerBgPhoto() || c1;
+  const tcoul = estCouleurClaire(c1) ? '#111' : '#fff';
+  const coulStabilo = stabiloCouleurCourante(c1);
+  const titre = (genPhotoTitre||'Ton titre ici').substring(0,60);
+  const hasPhoto = !!photoFondImageSrc;
+  const fondCss = hasPhoto ? 'position:relative;overflow:hidden;' : 'background:'+bg+';';
+  const imgHtml = hasPhoto
+    ? '<img src="'+photoFondImageSrc+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7;"/><div style="position:absolute;inset:0;background:rgba(0,0,0,.35);"></div>'
+    : '';
+  const coulTxt = hasPhoto ? '#fff' : tcoul;
+  const affStabilo = phStabiloActif && !hasPhoto;
+
+  preview.innerHTML = '<div style="width:100%;height:100%;'+fondCss+'border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:1rem 1.1rem;box-sizing:border-box;">'
+    + imgHtml
+    + '<div style="position:relative;z-index:1;font-family:var(--ptit-tmp,serif);font-size:.92rem;font-weight:700;color:'+coulTxt+';line-height:1.5;">'
+    + (affStabilo ? rendreTitreStabilo(titre, coulStabilo, coulTxt) : escapeHtml(titre))
+    + '</div></div>';
+}
+
+function phToggleStabilo(){
+  phStabiloActif = !phStabiloActif;
+  const track = document.getElementById('ph-stabilo-track');
+  if(track) track.classList.toggle('on', phStabiloActif);
+  const cfg = document.getElementById('ph-stabilo-cfg');
+  if(cfg) cfg.style.display = phStabiloActif ? 'block' : 'none';
+  photoStabiloCouleur = phStabiloActif ? (photoStabiloCouleur || '#ffffff') : null;
+  renderPreviewFondColoreAvecBg(null);
+}
+
+function setV2(id, val){ const el=document.getElementById(id); if(el) el.value=val; }
+function gv(id){ const el=document.getElementById(id); return el?el.value:''; }
+
 function setStyleFond(btn, style){
   styleFondActif = style;
   // NE PAS effacer les overrides par slide — le style global s'applique aux slides
@@ -4371,97 +4799,112 @@ function majFondsSlides(){
 // ══════════════════════════════════════════
 async function exporterPNG(){
   if(!carrouselCourant) return;
-  toast('⏳ Préparation des PNG…','ok');
+  toast('⏳ Préparation des slides…','ok');
 
-  // Charger html2canvas dynamiquement
   await chargerScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
 
   const { slides } = carrouselCourant;
-  const c1 = CFG.couleur1 || '#E8186D';
-  const c2 = CFG.couleur2 || '#111111';
+  const c1   = CFG.couleur1 || '#E8186D';
+  const c2   = CFG.couleur2 || '#111111';
   const ptit = CFG.policeTitre || 'Playfair Display';
-  const pcorp = CFG.policeCorps || 'DM Sans';
+  const pcorp= CFG.policeCorps || 'DM Sans';
 
+  // Générer chaque slide → blob → téléchargement individuel
   for(let i = 0; i < slides.length; i++){
-    const s = slides[i];
-    const fond = fondSlide(s.num, slides.length, c1, c2);
-    const tcoul = texteSlide(fond);
+    const s            = slides[i];
+    const fond         = fondSlide(s.num, slides.length, c1, c2);
+    const isSlide1Photo= (i === 0 && photoSlide1);
+    const tcoulFinal   = isSlide1Photo ? meilleureTexteCouleur('#000000', c1, c2) : texteSlide(fond);
+    const soulCoul     = isSlide1Photo ? couleurSoulignement(tcoulFinal, c1, c2) : null;
 
-    // Créer un div offscreen 1080x1440
-    const isSlide1Photo = (i === 0 && photoSlide1);
-    const tcoulFinal = isSlide1Photo ? meilleureTexteCouleur('#000000', c1, c2) : tcoul;
-    const soulCoul   = isSlide1Photo ? couleurSoulignement(tcoulFinal, c1, c2) : null;
-
+    // Créer le div offscreen
     const div = document.createElement('div');
-    // Appliquer les styles de base d'abord
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;overflow:hidden;font-family:'${pcorp}',sans-serif;color:${tcoulFinal};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;`;
-    // Appliquer le fond séparément pour éviter les conflits de shorthand CSS
+    div.style.cssText = [
+      'position:fixed','left:-9999px','top:0',
+      'width:1080px','height:1440px','overflow:hidden',
+      "font-family:'" + pcorp + "',sans-serif",
+      'color:' + tcoulFinal,
+      'padding:110px 88px 88px',
+      'box-sizing:border-box',
+      'display:flex','flex-direction:column',
+      'justify-content:center','align-items:flex-start','text-align:left'
+    ].join(';') + ';';
+
+    // Fond séparé pour préserver gradients
     if(isSlide1Photo){
       div.style.background = '#000';
     } else {
-      const fondCSS = styleFondSlide(s.num, slides.length, c1, c2);
-      appliqueFondCSS(div, fondCSS);
+      appliqueFondCSS(div, styleFondSlide(s.num, slides.length, c1, c2));
     }
 
-    const photoHtml = isSlide1Photo ? `
-      <img src="${photoSlide1.src}" alt="photo" crossOrigin="anonymous"
-        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;z-index:0;"/>
-      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.38);z-index:1;"></div>` : '';
+    const photoHtml = isSlide1Photo
+      ? '<img src="' + photoSlide1.src + '" crossOrigin="anonymous" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:0;"/>'
+        + '<div style="position:absolute;inset:0;background:rgba(0,0,0,0.38);z-index:1;"></div>'
+      : '';
 
-    div.innerHTML = `
-      ${photoHtml}
-      <div style="position:relative;z-index:2;display:flex;flex-direction:column;height:100%;width:100%;">
-        
-        <div style="font-family:'${ptit}',serif;font-size:${isSlide1Photo ? fontSizeTitre(s.titre, .82, 72).px : (s.type==='hook'?72:54)}px;font-weight:700;line-height:1.25;margin-bottom:${isSlide1Photo?'8px':'24px'};${isSlide1Photo?'border-bottom:6px solid '+soulCoul+';padding-bottom:12px;':''}">${rendreTitreAccent(s.titre||'', accentSlide(c1, fond), fond)}</div>
-        ${s.sousTitre?`<div style="font-size:32px;opacity:.7;margin-bottom:24px;">${s.sousTitre}</div>`:''}
-        <div style="font-size:${s.type==='hook'?36:32}px;line-height:1.65;flex:1;">${isSlide1Photo ? '' : (s.corps||'')}</div>
-        ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="max-width:160px;max-height:60px;object-fit:contain;opacity:.8;margin-top:auto;"/>` : ''}
+    const titreHtml = rendreTitreAccent(s.titre||'', accentSlide(c1, fond), fond);
+    const tFontSize = isSlide1Photo ? fontSizeTitre(s.titre, .82, 72).px : (s.type==='hook' ? 72 : 54);
+    const tMargin   = isSlide1Photo ? '8px' : '24px';
+    const tExtra    = isSlide1Photo ? 'border-bottom:6px solid ' + soulCoul + ';padding-bottom:12px;' : '';
+    const bFontSize = s.type === 'hook' ? 36 : 32;
 
-      </div>`;
+    div.innerHTML = photoHtml
+      + '<div style="position:relative;z-index:2;display:flex;flex-direction:column;height:100%;width:100%;">'
+      +   '<div style="font-family:\'' + ptit + '\',serif;font-size:' + tFontSize + 'px;font-weight:700;line-height:1.25;margin-bottom:' + tMargin + ';' + tExtra + '">' + titreHtml + '</div>'
+      + (s.sousTitre ? '<div style="font-size:32px;opacity:.7;margin-bottom:24px;">' + escapeHtml(s.sousTitre) + '</div>' : '')
+      +   '<div style="font-size:' + bFontSize + 'px;line-height:1.65;flex:1;">' + (isSlide1Photo ? '' : (s.corps||'')) + '</div>'
+      + (s.type === 'cta' && CFG.logoUrl ? '<img src="' + CFG.logoUrl + '" style="max-width:160px;max-height:60px;object-fit:contain;opacity:.8;margin-top:auto;"/>' : '')
+      + '</div>';
 
     document.body.appendChild(div);
 
-    try{
-      const canvas = await window.html2canvas(div, { scale:1, useCORS:true, allowTaint:true, backgroundColor:fond });
-      const dataUrl = canvas.toDataURL('image/png');
-      const nomFichier = `carrousel-slide-${String(i+1).padStart(2,'0')}.png`;
+    const nomFichier = 'carrousel-slide-' + String(i + 1).padStart(2, '0') + '.png';
 
-      // Sur mobile iOS : Share API → album photo
-      // Sur desktop ou si Share non dispo : téléchargement direct
-      let partageReussi = false;
-      if(navigator.share && navigator.canShare){
-        try{
-          const blob = await (await fetch(dataUrl)).blob();
-          const file = new File([blob], nomFichier, {type:'image/png'});
-          if(navigator.canShare({files:[file]})){
-            await navigator.share({files:[file], title:`Slide ${i+1}/${slides.length}`});
-            partageReussi = true;
-            await new Promise(r=>setTimeout(r,500));
-          }
-        }catch(shareErr){
-          // AbortError = utilisateur a annulé → fallback téléchargement
-          if(shareErr.name !== 'AbortError') console.warn('Share err:', shareErr);
-        }
-      }
-      // Fallback systématique si partage non disponible ou annulé
-      if(!partageReussi){
-        const link = document.createElement('a');
-        link.download = nomFichier;
-        link.href = dataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        await new Promise(r=>setTimeout(r,400));
-      }
-    }catch(e){
-      console.error('Export slide', i+1, ':', e);
-      toast('⚠️ Erreur slide ' + (i+1), 'err');
+    try {
+      // Attendre que le div soit rendu
+      await new Promise(r => setTimeout(r, 80));
+
+      const canvas = await window.html2canvas(div, {
+        scale:           1,
+        useCORS:         true,
+        allowTaint:      true,
+        backgroundColor: fond,
+        logging:         false,
+        removeContainer: false
+      });
+
+      // Blob URL — fonctionne sur iOS PWA, desktop, Android
+      await new Promise((resolve, reject) => {
+        canvas.toBlob(function(blob){
+          if(!blob){ reject(new Error('toBlob null')); return; }
+          const blobUrl = URL.createObjectURL(blob);
+          const link    = document.createElement('a');
+          link.href     = blobUrl;
+          link.download = nomFichier;
+          link.style.display = 'none';
+          document.body.appendChild(link);
+          link.click();
+          // Nettoyer après délai
+          setTimeout(function(){
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+            resolve();
+          }, 600);
+        }, 'image/png');
+      });
+
+      toast('⬇️ Slide ' + (i+1) + '/' + slides.length + ' téléchargée', 'ok');
+      // Délai entre slides pour laisser le temps au navigateur
+      await new Promise(r => setTimeout(r, 400));
+
+    } catch(e) {
+      console.error('Export slide ' + (i+1) + ':', e);
+      toast('⚠️ Erreur slide ' + (i+1) + ' : ' + e.message, 'err');
     } finally {
-      // Toujours nettoyer le div, même si erreur ou annulation
       if(document.body.contains(div)) document.body.removeChild(div);
     }
   }
-  toast('✅ Slides PNG téléchargées !','ok');
+  toast('✅ ' + slides.length + ' slides téléchargées !', 'ok');
 }
 
 // ══════════════════════════════════════════

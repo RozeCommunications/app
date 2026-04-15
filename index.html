@@ -1775,6 +1775,13 @@
             📷 Choisir une photo
             <input type="file" id="photo-fond-file" accept="image/*" style="display:none;" onchange="majFondPhotoImage(this)"/>
           </label>
+          <div id="ph-photo-preview-wrap" style="display:none;margin-top:.6rem;">
+            <div style="font-size:.72rem;color:#4caf50;font-weight:600;margin-bottom:.4rem;">✅ Photo chargée — aperçu :</div>
+            <div style="border-radius:10px;overflow:hidden;aspect-ratio:3/4;max-width:100px;position:relative;background:#222;">
+              <img id="ph-photo-preview-img" style="width:100%;height:100%;object-fit:cover;display:block;"/>
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,.35);"></div>
+            </div>
+          </div>
         </div>
 
         <!-- Stabilo toggle -->
@@ -2609,7 +2616,15 @@
           📷 Choisir une photo
           <input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhotoSlide(this,cvSlideActive)"/>
         </label>
-        <p style="font-size:.72rem;color:var(--gris-clair);margin-top:.4rem;">Un filtre semi-transparent est automatiquement appliqué pour garantir la lisibilité du texte.</p>
+        <p style="font-size:.72rem;color:var(--gris-clair);margin-top:.4rem;">Un filtre semi-transparent est appliqué automatiquement pour la lisibilité du texte.</p>
+        <!-- Preview photo importée -->
+        <div id="ed-photo-preview-wrap" style="display:none;margin-top:.6rem;">
+          <div style="font-size:.72rem;color:#4caf50;font-weight:600;margin-bottom:.4rem;">✅ Photo chargée — aperçu :</div>
+          <div id="ed-photo-preview" style="border-radius:10px;overflow:hidden;aspect-ratio:3/4;max-width:120px;position:relative;background:#222;">
+            <img id="ed-photo-preview-img" style="width:100%;height:100%;object-fit:cover;display:block;"/>
+            <div style="position:absolute;inset:0;background:rgba(0,0,0,.38);"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Prévisualisation -->
@@ -3862,6 +3877,13 @@ function accentSlide(c1, fondSlide){
 // ══════════════════════════════════════════
 let carrouselCourant = null;
 let styleFondActif = 'uni'; // 'uni' | 'uni2' | 'degrade' | 'grain' | 'beton'
+let carFormatRatio = '3:4'; // Format carrousel : '3:4' | '4:5' | '1:1'
+// Dimensions en px pour l'export (base 1080px)
+const CAR_FORMATS = {
+  '3:4': { w: 1080, h: 1440, label: '3:4 (défaut)' },
+  '4:5': { w: 1080, h: 1350, label: '4:5' },
+  '1:1': { w: 1080, h: 1080, label: '1:1 (carré)' },
+};
 let overridesSlide = {};  // { slideIndex: style } — surcharge par slide
 let cvSlideActive = 0;
 
@@ -4165,6 +4187,15 @@ function afficherCarrousel(slides, legende, reseau, containerId){
         <label class="cv-fond-opt" id="cvf-photo-fond" title="Photo de fond" style="cursor:pointer;"><span class="cv-fond-dot" style="background:linear-gradient(135deg,#555,#333);">🖼️</span>Photo<input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhoto(this)"/></label>
         <button class="cv-fond-opt"    id="cvf-beton"   onclick="setStyleFond(this,'beton')"   title="Matière"><span class="cv-fond-dot" style="background:radial-gradient(ellipse at 30% 20%,${c1},${c2})"></span>Matière</button>
         <button class="cv-fond-reset"  onclick="resetOverrides()" title="Annuler les overrides par slide">↺ Tout réinitialiser</button>
+        <span style="display:flex;align-items:center;gap:.3rem;margin-left:.4rem;">
+          <span style="font-size:.7rem;color:var(--gris-clair);">Format&nbsp;:</span>
+          <select id="car-format-sel" onchange="setCarFormat(this.value)"
+            style="font-size:.75rem;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:6px;padding:3px 6px;color:var(--blanc-doux);cursor:pointer;">
+            <option value="3:4">3:4 (défaut)</option>
+            <option value="4:5">4:5</option>
+            <option value="1:1">1:1 (carré)</option>
+          </select>
+        </span>
         ${photoSlide1 ? '<span style="font-size:.72rem;color:var(--succes);padding:.2rem .6rem;background:rgba(46,204,113,.1);border-radius:6px;border:1px solid rgba(46,204,113,.3);">🖼️ Slide 1 : ' + photoSlide1.nom.substring(0,20) + '…</span>' : ''}
       </div>
         ${reseau === 'Instagram'
@@ -4429,10 +4460,25 @@ const cvFondPhotoParSlide = {};
 function setCvFondPhotoSlide(input, slideIdx){
   const file = input.files[0]; if(!file) return;
   const reader = new FileReader();
-  reader.onload = e => {
-    cvFondPhotoParSlide[slideIdx] = e.target.result;
+  reader.onload = function(e){
+    const src = e.target.result;
+    cvFondPhotoParSlide[slideIdx] = src;
     overridesSlide[slideIdx] = 'photo';
+    overridesSlide['__css__'] = overridesSlide['__css__'] || {};
+    delete overridesSlide['__css__'][slideIdx]; // pas de CSS custom, c'est une photo
     majFondsSlides();
+    // Afficher la preview dans la modale
+    const wrap = document.getElementById('ed-photo-preview-wrap');
+    const img  = document.getElementById('ed-photo-preview-img');
+    if(wrap){ wrap.style.display='block'; }
+    if(img) { img.src = src; }
+    // Mettre à jour le preview général de fond
+    const prev = document.getElementById('ed-fond-preview');
+    if(prev){
+      prev.style.backgroundImage = 'url('+JSON.stringify(src)+')';
+      prev.style.backgroundSize  = 'cover';
+      prev.style.backgroundPosition = 'center';
+    }
   };
   reader.readAsDataURL(file);
 }
@@ -4666,6 +4712,19 @@ function setStyleSlide(slideIdx, btn, style){
   }
 }
 
+function setCarFormat(ratio){
+  carFormatRatio = ratio;
+  // Mettre à jour l'aspect-ratio du viewer miniature
+  const fmt = CAR_FORMATS[ratio] || CAR_FORMATS['3:4'];
+  const ar  = fmt.w + ' / ' + fmt.h;
+  document.querySelectorAll('.cv-slide').forEach(function(s){
+    s.style.aspectRatio = ar;
+    s.style.width = ''; // laisser la largeur s'adapter
+  });
+  const sel = document.getElementById('car-format-sel');
+  if(sel) sel.value = ratio;
+}
+
 function resetOverrides(){
   overridesSlide = {};
   document.querySelectorAll('.cv-fond-opt').forEach(b => b.classList.remove('on'));
@@ -4821,7 +4880,9 @@ async function exporterPNG(){
     var div = document.createElement('div');
     div.style.cssText = [
       'position:fixed','left:-9999px','top:0',
-      'width:1080px','height:1440px','overflow:hidden',
+      'width:'+(CAR_FORMATS[carFormatRatio]||CAR_FORMATS['3:4']).w+'px',
+      'height:'+(CAR_FORMATS[carFormatRatio]||CAR_FORMATS['3:4']).h+'px',
+      'overflow:hidden',
       "font-family:'" + pcorp + "',sans-serif",
       'color:' + tcoulFinal,
       'padding:110px 88px 88px',
@@ -4877,13 +4938,16 @@ async function exporterPNG(){
     try {
       await new Promise(function(r){ setTimeout(r, 100); });
 
+      var fmtDims = CAR_FORMATS[carFormatRatio] || CAR_FORMATS['3:4'];
       var canvas = await window.html2canvas(div, {
         scale:           2,
         useCORS:         true,
         allowTaint:      true,
         backgroundColor: bgColor,
         logging:         false,
-        removeContainer: false
+        removeContainer: false,
+        width:           fmtDims.w,
+        height:          fmtDims.h
       });
 
       await new Promise(function(resolve, reject){
@@ -4950,7 +5014,8 @@ async function exporterPDF(){
   const pcorp = CFG.policeCorps || 'DM Sans';
 
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({ orientation:'portrait', unit:'px', format:[1080,1440] });
+  const _pdfFmt = CAR_FORMATS[carFormatRatio] || CAR_FORMATS['3:4'];
+  const pdf = new jsPDF({ orientation:'portrait', unit:'px', format:[_pdfFmt.w, _pdfFmt.h] });
 
   for(let i = 0; i < slides.length; i++){
     const s = slides[i];
@@ -4958,7 +5023,8 @@ async function exporterPDF(){
     const tcoul = texteSlide(fond);
 
     const div = document.createElement('div');
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:1080px;height:1440px;font-family:'${pcorp}',sans-serif;color:${tcoul};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;`;
+    const _pdfFmtD = CAR_FORMATS[carFormatRatio] || CAR_FORMATS['3:4'];
+    div.style.cssText = `position:fixed;left:-9999px;top:0;width:${_pdfFmtD.w}px;height:${_pdfFmtD.h}px;font-family:'${pcorp}',sans-serif;color:${tcoul};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;`;
     // Fond séparé pour préserver les dégradés
     const fondPDFcss = styleFondSlide(s.num, slides.length, c1, c2);
     appliqueFondCSS(div, fondPDFcss);
@@ -4972,8 +5038,8 @@ async function exporterPDF(){
 
     try{
       const canvas = await window.html2canvas(div, {scale:1, useCORS:true, allowTaint:true, backgroundColor:fond});
-      if(i > 0) pdf.addPage([1080,1440]);
-      pdf.addImage(canvas.toDataURL('image/jpeg',0.95), 'JPEG', 0, 0, 1080, 1440);
+      if(i > 0) pdf.addPage([_pdfFmt.w, _pdfFmt.h]);
+      pdf.addImage(canvas.toDataURL('image/jpeg',0.95), 'JPEG', 0, 0, _pdfFmt.w, _pdfFmt.h);
     }catch(e){ console.error(e); }
     document.body.removeChild(div);
   }
@@ -5239,7 +5305,15 @@ function majFondPhotoCouleur(valeur){
 function majFondPhotoImage(input){
   const file=input.files[0]; if(!file) return;
   const reader=new FileReader();
-  reader.onload=e=>{ photoFondImageSrc=e.target.result; if(genPhotoStyle==='fond') renderPreviewFondColore(); };
+  reader.onload=function(e){
+    photoFondImageSrc=e.target.result;
+    if(genPhotoStyle==='fond') renderPreviewFondColore();
+    // Afficher confirmation chargement dans la zone photo post
+    const phWrap = document.getElementById('ph-photo-preview-wrap');
+    const phImg  = document.getElementById('ph-photo-preview-img');
+    if(phWrap){ phWrap.style.display='block'; }
+    if(phImg) { phImg.src = photoFondImageSrc; }
+  };
   reader.readAsDataURL(file);
 }
 
@@ -7812,11 +7886,18 @@ function ouvrirJour(ds, items){
     const cl = it.reseau==='LinkedIn' ? 'li' : 'ig';
     const btn = document.createElement('button');
     btn.style.cssText = 'width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:12px;padding:.85rem 1rem;display:flex;align-items:center;gap:.8rem;cursor:pointer;text-align:left;transition:border-color .15s;';
+    const sujet = apercuPost(it).replace(/^[🌿🎞📹📱]/,'').trim();
+    const reseauCoul = it.reseau==='LinkedIn' ? '#5bb8ff' : 'var(--rose-clair)';
+    const reseauIc   = it.reseau==='LinkedIn' ? '💼' : '📷';
+    const formatIc   = {
+      'Carrousel':'🎠','Post texte':'📝','Photo':'🖼️',
+      'Réel':'🎬','Vidéo':'📹','Stories':'📱'
+    }[it.typeContenu] || '📄';
     btn.innerHTML = `
       <div style="width:10px;height:10px;border-radius:50%;background:${it.reseau==='LinkedIn'?'#5bb8ff':'var(--rose)'};flex-shrink:0;"></div>
       <div style="flex:1;min-width:0;">
-        <div style="font-size:.78rem;font-weight:700;color:${it.reseau==='LinkedIn'?'#5bb8ff':'var(--rose-clair)'};">${escapeHtml(it.reseau)} · ${escapeHtml(it.typeContenu)}</div>
-        <div style="font-size:.82rem;color:var(--blanc-doux);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">${escapeHtml(String(it.texte||'').substring(0,60))}</div>
+        <div style="font-size:.75rem;font-weight:700;color:${reseauCoul};margin-bottom:2px;">${reseauIc} ${escapeHtml(it.reseau)} · ${formatIc} ${escapeHtml(it.typeContenu)}</div>
+        <div style="font-size:.83rem;color:var(--blanc-doux);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;">${escapeHtml(sujet.substring(0,70))}</div>
       </div>
       <span style="font-size:.85rem;color:var(--gris-clair);">›</span>`;
     btn.onclick = () => { fermerJour(); ouvrirEdit(it.id); };

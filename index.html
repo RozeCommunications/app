@@ -447,7 +447,8 @@
       display:flex;gap:4px;background:rgba(0,0,0,.45);
       border-radius:999px;padding:4px 8px;
       opacity:0;transition:opacity .2s;pointer-events:none;
-    }
+    opacity:0;transition:opacity .15s;}
+    .cv-slide:hover .cv-slide-style-picker,.cv-slide.active .cv-slide-style-picker{opacity:1;}
     .cv-slide:hover .cv-slide-style-picker,
     .cv-slide.active .cv-slide-style-picker{
       opacity:1;pointer-events:auto;
@@ -797,7 +798,7 @@
     .cv-stabilo-preview{display:inline-block;padding:2px 8px;border-radius:3px;font-size:.78rem;font-weight:700;}
     .cv-slide:active{transform:scale(.97);}
     .cv-slide.active{border-color:var(--rose);}
-    .cv-slide-inner{width:100%;height:100%;display:flex;flex-direction:column;padding:20px 14px 14px;box-sizing:border-box;position:relative;justify-content:center;}
+    .cv-slide-inner{width:100%;height:100%;display:flex;flex-direction:column;padding:20px 14px 14px;box-sizing:border-box;position:relative;justify-content:center;text-align:center;align-items:center;}
     .cv-slide-num{position:absolute;top:8px;right:10px;font-size:.68rem;font-weight:700;opacity:.5;}
     .cv-slide-type{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;opacity:.7;}
     .cv-slide-titre{font-size:.82rem;font-weight:700;line-height:1.3;margin-bottom:6px;}
@@ -4317,6 +4318,41 @@ function appliquerEditSlide(){
 }
 
 
+
+// Rendu unifié titre/corps slide — tient compte de overridesStabilo
+// Utilisé dans le viewer fullscreen ET dans l'export PNG/PDF
+function rendreSlideHTML(idx, c1, fond, partie){
+  if(!carrouselCourant) return '';
+  const s = carrouselCourant.slides[idx];
+  if(!s) return '';
+
+  if(partie === 'corps'){
+    const corps = s.corps || '';
+    return corps.split('\n').map(function(l){ return escapeHtml(l); }).join('<br>');
+  }
+
+  // Partie titre — applique stabilo personnalisé
+  const titre  = s.titre || '';
+  const ovSt   = overridesStabilo[idx] || {};
+  const stActif= ovSt.actif !== false;
+  const stMot  = ovSt.mot   || '';
+  const stCoul = ovSt.couleur || c1;
+
+  if(!stActif){
+    return escapeHtml(titre);
+  }
+  if(stMot && titre.includes(stMot)){
+    var rgbSt = hexToRgbPhoto(stCoul);
+    var bgSt  = rgbSt ? 'rgba('+rgbSt.r+','+rgbSt.g+','+rgbSt.b+',.65)' : 'rgba(232,24,109,.65)';
+    var txtSt = estCouleurClaire(stCoul) ? '#111' : '#fff';
+    return escapeHtml(titre).replace(
+      escapeHtml(stMot),
+      '<span style="background:'+bgSt+';border-radius:3px;padding:1px 5px 2px;-webkit-box-decoration-break:clone;box-decoration-break:clone;color:'+txtSt+';">'+escapeHtml(stMot)+'</span>'
+    );
+  }
+  return rendreTitreStabilo(titre, stCoul, texteSlide(fond));
+}
+
 function ouvrirCarrouselFullscreen(){
   if(!carrouselCourant) return;
   const { slides } = carrouselCourant;
@@ -4339,11 +4375,11 @@ function ouvrirCarrouselFullscreen(){
     const tcoul = texteSlide(fond);
     return `
       <div class="cv-fs-slide" id="cv-fs-slide-${idx}" style="${styleFondSlide(s.num, slides.length, c1, c2)}">
-        <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};width:100%;height:100%;box-sizing:border-box;padding:40px 28px 28px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;">
+        <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};width:100%;height:100%;box-sizing:border-box;padding:40px 28px 28px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
 
-          <div style="font-family:'${ptit}',serif;font-size:${idx===0 ? fontSizeTitre(s.titre, 1.15, 44).rem+'rem' : '1.15rem'};font-weight:700;line-height:1.3;margin-bottom:8px;">${rendreTitreAccent(s.titre||'', accentSlide(c1, fond), fond)}</div>
-          ${s.sousTitre?`<div style="font-size:.8rem;opacity:.7;margin-bottom:8px;">${escapeHtml(nettoyerSousTitre(s.sousTitre))}</div>`:''}
-          <div style="font-size:.85rem;line-height:1.6;">${nettoyerCorpsSlide(s.corps||'')}</div>
+          <div style="font-family:'${ptit}',serif;font-size:${idx===0 ? fontSizeTitre(s.titre, 1.15, 44).rem+'rem' : '1.15rem'};font-weight:700;line-height:1.3;margin-bottom:8px;width:100%;">${rendreSlideHTML(idx, c1, fond, 'titre')}</div>
+          ${s.sousTitre?`<div style="font-size:.8rem;opacity:.7;margin-bottom:8px;width:100%;">${escapeHtml(nettoyerSousTitre(s.sousTitre))}</div>`:''}
+          <div style="font-size:.85rem;line-height:1.6;white-space:pre-wrap;width:100%;">${rendreSlideHTML(idx, c1, fond, 'corps')}</div>
           ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="position:absolute;bottom:16px;right:16px;max-width:60px;max-height:28px;object-fit:contain;opacity:.8;"/>`:''
         }</div>
       </div>
@@ -4849,32 +4885,9 @@ async function exporterPNG(){
       : texteSlide(fondBase);
     const soulCoul = isSlide1Photo ? couleurSoulignement(tcoulFinal, c1, c2) : null;
 
-    // ── Stabilo : depuis overridesStabilo ou défaut ──
-    const ovSt      = overridesStabilo[i] || {};
-    const stActif   = ovSt.actif !== false;
-    const stMot     = ovSt.mot   || '';
-    const stCoul    = ovSt.couleur || c1;
-
-    // ── Titre HTML avec stabilo personnalisé ──
-    let titreHtml;
-    const titre = s.titre || '';
-    if(!stActif){
-      titreHtml = escapeHtml(titre);
-    } else if(stMot && titre.includes(stMot)){
-      var rgbSt = hexToRgbPhoto(stCoul);
-      var bgSt  = rgbSt ? 'rgba('+rgbSt.r+','+rgbSt.g+','+rgbSt.b+',.65)' : 'rgba(232,24,109,.65)';
-      var txtSt = estCouleurClaire(stCoul) ? '#111' : '#fff';
-      titreHtml = escapeHtml(titre).replace(
-        escapeHtml(stMot),
-        '<span style="background:'+bgSt+';border-radius:3px;padding:1px 5px 2px;-webkit-box-decoration-break:clone;box-decoration-break:clone;color:'+txtSt+';">'+escapeHtml(stMot)+'</span>'
-      );
-    } else {
-      titreHtml = rendreTitreStabilo(titre, stCoul, tcoulFinal);
-    }
-
-    // ── Corps avec sauts de ligne ──
-    const corps = s.corps || '';
-    const corpsHtml = corps.split('\n').map(function(l){ return escapeHtml(l); }).join('<br>');
+    // ── Titre + corps depuis rendreSlideHTML (unifié avec viewer) ──
+    const titreHtml = rendreSlideHTML(i, c1, fondBase, 'titre');
+    const corpsHtml = rendreSlideHTML(i, c1, fondBase, 'corps');
 
     // ── Créer le div offscreen 1080×1440 ──
     var div = document.createElement('div');
@@ -4888,7 +4901,7 @@ async function exporterPNG(){
       'padding:110px 88px 88px',
       'box-sizing:border-box',
       'display:flex','flex-direction:column',
-      'justify-content:center','align-items:flex-start','text-align:left'
+      'justify-content:center','align-items:center','text-align:center'
     ].join(';') + ';';
 
     // Fond — séparé pour préserver gradients
@@ -4924,9 +4937,9 @@ async function exporterPNG(){
 
     div.innerHTML = photoS1Html + photoBgHtml
       + '<div style="position:relative;z-index:2;display:flex;flex-direction:column;height:100%;width:100%;">'
-      +   '<div style="font-family:\''+ptit+'\',serif;font-size:'+tFontSize+'px;font-weight:700;line-height:1.3;margin-bottom:'+tMargin+';'+tExtra+'">'+titreHtml+'</div>'
+      +   '<div style="font-family:\''+ptit+'\',serif;font-size:'+tFontSize+'px;font-weight:700;line-height:1.3;margin-bottom:'+tMargin+';'+tExtra+';width:100%;">'+titreHtml+'</div>'
       +   sousTitreHtml
-      +   '<div style="font-size:'+bFontSize+'px;line-height:1.7;flex:1;white-space:pre-wrap;">'+(isSlide1Photo ? '' : corpsHtml)+'</div>'
+      +   '<div style="font-size:'+bFontSize+'px;line-height:1.7;flex:1;white-space:pre-wrap;width:100%;">'+(isSlide1Photo ? '' : corpsHtml)+'</div>'
       +   logoHtml
       + '</div>';
 

@@ -1972,8 +1972,30 @@
           <input type="text" id="cfg-nom" placeholder="Ex : Dupont" autocomplete="family-name" autocomplete="family-name" style="font-size:16px;"/>
           <label class="lbl">Entreprise</label>
           <input type="text" id="cfg-entreprise" placeholder="Ex : Roze Communications" autocomplete="organization" style="font-size:16px;"/>
-          <label class="lbl">Métier</label>
-          <input type="text" id="cfg-metier" placeholder="Ex : Plombier, Avocat, Coach sportif, Boulangers…" style="font-size:16px;"/>
+          <label class="lbl">Catégorie métier</label>
+          <select id="cfg-cat-metier" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);" onchange="majCatMetier(this.value)">
+            <option value="">— Choisir une catégorie —</option>
+            <option value="commercant">🛍️ Commerçant (boutique, épicerie, restaurant, fleuriste…)</option>
+            <option value="artisan">🔨 Artisan (plombier, menuisier, électricien, coiffeur…)</option>
+            <option value="creatif">🎨 Créatif / Maker (photographe, graphiste, illustrateur…)</option>
+            <option value="praticien">🌿 Praticien / Thérapeute (coach, ostéo, naturopathe, sophro…)</option>
+            <option value="consultant">💼 Consultant / Expert (conseil, audit, stratégie, comptable…)</option>
+            <option value="formateur">📚 Formateur / Enseignant (formation, coaching certifié, pédagogie…)</option>
+            <option value="independant">⚡ Indépendant / Freelance (autre activité de service)</option>
+            <option value="autre">✏️ Autre (préciser ci-dessous)</option>
+          </select>
+          <label class="lbl" style="margin-top:.5rem;">Métier précis <span style="color:#888;font-size:.7rem;font-weight:400;">(ex : fleuriste, menuisier charpentier, nutritionniste…)</span></label>
+          <input type="text" id="cfg-metier" placeholder="Ex : Fleuriste spécialisée mariages, Expert-comptable TPE…" style="font-size:16px;"/>
+          <label class="lbl" style="margin-top:.6rem;">Type d'activité</label>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;" id="cfg-tronc-group">
+            <button type="button" class="ed-chip" id="tronc-produit" onclick="setTronc('produit',this)">📦 Je vends des produits</button>
+            <button type="button" class="ed-chip" id="tronc-service" onclick="setTronc('service',this)">🤝 Je vends des services</button>
+            <button type="button" class="ed-chip" id="tronc-mixte"   onclick="setTronc('mixte',this)">🔀 Les deux</button>
+          </div>
+          <label class="lbl" style="margin-top:.6rem;">Ma cible client <span style="color:#888;font-size:.7rem;font-weight:400;">(décris en 1-2 phrases qui tu aides)</span></label>
+          <textarea id="cfg-cible" rows="2" placeholder="Ex : Artisans du bâtiment qui veulent trouver des clients sans démarcher." style="font-size:15px;resize:vertical;line-height:1.5;"></textarea>
+          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.2rem;">L'IA enrichira cette description automatiquement chaque semaine depuis tes matières.</div>
+
           <label class="lbl" style="margin-top:.6rem;">
             Sources de veille
             <span style="font-weight:400;color:var(--gris-clair);font-size:.75rem;">— URLs uniquement</span>
@@ -2065,7 +2087,42 @@
         </div>
       </div>
 
-      
+      <!-- Onglet Ton & Voix -->
+      <div class="duo-tab" id="tab-ton">
+        <div class="duo-tab-hd" onclick="toggleDuoTab('tab-ton')">
+          <div class="duo-tab-titre"><span>🎙️</span><span>Ton &amp; voix</span></div>
+          <span class="duo-tab-chevron">▼</span>
+        </div>
+        <div class="duo-tab-body">
+          <label class="lbl" style="margin-top:.6rem;">Registre</label>
+          <div style="display:flex;gap:.5rem;" id="cfg-registre-group">
+            <button type="button" class="ed-chip on" id="reg-tutoiement" onclick="setRegistre('tutoiement',this)">Tu</button>
+            <button type="button" class="ed-chip" id="reg-vouvoiement" onclick="setRegistre('vouvoiement',this)">Vous</button>
+          </div>
+          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.3rem;">Appliqué sur tous les posts générés, Instagram et LinkedIn.</div>
+
+          <label class="lbl" style="margin-top:.8rem;">Tonalité principale</label>
+          <select id="cfg-tonalite" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);">
+            <option value="direct">⚡ Direct &amp; tranchant — je dis ce que je pense, sans tourner autour</option>
+            <option value="chaleureux">🤝 Chaleureux &amp; proche — je crée de la proximité, je suis accessible</option>
+            <option value="pedagogue">📖 Pédagogue &amp; posé — j'explique, je rassure, je structure</option>
+            <option value="sobre">🎯 Expert &amp; sobre — professionnel, factuel, peu d'effusion</option>
+            <option value="enthousiaste">🔥 Enthousiaste &amp; énergique — je mets de l'élan dans tout ce que je fais</option>
+          </select>
+
+          <label class="lbl" style="margin-top:.8rem;">Niveau de partage personnel</label>
+          <select id="cfg-partage" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);">
+            <option value="ouvert">🔓 Ouvert — je partage coulisses, doutes, moments perso</option>
+            <option value="equilibre">⚖️ Équilibré — pro avec quelques touches personnelles</option>
+            <option value="reserve">🔒 Réservé — je reste professionnel, peu de perso</option>
+          </select>
+
+          <label class="lbl" style="margin-top:.8rem;">Expressions de marque <span style="color:#888;font-size:.7rem;font-weight:400;">(formules que tu utilises vraiment)</span></label>
+          <textarea id="cfg-expr-marque" rows="2" placeholder="Ex : on ne lâche rien, du concret toujours, sans filtre…" style="font-size:15px;resize:vertical;line-height:1.5;"></textarea>
+          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.2rem;">L'IA les réutilisera naturellement dans tes posts.</div>
+        </div>
+      </div>
+
     </div>
 
     <!-- Séparateur section -->
@@ -2660,6 +2717,13 @@ let CFG = {
   nom:          ls('roze_nom')           || '',
   entreprise:   ls('roze_entreprise')    || '',
   metier:       ls('roze_metier')        || '',
+  catMetier:    ls('roze_cat_metier')    || '',
+  tronc:        ls('roze_tronc')         || '',
+  registre:     ls('roze_registre')      || 'tutoiement',
+  tonalite:     ls('roze_tonalite')      || 'direct',
+  partage:      ls('roze_partage')       || 'equilibre',
+  cible:        ls('roze_cible')         || '',
+  exprMarque:   ls('roze_expr_marque')   || '',
   references:   ls('roze_references')    || '',
   motsInterdits: ls('roze_mots_interdits') || '',
   emojisMarque:  ls('roze_emojis_marque')  || '',
@@ -3405,31 +3469,31 @@ function prochainIndexSource(total){
 // ── Construction intelligente de la requête de recherche ──
 // Basée sur le métier du professionnel + le sujet du post + le pilier actif.
 // Varie les angles : actus, stats, nouveautés, chiffres clés selon le contexte.
+
+// Fallback catégorie depuis le texte libre du métier (si catMetier pas renseigné)
+function categorieDepuisMetier(metier){
+  const m = (metier||'').toLowerCase();
+  if(/artisan|menuisier|plombier|électri|maçon|charpentier|coiffeur|esthéti|tatoueur|soudeur|peintre|carreleur|vitrier|serrurier|couvreur/.test(m)) return 'artisan';
+  if(/commerç|boutique|épiceri|restaurant|café|boulang|pâtissi|fleuriste|librairie|caviste|boucheri|poissonni|chocolat/.test(m)) return 'commercant';
+  if(/coach|thérapeute|sophro|naturo|ostéo|kinési|psycho|hypno|nutritionni|diététi|bien-être/.test(m)) return 'praticien';
+  if(/consultant|conseil|expert|analyste|stratège|auditeur|comptable/.test(m)) return 'consultant';
+  if(/formateur|formatrice|enseignant|pédagogue/.test(m)) return 'formateur';
+  if(/graphiste|photographe|vidéaste|illustrateur|designer|créatif|créatrice|artiste|musicien|rédacteur|copywriter/.test(m)) return 'creatif';
+  return 'independant';
+}
+
 function construireRequeteRecherche(metier, sujetSaisi, pilier){
   const annee = new Date().getFullYear();
 
-  // Si un sujet précis est saisi → recherche directement liée
+  // Sujet précis saisi → recherche directement liée
   if(sujetSaisi && sujetSaisi.length > 5){
-    return `${sujetSaisi} statistiques chiffres ${annee} France`;
+    return sujetSaisi + ' statistiques chiffres ' + annee + ' France';
   }
 
-  // Sinon : angles variés selon le métier et le pilier
-  // On génère plusieurs formulations possibles et on en choisit une selon l'index actuel
-  const mBase = metier.toLowerCase();
-
-  // ── Détection catégorie métier ──
-  // Chaque regex couvre les variantes courantes du secteur.
-  // Un métier peut matcher plusieurs catégories — la priorité va à la plus spécifique (ordre des if).
-  const isReseaux      = /réseau|social|instagram|linkedin|tiktok|contenu|community|digital|web|communication|créateur|créatrice/.test(mBase);
-  const isTherapie     = /thérapeute|thérapie|hypno|sophro|psycho|kinésio|ostéo|acupunct|réflexo|énergétici|magnétiseur|praticien|facilitatrice/.test(mBase);
-  const isNutriSante   = /naturo|nutri|diété|micronutri|naturopath/.test(mBase);
-  const isSportFitness = /coach sportif|fitness|muscul|yoga|pilates|sport|prépar|athlète|entraîn/.test(mBase);
-  const isBienEtre     = /bien-être|bien être|méditat|mindful|pleine conscience|développement personnel|coaching de vie|life coach/.test(mBase);
-  const isCommerce     = /commerce|boutique|artisan|commerçant|restaur|hôtel|café|boulang|pâtissi|coiffeur|esthéti|fleuriste|libraire|épicier/.test(mBase);
-  const isImmobilier   = /immobilier|agence immob|promoteur|gestionnaire de biens|syndic/.test(mBase);
-  const isFinance      = /finance|compta|expert-comptable|investissement|patrimoine|banque|gestion de patrimoine|conseiller financier/.test(mBase);
-  const isJuridique    = /avocat|juriste|notaire|huissier|droit/.test(mBase);
-  const isSante        = /médecin|infirmier|infirmière|kiné|orthophon|ergothérap|pédicure|podologue|pharmacien|sage-femme|dentiste/.test(mBase);
+  // Catégorie : priorité au choix explicite dans Mon Compte
+  const cat = CFG.catMetier || categorieDepuisMetier(metier);
+  const cible = CFG.cible || '';
+  const zone  = ''; // sera ajoutée quand zone géographique sera implémentée
 
   let angles = [];
 
@@ -5630,6 +5694,13 @@ function buildConfigPayload(){
     nom:           CFG.nom          || '',
     entreprise:    CFG.entreprise   || '',
     metier:        CFG.metier       || '',
+    cat_metier:    CFG.catMetier    || '',
+    tronc:         CFG.tronc        || '',
+    registre:      CFG.registre     || 'tutoiement',
+    tonalite:      CFG.tonalite     || 'direct',
+    partage:       CFG.partage      || 'equilibre',
+    cible:         CFG.cible        || '',
+    expr_marque:   CFG.exprMarque   || '',
     references:    CFG.references   || '',
     mots_interdits: CFG.motsInterdits || '',
     emojis_marque:  CFG.emojisMarque  || '',
@@ -5667,6 +5738,13 @@ function appliquerConfig(config){
     nom:          ['nom',         'roze_nom'],
     entreprise:   ['entreprise',  'roze_entreprise'],
     metier:       ['metier',      'roze_metier'],
+    cat_metier:   ['catMetier',   'roze_cat_metier'],
+    tronc:        ['tronc',       'roze_tronc'],
+    registre:     ['registre',    'roze_registre'],
+    tonalite:     ['tonalite',    'roze_tonalite'],
+    partage:      ['partage',     'roze_partage'],
+    cible:        ['cible',       'roze_cible'],
+    expr_marque:  ['exprMarque',  'roze_expr_marque'],
     references:   ['references',  'roze_references'],
     insta_user:   ['instaUser',   'roze_insta_user'],
     linkedin_url: ['linkedinUrl', 'roze_linkedin_url'],
@@ -5691,6 +5769,24 @@ function appliquerConfig(config){
       localStorage.setItem(lsKey, val);
     }
   });
+  // Restaurer l'UI des nouveaux champs ton/métier
+  const selCat2 = document.getElementById('cfg-cat-metier');
+  if(selCat2 && CFG.catMetier) selCat2.value = CFG.catMetier;
+  if(CFG.tronc){
+    document.querySelectorAll('#cfg-tronc-group .ed-chip').forEach(b=>b.classList.remove('on'));
+    const tb2 = document.getElementById('tronc-'+CFG.tronc);
+    if(tb2) tb2.classList.add('on');
+  }
+  if(CFG.registre){
+    document.querySelectorAll('#cfg-registre-group .ed-chip').forEach(b=>b.classList.remove('on'));
+    const rb2 = document.getElementById('reg-'+CFG.registre);
+    if(rb2) rb2.classList.add('on');
+  }
+  const selTon2 = document.getElementById('cfg-tonalite');
+  if(selTon2 && CFG.tonalite) selTon2.value = CFG.tonalite;
+  const selPar2 = document.getElementById('cfg-partage');
+  if(selPar2 && CFG.partage) selPar2.value = CFG.partage;
+
   // Restaurer les brouillons
   if(config.brouillons){
     try{
@@ -6344,6 +6440,14 @@ async function genUnPost(){
       actu:            actuTexte || '',
       stats_eviter:    buildStatsEviterBloc(),
       anti_redondance: contexteAntiRedondance(),
+      // Nouveaux paramètres de personnalisation
+      cat_metier:      CFG.catMetier  || '',
+      tronc:           CFG.tronc      || '',
+      registre:        CFG.registre   || 'tutoiement',
+      tonalite:        CFG.tonalite   || 'direct',
+      partage:         CFG.partage    || 'equilibre',
+      cible:           CFG.cible      || '',
+      expr_marque:     CFG.exprMarque || '',
     };
 
     const r = await fetch(CFG.as, {
@@ -6631,6 +6735,13 @@ async function genSemaine(){
       posts:           posts,
       matiere:         mat,
       anti_redondance: contexteAntiRedondance(),
+      cat_metier:      CFG.catMetier  || '',
+      tronc:           CFG.tronc      || '',
+      registre:        CFG.registre   || 'tutoiement',
+      tonalite:        CFG.tonalite   || 'direct',
+      partage:         CFG.partage    || 'equilibre',
+      cible:           CFG.cible      || '',
+      expr_marque:     CFG.exprMarque || '',
     };
 
     const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
@@ -7935,6 +8046,27 @@ function ouvrirCreerDepuisJour(){
 // ══════════════════════════════════════════
 // MON COMPTE
 // ══════════════════════════════════════════
+
+// ── Helpers nouveaux champs Mon Compte ──
+function majCatMetier(val){
+  CFG.catMetier = val;
+  localStorage.setItem('roze_cat_metier', val);
+}
+
+function setTronc(val, btn){
+  CFG.tronc = val;
+  localStorage.setItem('roze_tronc', val);
+  document.querySelectorAll('#cfg-tronc-group .ed-chip').forEach(b => b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+}
+
+function setRegistre(val, btn){
+  CFG.registre = val;
+  localStorage.setItem('roze_registre', val);
+  document.querySelectorAll('#cfg-registre-group .ed-chip').forEach(b => b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+}
+
 function chargerCompte(){
   const setV2 = (id,val)=>{ const e=document.getElementById(id); if(e) e.value=val||''; };
   setV2('cfg-prenom',       CFG.prenom);
@@ -7944,9 +8076,26 @@ function chargerCompte(){
   setV2('cfg-insta-user',   CFG.instaUser);
   setV2('cfg-linkedin-url', CFG.linkedinUrl);
   majLiensReseaux();
+  // Catégorie métier
+  const selCat = document.getElementById('cfg-cat-metier');
+  if(selCat) selCat.value = CFG.catMetier || '';
+  // Tronc
+  document.querySelectorAll('#cfg-tronc-group .ed-chip').forEach(b => b.classList.remove('on'));
+  if(CFG.tronc){ const tb = document.getElementById('tronc-'+CFG.tronc); if(tb) tb.classList.add('on'); }
+  // Cible client
+  setV2('cfg-cible', CFG.cible);
+  // Ton & voix
+  document.querySelectorAll('#cfg-registre-group .ed-chip').forEach(b => b.classList.remove('on'));
+  const regBtn = document.getElementById('reg-'+(CFG.registre||'tutoiement'));
+  if(regBtn) regBtn.classList.add('on');
+  const selTon = document.getElementById('cfg-tonalite');
+  if(selTon) selTon.value = CFG.tonalite || 'direct';
+  const selPar = document.getElementById('cfg-partage');
+  if(selPar) selPar.value = CFG.partage || 'equilibre';
+  setV2('cfg-expr-marque', CFG.exprMarque || '');
+  // Sources
   setV2('cfg-references',   CFG.references);
   setV2('cfg-mots-interdits', CFG.motsInterdits || '');
-  // Synchroniser le compteur sources de veille après chargement
   majCompteurRefs();
   setV2('cfg-emojis-marque',  CFG.emojisMarque  || '');
   setV2('cfg-as',           CFG.as);
@@ -8003,6 +8152,13 @@ function sauvegarderCompte(){
   CFG.nom          = gv('cfg-nom');
   CFG.entreprise   = gv('cfg-entreprise');
   CFG.metier       = gv('cfg-metier');
+  CFG.catMetier    = (document.getElementById('cfg-cat-metier')||{}).value || '';
+  CFG.cible        = gv('cfg-cible');
+  CFG.registre     = CFG.registre     || 'tutoiement'; // géré par setRegistre
+  CFG.tronc        = CFG.tronc        || '';            // géré par setTronc
+  CFG.tonalite     = (document.getElementById('cfg-tonalite')||{}).value || 'direct';
+  CFG.partage      = (document.getElementById('cfg-partage') ||{}).value || 'equilibre';
+  CFG.exprMarque   = gv('cfg-expr-marque');
   localStorage.setItem('roze_couleur1',     CFG.couleur1);
   localStorage.setItem('roze_couleur2',     CFG.couleur2);
   localStorage.setItem('roze_couleur3',     CFG.couleur3);
@@ -8015,6 +8171,13 @@ function sauvegarderCompte(){
   localStorage.setItem('roze_nom',          CFG.nom);
   localStorage.setItem('roze_entreprise',   CFG.entreprise);
   localStorage.setItem('roze_metier',       CFG.metier);
+  localStorage.setItem('roze_cat_metier',   CFG.catMetier  || '');
+  localStorage.setItem('roze_tronc',        CFG.tronc      || '');
+  localStorage.setItem('roze_registre',     CFG.registre   || 'tutoiement');
+  localStorage.setItem('roze_tonalite',     CFG.tonalite   || 'direct');
+  localStorage.setItem('roze_partage',      CFG.partage    || 'equilibre');
+  localStorage.setItem('roze_cible',        CFG.cible      || '');
+  localStorage.setItem('roze_expr_marque',  CFG.exprMarque || '');
   CFG.instaUser   = (document.getElementById('cfg-insta-user')||{}).value?.trim()||'';
   CFG.linkedinUrl = (document.getElementById('cfg-linkedin-url')||{}).value?.trim()||'';
   localStorage.setItem('roze_insta_user',   CFG.instaUser);
@@ -8027,7 +8190,8 @@ function sauvegarderCompte(){
   localStorage.setItem('roze_emojis_marque',  CFG.emojisMarque);
   // Rythme
   majRythme();
-  localStorage.setItem('roze_secteur', JSON.stringify(CFG.prenom));
+  // Catégorie métier explicite — utilisée par construireRequeteRecherche
+  if(CFG.catMetier) localStorage.setItem('roze_cat_metier', CFG.catMetier);
   localStorage.setItem('roze_rythme',  JSON.stringify(RYTHME));
   // Stories — lire les valeurs des inputs AVANT de sauvegarder
   document.querySelectorAll('#stories-config .story-jour').forEach((bloc, i) => {

@@ -798,19 +798,54 @@
     .cv-stabilo-preview{display:inline-block;padding:2px 8px;border-radius:3px;font-size:.78rem;font-weight:700;}
     .cv-slide:active{transform:scale(.97);}
     .cv-slide.active{border-color:var(--rose);}
-    .cv-slide-inner{width:100%;height:100%;display:flex;flex-direction:column;padding:20px 14px 14px;box-sizing:border-box;position:relative;justify-content:center;text-align:center;align-items:center;}
+    /* ══ RENDU SLIDE UNIFIÉ — même structure pour viewer, fullscreen et export ══ */
+    /* Les 3 rendus partagent les mêmes proportions via CSS custom properties */
+    .cv-slide-inner{
+      width:100%;height:100%;
+      display:flex;flex-direction:column;
+      padding:8% 7%;                      /* padding proportionnel — identique partout */
+      box-sizing:border-box;
+      position:relative;
+      justify-content:center;
+      text-align:left !important;         /* FERRÉ À GAUCHE — règle absolue */
+      align-items:flex-start !important;  /* FERRÉ À GAUCHE — règle absolue */
+      overflow:hidden;                    /* Texte ne dépasse jamais du cadre */
+    }
+    /* Tous les enfants directs respectent l'alignement gauche */
+    .cv-slide-inner > *{text-align:left;width:100%;max-width:100%;}
     .cv-slide-num{position:absolute;top:8px;right:10px;font-size:.68rem;font-weight:700;opacity:.5;}
-    .cv-slide-type{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;opacity:.7;}
-    .cv-slide-titre{font-size:.82rem;font-weight:700;line-height:1.3;margin-bottom:6px;}
-    .cv-slide-corps{font-size:.68rem;line-height:1.5;flex:1;overflow:hidden;white-space:pre-wrap;}
+    .cv-slide-type{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;opacity:.7;width:100%;}
+    .cv-slide-titre{
+      font-size:var(--slide-titre-size,.82rem);
+      font-weight:700;line-height:1.25;
+      margin-bottom:.5em;
+      width:100%;
+      word-wrap:break-word;               /* Coupure si mot trop long */
+      overflow-wrap:break-word;
+    }
+    .cv-slide-corps{
+      font-size:var(--slide-corps-size,.68rem);
+      line-height:1.5;
+      flex:1;
+      width:100%;
+      overflow:hidden;
+      white-space:pre-wrap;
+      word-wrap:break-word;
+      overflow-wrap:break-word;
+    }
+    .cv-slide-sstitre{
+      font-size:var(--slide-sstitre-size,.65rem);
+      opacity:.7;margin-bottom:.6em;
+      width:100%;
+    }
     .cv-slide-logo{position:absolute;bottom:8px;right:10px;max-width:40px;max-height:20px;object-fit:contain;opacity:.8;}
-    /* Slide plein écran */
+    /* Aperçu fullscreen — même structure, tailles différentes */
     .cv-fullscreen{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:600;display:none;align-items:center;justify-content:center;flex-direction:column;gap:1rem;padding:1rem;}
     .cv-fullscreen.on{display:flex;}
-    .cv-fs-slide{width:min(360px,85vw);height:min(480px,85vw * 1.333);border-radius:14px;overflow:hidden;position:relative;}
-    .cv-fs-slide .cv-slide-inner{width:100%;height:100%;padding:24px 20px;}
-    .cv-fs-slide .cv-slide-titre{font-size:1.1rem;}
-    .cv-fs-slide .cv-slide-corps{font-size:.88rem;white-space:pre-wrap;}
+    .cv-fs-slide{width:min(360px,85vw);aspect-ratio:3/4;border-radius:14px;overflow:hidden;position:relative;}
+    .cv-fs-slide .cv-slide-titre{--slide-titre-size:1.1rem;}
+    .cv-fs-slide .cv-slide-corps{--slide-corps-size:.85rem;}
+    .cv-fs-slide .cv-slide-sstitre{--slide-sstitre-size:.78rem;}
     .cv-fs-nav{display:flex;align-items:center;gap:1rem;}
     .cv-fs-btn{background:rgba(255,255,255,.12);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;}
     .cv-fs-counter{font-size:.82rem;color:#ccc;}
@@ -4439,13 +4474,12 @@ function ouvrirCarrouselFullscreen(){
     const tcoul = texteSlide(fond);
     return `
       <div class="cv-fs-slide" id="cv-fs-slide-${idx}" style="${styleFondSlide(s.num, slides.length, c1, c2)}">
-        <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};width:100%;height:100%;box-sizing:border-box;padding:40px 28px 28px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
-
-          <div style="font-family:'${ptit}',serif;font-size:${idx===0 ? fontSizeTitre(s.titre, 1.15, 44).rem+'rem' : '1.15rem'};font-weight:700;line-height:1.3;margin-bottom:8px;width:100%;">${rendreSlideHTML(idx, c1, fond, 'titre')}</div>
-          ${s.sousTitre?`<div style="font-size:.8rem;opacity:.7;margin-bottom:8px;width:100%;">${escapeHtml(nettoyerSousTitre(s.sousTitre))}</div>`:''}
-          <div style="font-size:.85rem;line-height:1.6;white-space:pre-wrap;width:100%;">${rendreSlideHTML(idx, c1, fond, 'corps')}</div>
-          ${(s.type==='cta'&&CFG.logoUrl)?`<img src="${CFG.logoUrl}" alt="logo" style="position:absolute;bottom:16px;right:16px;max-width:60px;max-height:28px;object-fit:contain;opacity:.8;"/>`:''
-        }</div>
+        <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};">
+          <div class="cv-slide-titre" style="font-family:'${ptit}',serif;font-size:${idx===0 ? fontSizeTitre(s.titre, 1.15, 44).rem+'rem' : '1.15rem'};">${rendreSlideHTML(idx, c1, fond, 'titre')}</div>
+          ${s.sousTitre?`<div class="cv-slide-sstitre" style="--slide-sstitre-size:.78rem;">${escapeHtml(nettoyerSousTitre(s.sousTitre))}</div>`:''}
+          <div class="cv-slide-corps" style="--slide-corps-size:.85rem;">${rendreSlideHTML(idx, c1, fond, 'corps')}</div>
+          ${(s.type==='cta'&&CFG.logoUrl)?`<img class="cv-slide-logo" src="${CFG.logoUrl}" alt="logo" style="max-width:60px;max-height:28px;"/>`:''}
+        </div>
       </div>
       <div class="cv-fs-nav">
         <button class="cv-fs-btn" onclick="cvFSNav(-1)">‹</button>
@@ -4762,9 +4796,9 @@ function renderPreviewFondColoreAvecBg(bgOverride){
   const coulTxt = hasPhoto ? '#fff' : tcoul;
   const affStabilo = phStabiloActif && !hasPhoto;
 
-  preview.innerHTML = '<div style="width:100%;height:100%;'+fondCss+'border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:1rem 1.1rem;box-sizing:border-box;">'
+  preview.innerHTML = '<div style="width:100%;height:100%;'+fondCss+'border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;padding:8% 7%;box-sizing:border-box;overflow:hidden;">'
     + imgHtml
-    + '<div style="position:relative;z-index:1;font-family:var(--ptit-tmp,serif);font-size:.92rem;font-weight:700;color:'+coulTxt+';line-height:1.5;">'
+    + '<div style="position:relative;z-index:1;font-family:var(--ptit-tmp,serif);font-size:.92rem;font-weight:700;color:'+coulTxt+';line-height:1.5;width:100%;word-wrap:break-word;overflow-wrap:break-word;">'
     + (affStabilo ? rendreTitreStabilo(titre, coulStabilo, coulTxt) : escapeHtml(titre))
     + '</div></div>';
 }
@@ -4962,10 +4996,10 @@ async function exporterPNG(){
       'overflow:hidden',
       "font-family:'" + pcorp + "',sans-serif",
       'color:' + tcoulFinal,
-      'padding:110px 88px 88px',
+      'padding:8% 7%',  // proportionnel — identique au viewer
       'box-sizing:border-box',
       'display:flex','flex-direction:column',
-      'justify-content:center','align-items:center','text-align:center'
+      'justify-content:center','align-items:flex-start','text-align:left'
     ].join(';') + ';';
 
     // Fond — séparé pour préserver gradients
@@ -5101,7 +5135,7 @@ async function exporterPDF(){
 
     const div = document.createElement('div');
     const _pdfFmtD = CAR_FORMATS[carFormatRatio] || CAR_FORMATS['3:4'];
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:${_pdfFmtD.w}px;height:${_pdfFmtD.h}px;font-family:'${pcorp}',sans-serif;color:${tcoul};padding:110px 88px 88px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;`;
+    div.style.cssText = `position:fixed;left:-9999px;top:0;width:${_pdfFmtD.w}px;height:${_pdfFmtD.h}px;font-family:'${pcorp}',sans-serif;color:${tcoul};padding:8% 7%;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;overflow:hidden;`;
     // Fond séparé pour préserver les dégradés
     const fondPDFcss = styleFondSlide(s.num, slides.length, c1, c2);
     appliqueFondCSS(div, fondPDFcss);
@@ -5415,9 +5449,9 @@ function renderPreviewFondColore(){
   const coulStabilo = photoFondImageSrc
     ? (photoStabiloCouleur || 'rgba(255,255,255,.55)')
     : stabiloCouleurCourante(c1);
-  preview.innerHTML='<div style="width:100%;height:100%;'+fondCss+'border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:1rem 1.1rem;box-sizing:border-box;">'
+  preview.innerHTML='<div style="width:100%;height:100%;'+fondCss+'border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;padding:8% 7%;box-sizing:border-box;overflow:hidden;">'
     +imgHtml
-    +'<div style="position:relative;z-index:1;font-family:var(--ptit-tmp,serif);font-size:.92rem;font-weight:700;color:'+coulTxt+';line-height:1.5;">'
+    +'<div style="position:relative;z-index:1;font-family:var(--ptit-tmp,serif);font-size:.92rem;font-weight:700;color:'+coulTxt+';line-height:1.5;width:100%;word-wrap:break-word;overflow-wrap:break-word;">'
     +rendreTitreStabilo(titre,coulStabilo,coulTxt)
     +'</div></div>';
 }

@@ -2779,15 +2779,41 @@ if(!RYTHME.ig.jours) RYTHME.ig.jours = [4];
 
 // Stories config (7 jours)
 const STORIES_DEF = [
-  {jour:'Lundi',   typo:'storytelling-lifestyle', sujet:'Scène du quotidien pro ou perso qui révèle qui tu es'},
-  {jour:'Mardi',   typo:'valeur',                 sujet:'1 astuce utile pour ta cible (plusieurs slides pour aérer ton message)'},
-  {jour:'Mercredi',typo:'vente',                  sujet:'Contexte du jour / Ta pensée sur une situation → Lien avec une douleur de ta cible → Appel à action vers un échange en message privé, ou vers un lien intégré en story'},
-  {jour:'Jeudi',   typo:'storytelling-lifestyle', sujet:'Opinion assumée sur un sujet qui te touche ou qui touche ta cible'},
-  {jour:'Vendredi',typo:'valeur',                 sujet:'1 astuce pour ta cible (en face caméra idéalement)'},
-  {jour:'Samedi',  typo:'storytelling-lifestyle', sujet:'Valeur incarnée dans ton quotidien (ex : la liberté à travers une habitude chaque semaine, …)'},
-  {jour:'Dimanche',typo:'vente',                  sujet:'Contexte du jour / Ta pensée sur une situation → Lien avec une douleur de ta cible → Appel à action vers un échange en message privé, ou vers un lien intégré en story'},
+  {jour:'Lundi',   typo:'storytelling-lifestyle', sujet:'Scène du quotidien pro (bureau, atelier, déplacement) qui révèle un bout de ta personnalité ou de ta façon de travailler'},
+  {jour:'Mardi',   typo:'valeur',                 sujet:'1 astuce utile pour ta cible sur un sujet qui la touche (1 slide = 1 idée)'},
+  {jour:'Mercredi',typo:'vente',                  sujet:'Recontextualisation de ta journée → problème que ta cible rencontre → invitation à un échange en DM ou lien en story'},
+  {jour:'Jeudi',   typo:'storytelling-lifestyle', sujet:'Ton avis tranché sur un sujet de ton secteur qui concerne ta cible (ose prendre position)'},
+  {jour:'Vendredi',typo:'valeur',                 sujet:'1 actualité récente de ton secteur commentée, OU 1 astuce en face caméra pour ta cible'},
+  {jour:'Samedi',  typo:'storytelling-lifestyle', sujet:'Une de tes valeurs incarnée dans un moment concret (ex : la liberté via une habitude de la semaine)'},
+  {jour:'Dimanche',typo:'vente',                  sujet:'Bilan de la semaine ou réflexion pro → lien avec une douleur de ta cible → invitation douce à échanger'},
 ];
-let STORIES_CFG = lsJ('roze_stories') || JSON.parse(JSON.stringify(STORIES_DEF));
+let STORIES_CFG = (function(){
+  const stored = lsJ('roze_stories');
+  if(!stored || !Array.isArray(stored) || stored.length !== 7) {
+    return JSON.parse(JSON.stringify(STORIES_DEF));
+  }
+  // Migration : si un jour a un libellé sujet ancien (formulation obsolète),
+  // on restaure le libellé par défaut correspondant — l'utilisateur peut toujours le modifier ensuite
+  const obsolete = [
+    'révèle qui tu es',
+    'plusieurs slides pour aérer',
+    'Contexte du jour / Ta pensée sur une situation',
+    'Opinion assumée sur un sujet qui te touche',
+    'en face caméra idéalement',
+    'la liberté à travers une habitude',
+  ];
+  stored.forEach((s, i) => {
+    if(!s.sujet) return;
+    if(obsolete.some(o => s.sujet.includes(o))) {
+      s.sujet = STORIES_DEF[i].sujet;
+    }
+    // Assurer que la typo est valide (pas d'UNDEFINED)
+    if(!['storytelling-lifestyle', 'valeur', 'vente'].includes(s.typo)) {
+      s.typo = STORIES_DEF[i].typo;
+    }
+  });
+  return stored;
+})();
 
 let editId = null;  // id du post en cours d'édition
 let CAL = { vue:'mois', annee:new Date().getFullYear(), mois:new Date().getMonth(), semDebut:lundiSem(new Date()) };
@@ -2841,7 +2867,7 @@ function majStoryDuJour(){
   const s = STORIES_CFG[idx];
   if(!s) return;
 
-  const typoNom = {'storytelling-lifestyle':'Storytelling',valeur:'Valeur',vente:'Vente'};
+  const typoNom = {'storytelling-lifestyle':'Storytelling / Lifestyle', valeur:'Valeur', vente:'Vente'};
   const publiee = localStorage.getItem('roze_story_pub_' + aujStr) === '1';
 
   // Mettre à jour l'affichage
@@ -2852,7 +2878,7 @@ function majStoryDuJour(){
   const elTypoBadge = document.getElementById('pc-story-typo-badge');
   const elBtnTxt    = document.getElementById('pc-story-btn-txt');
   const elBtnIcon   = document.getElementById('pc-story-btn-icon');
-  const typoClasse  = {'vente':'typo-vente','valeur':'typo-valeur','lifestyle':'typo-lifestyle'};
+  const typoClasse  = {'vente':'typo-vente','valeur':'typo-valeur','storytelling-lifestyle':'typo-lifestyle'};
   if(elTypoBadge){
     elTypoBadge.textContent = typoNom[s.typo] || s.typo;
     elTypoBadge.className   = 'pc-story-typo-badge ' + (typoClasse[s.typo]||'');
@@ -3780,7 +3806,7 @@ function construireStoriesUI(){
   const zone = document.getElementById('stories-config');
   if(!zone) return;
   const typoMap = {'storytelling-lifestyle':'typo-lifestyle',valeur:'typo-valeur',vente:'typo-vente'};
-  const typoNom = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente'};
+  const typoNom = {'storytelling-lifestyle':'Storytelling / Lifestyle', valeur:'Valeur', vente:'Vente'};
   zone.innerHTML = STORIES_CFG.map((s,i)=>`
     <div class="story-jour">
       <div class="story-jour-hd">
@@ -8295,8 +8321,8 @@ function majStoriesPanel(){
   const aujStr    = dateAujourdhui();
   const joursNoms = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
   const joursAbr  = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-  const typoMap   = {lifestyle:'typo-lifestyle',valeur:'typo-valeur',vente:'typo-vente'};
-  const typoNom   = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente'};
+  const typoMap   = {'storytelling-lifestyle':'typo-lifestyle', valeur:'typo-valeur', vente:'typo-vente'};
+  const typoNom   = {'storytelling-lifestyle':'Storytelling / Lifestyle', valeur:'Valeur', vente:'Vente'};
 
   let nbPub = 0;
   const items = STORIES_CFG.map((s, i) => {
@@ -8403,8 +8429,8 @@ function majTrackerStories(){
 
   const lundi = lundiSem(new Date());
   const aujStr = dateAujourdhui();
-  const typoMap = {lifestyle:'typo-lifestyle',valeur:'typo-valeur',vente:'typo-vente'};
-  const typoNom = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente'};
+  const typoMap = {'storytelling-lifestyle':'typo-lifestyle', valeur:'typo-valeur', vente:'typo-vente'};
+  const typoNom = {'storytelling-lifestyle':'Storytelling / Lifestyle', valeur:'Valeur', vente:'Vente'};
   const joursNoms = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
 
   zone.innerHTML = STORIES_CFG.map((s, i) => {
@@ -8434,8 +8460,8 @@ function majTrackerStories(){
 function ouvrirStory(idx, dateStr){
   storyModalIndex = idx;
   const s = STORIES_CFG[idx];
-  const typoNom = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente'};
-  const typoMap = {lifestyle:'typo-lifestyle',valeur:'typo-valeur',vente:'typo-vente'};
+  const typoNom = {'storytelling-lifestyle':'Storytelling / Lifestyle', valeur:'Valeur', vente:'Vente'};
+  const typoMap = {'storytelling-lifestyle':'typo-lifestyle', valeur:'typo-valeur', vente:'typo-vente'};
   const joursNoms = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
   const publiee = localStorage.getItem('roze_story_pub_' + dateStr) === '1';
 

@@ -1698,9 +1698,7 @@
         <div class="pilier-chip" onclick="setGenPilier(this,'expertise')"><span class="pi">🧠</span><span class="pn">Expertise</span></div>
         <div class="pilier-chip" onclick="setGenPilier(this,'activite')"><span class="pi">🏪</span><span class="pn">Activité</span></div>
       </div>
-      <div class="pilier-autre-input" id="gen-pilier-autre-zone">
-        <input type="text" id="gen-pilier-autre" placeholder="Ex : Série Excel 30 secondes, Lancement offre…" style="font-size:16px;"/>
-      </div>
+      
 
       <!-- Format -->
       <span class="creer-lbl">Format</span>
@@ -3406,8 +3404,7 @@ function setGenPilier(chip, pilier){
   });
   chip.classList.add(PILIER_CLASSES[pilier]||'on-aut2');
   genPilier = pilier;
-  const autreZone = document.getElementById('gen-pilier-autre-zone');
-  if(autreZone) autreZone.classList.toggle('on', pilier==='activite');
+
 }
 
 function setCreerPilier(chip, pilier){
@@ -3470,7 +3467,6 @@ ${instructions[pilier]||instructions.activite}
 function resetGenPiliers(){
   genPilier = null;
   document.querySelectorAll('#gen-piliers .pilier-chip').forEach(c=>c.className='pilier-chip');
-  const z=document.getElementById('gen-pilier-autre-zone'); if(z) z.classList.remove('on'); // zone saisie libre activite
 }
 function resetCreerPiliers(){ resetGenPiliers(); }
 

@@ -2637,6 +2637,31 @@
       <textarea class="cv-edit-textarea" id="cv-edit-corps" rows="3" oninput="appliquerEditSlide()"></textarea>
     </div>
 
+    <!-- Sous-titre (optionnel, affiché sur slide 1 et sous les titres des slides) -->
+    <div class="ed-section">
+      <span class="ed-label">✨ Sous-titre <span style="font-weight:400;color:var(--gris-clair);font-size:.7rem;">(petite ligne sous le titre, optionnelle)</span></span>
+      <input type="text" class="cv-edit-textarea" id="cv-edit-sstitre" placeholder="Ex : Moins de volume, plus d'impact" style="font-size:.88rem;" oninput="appliquerEditSlide()"/>
+    </div>
+
+    <!-- Interligne titre + corps -->
+    <div class="ed-section">
+      <span class="ed-label">📏 Espacement des lignes</span>
+      <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:.4rem;">
+        <div style="flex:1;min-width:130px;">
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.25rem;display:flex;justify-content:space-between;">
+            <span>Titre</span><span id="ed-lh-titre-val">1.25</span>
+          </div>
+          <input type="range" id="ed-lh-titre" min="1.0" max="1.8" step="0.05" value="1.25" oninput="majInterligne('titre',this.value)" style="width:100%;"/>
+        </div>
+        <div style="flex:1;min-width:130px;">
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.25rem;display:flex;justify-content:space-between;">
+            <span>Corps</span><span id="ed-lh-corps-val">1.5</span>
+          </div>
+          <input type="range" id="ed-lh-corps" min="1.1" max="2.0" step="0.05" value="1.5" oninput="majInterligne('corps',this.value)" style="width:100%;"/>
+        </div>
+      </div>
+    </div>
+
     <!-- Stabilo toggle + config -->
     <div class="ed-section">
       <label class="ed-toggle" onclick="edToggleStabilo()">
@@ -2664,7 +2689,10 @@
         <button class="ed-chip"    id="ed-fond-degrade" onclick="edFondType('degrade',this)">Dégradé</button>
         <button class="ed-chip"    id="ed-fond-beton"   onclick="edFondType('beton',this)">Matière</button>
 
-        <button class="ed-chip"    id="ed-fond-photo"   onclick="edFondType('photo',this)">📷 Photo</button>
+        <label class="ed-chip" id="ed-fond-photo" style="cursor:pointer;margin:0;">
+          📷 Importer une photo
+          <input type="file" accept="image/*" id="ed-photo-file-input" style="display:none;" onchange="edImporterPhoto(this)"/>
+        </label>
       </div>
 
       <!-- Uni custom : 1 couleur libre -->
@@ -2703,19 +2731,26 @@
 
 
 
-      <!-- Photo de fond -->
-      <div id="ed-cfg-photo" style="display:none;">
-        <label class="ed-chip" style="cursor:pointer;">
-          📷 Choisir une photo
-          <input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhotoSlide(this,cvSlideActive)"/>
-        </label>
-        <p style="font-size:.72rem;color:var(--gris-clair);margin-top:.4rem;">Un filtre semi-transparent est appliqué automatiquement pour la lisibilité du texte.</p>
-        <!-- Preview photo importée -->
-        <div id="ed-photo-preview-wrap" style="display:none;margin-top:.6rem;">
-          <div style="font-size:.72rem;color:#4caf50;font-weight:600;margin-bottom:.4rem;">✅ Photo chargée — aperçu :</div>
-          <div id="ed-photo-preview" style="border-radius:10px;overflow:hidden;aspect-ratio:3/4;max-width:120px;position:relative;background:#222;">
-            <img id="ed-photo-preview-img" style="width:100%;height:100%;object-fit:cover;display:block;"/>
-            <div style="position:absolute;inset:0;background:rgba(0,0,0,.38);"></div>
+      <!-- Photo de fond — aperçu inline quand importée -->
+      <div id="ed-cfg-photo" style="display:none;margin-top:.6rem;">
+        <div id="ed-photo-preview-wrap" style="display:none;">
+          <div style="display:flex;gap:.8rem;align-items:stretch;">
+            <!-- Aperçu à gauche -->
+            <div id="ed-photo-preview" style="border-radius:10px;overflow:hidden;aspect-ratio:3/4;width:90px;flex-shrink:0;position:relative;background:#222;">
+              <img id="ed-photo-preview-img" style="width:100%;height:100%;object-fit:cover;display:block;"/>
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,.38);"></div>
+            </div>
+            <!-- Infos + bouton changer à droite -->
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0;">
+              <div>
+                <div style="font-size:.78rem;color:#4caf50;font-weight:600;margin-bottom:.25rem;">✅ Photo chargée</div>
+                <div style="font-size:.7rem;color:var(--gris-clair);line-height:1.4;">Un filtre semi-transparent est appliqué pour la lisibilité du texte.</div>
+              </div>
+              <label class="ed-chip" style="cursor:pointer;margin-top:.5rem;align-self:flex-start;font-size:.72rem;padding:4px 10px;">
+                🔄 Changer la photo
+                <input type="file" accept="image/*" style="display:none;" onchange="edImporterPhoto(this)"/>
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -4252,6 +4287,32 @@ function nettoyerSousTitre(st){
   return st.replace(/\[FORMAT:[A-Z]\]/gi, '').trim();
 }
 
+
+function appliquerOverridesLH(){
+  if(!carrouselCourant) return;
+  const slides = carrouselCourant.slides;
+  slides.forEach((s, i) => {
+    const lh = overridesLH[i];
+    if(!lh) return;
+    // Viewer mini
+    const miniEl = document.getElementById('cv-slide-'+i);
+    if(miniEl){
+      const t = miniEl.querySelector('.cv-slide-titre');
+      const c = miniEl.querySelector('.cv-slide-corps');
+      if(t && lh.titre) t.style.lineHeight = lh.titre;
+      if(c && lh.corps) c.style.lineHeight = lh.corps;
+    }
+    // Fullscreen
+    const fsEl = document.getElementById('cv-fs-slide-'+i);
+    if(fsEl){
+      const t = fsEl.querySelector('.cv-slide-titre');
+      const c = fsEl.querySelector('.cv-slide-corps');
+      if(t && lh.titre) t.style.lineHeight = lh.titre;
+      if(c && lh.corps) c.style.lineHeight = lh.corps;
+    }
+  });
+}
+
 function afficherCarrousel(slides, legende, reseau, containerId){
   carrouselCourant = { slides, legende, reseau, styleFond: styleFondActif, overrides: {...overridesSlide} };
   cvSlideActive = 0;
@@ -4346,6 +4407,31 @@ function cvSelectSlide(idx){
 }
 
 let overridesStabilo = {};
+let overridesLH = {};  // Interligne custom par slide : { idx: {titre:1.25, corps:1.5} }
+
+function majInterligne(type, val){
+  const v = parseFloat(val);
+  const idx = cvSlideActive;
+  if(idx === undefined || idx === null) return;
+  overridesLH[idx] = overridesLH[idx] || {};
+  overridesLH[idx][type] = v;
+  // Maj du label
+  const lbl = document.getElementById('ed-lh-'+type+'-val');
+  if(lbl) lbl.textContent = v.toFixed(2);
+  // Appliquer dans le viewer directement
+  const slideEl = document.getElementById('cv-slide-'+idx);
+  if(slideEl){
+    const target = slideEl.querySelector(type === 'titre' ? '.cv-slide-titre' : '.cv-slide-corps');
+    if(target) target.style.lineHeight = v;
+  }
+  // Appliquer dans le fullscreen s'il est ouvert
+  const fsSlide = document.getElementById('cv-fs-slide-'+idx);
+  if(fsSlide){
+    const target = fsSlide.querySelector(type === 'titre' ? '.cv-slide-titre' : '.cv-slide-corps');
+    if(target) target.style.lineHeight = v;
+  }
+}
+
 
 function fermerEditSlide(e){
   if(e && e.type === 'click' && e.target !== document.getElementById('cv-edit-overlay')) return;
@@ -4364,12 +4450,22 @@ function ouvrirEditSlide(idx){
   const s = carrouselCourant.slides[idx];
   if(!s) return;
   const titre = (s.titre||'').replace(/\[\/?accent\]/gi,'');
-  const el_t = document.getElementById('cv-edit-titre');
-  const el_c = document.getElementById('cv-edit-corps');
-  const el_m = document.getElementById('cv-edit-stabilo-mot');
-  const el_k = document.getElementById('cv-edit-stabilo-couleur');
-  if(el_t) el_t.value = titre;
-  if(el_c) el_c.value = s.corps||'';
+  const el_t  = document.getElementById('cv-edit-titre');
+  const el_c  = document.getElementById('cv-edit-corps');
+  const el_st = document.getElementById('cv-edit-sstitre');
+  const el_m  = document.getElementById('cv-edit-stabilo-mot');
+  const el_k  = document.getElementById('cv-edit-stabilo-couleur');
+  if(el_t)  el_t.value  = titre;
+  if(el_c)  el_c.value  = s.corps||'';
+  if(el_st) el_st.value = nettoyerSousTitre(s.sousTitre||'');
+  // Interligne actuel (stocké dans overridesLH ou valeurs par défaut)
+  const lh = overridesLH[idx] || {};
+  const lhTit = lh.titre || 1.25;
+  const lhCor = lh.corps || 1.5;
+  const slTit = document.getElementById('ed-lh-titre');
+  const slCor = document.getElementById('ed-lh-corps');
+  if(slTit){ slTit.value = lhTit; const v=document.getElementById('ed-lh-titre-val'); if(v) v.textContent = lhTit.toFixed(2); }
+  if(slCor){ slCor.value = lhCor; const v=document.getElementById('ed-lh-corps-val'); if(v) v.textContent = lhCor.toFixed(2); }
   const ovSt = overridesStabilo[idx] || {};
   const coul = ovSt.couleur || CFG.couleur1 || '#E8186D';
   if(el_m) el_m.value = ovSt.mot || '';
@@ -4408,10 +4504,12 @@ function appliquerEditSlide(){
   if(!s) return;
   const titre = (document.getElementById('cv-edit-titre')||{}).value || '';
   const corps = (document.getElementById('cv-edit-corps')||{}).value || '';
+  const sstitre = (document.getElementById('cv-edit-sstitre')||{}).value || '';
   const mot   = ((document.getElementById('cv-edit-stabilo-mot')||{}).value || '').trim();
   const coul  = (document.getElementById('cv-edit-stabilo-couleur')||{}).value || CFG.couleur1 || '#E8186D';
   s.titre = titre;
   s.corps = corps;
+  s.sousTitre = sstitre;
   overridesStabilo[idx] = { mot, couleur: coul, actif: edStabiloActif };
   majPreviewStabilo(mot || 'Aperçu stabilo', coul);
   // Mettre à jour le rendu de la slide
@@ -4616,6 +4714,40 @@ function setCvFondPhoto(input){
 
 // ── Photo de fond par slide ──
 const cvFondPhotoParSlide = {};
+
+
+function edImporterPhoto(input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const src = e.target.result;
+    const idx = cvSlideActive;
+    if(idx === undefined || idx === null) return;
+    cvFondPhotoParSlide[idx] = src;
+    overridesSlide[idx] = 'photo';
+    overridesSlide['__css__'] = overridesSlide['__css__'] || {};
+    delete overridesSlide['__css__'][idx];
+    edFondTypeActif = 'photo';
+    // Basculer l'affichage du bloc photo
+    ['custom','degrade','beton','texture','photo','uni'].forEach(t=>{
+      const el = document.getElementById('ed-cfg-'+t);
+      if(el) el.style.display = (t === 'photo') ? 'block' : 'none';
+    });
+    // Activer le chip photo
+    document.querySelectorAll('#cv-edit-panel .ed-chip[id^="ed-fond-"]').forEach(b=>b.classList.remove('on'));
+    const chip = document.getElementById('ed-fond-photo');
+    if(chip) chip.classList.add('on');
+    // Afficher l'aperçu
+    const wrap = document.getElementById('ed-photo-preview-wrap');
+    const img  = document.getElementById('ed-photo-preview-img');
+    if(wrap) wrap.style.display = 'block';
+    if(img)  img.src = src;
+    // Refresh le rendu de la slide
+    majFondsSlides();
+  };
+  reader.readAsDataURL(file);
+}
 
 function setCvFondPhotoSlide(input, slideIdx){
   const file = input.files[0]; if(!file) return;
@@ -4849,6 +4981,7 @@ function setStyleFond(btn, style){
   document.querySelectorAll('.cv-fond-opt').forEach(b => b.classList.remove('on'));
   if(btn) btn.classList.add('on');
   majFondsSlides();
+  setTimeout(appliquerOverridesLH, 50);
 }
 
 function appliquerFondAToutesSlides(btn, style){
@@ -4978,105 +5111,115 @@ function majFondsSlides(){
 // ══════════════════════════════════════════
 async function exporterPNG(){
   if(!carrouselCourant) return;
-  toast('⏳ Génération des slides…','ok');
-
-  await chargerScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
 
   const { slides } = carrouselCourant;
   const c1   = CFG.couleur1 || '#E8186D';
   const c2   = CFG.couleur2 || '#111111';
   const ptit = CFG.policeTitre || 'Playfair Display';
   const pcorp= CFG.policeCorps || 'DM Sans';
+  const fmtDims = CAR_FORMATS[carFormatRatio] || CAR_FORMATS['3:4'];
 
-  // Détecter iOS PWA pour envoyer vers la galerie photos
+  toast('⏳ Rendu des '+slides.length+' slides…','ok');
+  await chargerScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+
+  // Détection iOS PWA pour share multi-fichier vers galerie
   const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
   const isPWA = window.navigator.standalone === true;
-  const useShareAPI = isIOS && isPWA && navigator.share && navigator.canShare;
+  const useShareAPI = isIOS && navigator.share && navigator.canShare;
+
+  // ── Rendu offscreen : chaque slide est un clone EXACT du .cv-fs-slide ──
+  // Utilisation des MÊMES classes CSS que le viewer/fullscreen pour rendu identique
+  const blobs = [];
 
   for(let i = 0; i < slides.length; i++){
     const s = slides[i];
-
-    // ── Fond : priorité aux overrides custom, sinon styleFondSlide ──
+    const fondBase = fondSlide(s.num, slides.length, c1, c2);
     const fondCSSStr = (overridesSlide['__css__'] && overridesSlide['__css__'][i])
       ? overridesSlide['__css__'][i]
       : styleFondSlide(s.num, slides.length, c1, c2);
-
-    // Couleur de base pour calculs de contraste
-    const fondBase   = fondSlide(s.num, slides.length, c1, c2);
     const isSlide1Photo = (i === 0 && photoSlide1);
     const tcoulFinal = isSlide1Photo
       ? meilleureTexteCouleur('#000000', c1, c2)
       : texteSlide(fondBase);
     const soulCoul = isSlide1Photo ? couleurSoulignement(tcoulFinal, c1, c2) : null;
 
-    // ── Titre + corps depuis rendreSlideHTML (unifié avec viewer) ──
+    // Titre + corps depuis rendreSlideHTML (même logique que le viewer)
     const titreHtml = rendreSlideHTML(i, c1, fondBase, 'titre');
     const corpsHtml = rendreSlideHTML(i, c1, fondBase, 'corps');
 
-    // ── Créer le div offscreen 1080×1440 ──
-    var div = document.createElement('div');
-    div.style.cssText = [
+    // Interligne custom si défini
+    const lh = overridesLH[i] || {};
+    const lhTitre = lh.titre || 1.25;
+    const lhCorps = lh.corps || 1.5;
+
+    // Conteneur externe (format final) avec les MÊMES styles que .cv-fs-slide
+    const outer = document.createElement('div');
+    outer.style.cssText = [
       'position:fixed','left:-9999px','top:0',
-      'width:'+(CAR_FORMATS[carFormatRatio]||CAR_FORMATS['3:4']).w+'px',
-      'height:'+(CAR_FORMATS[carFormatRatio]||CAR_FORMATS['3:4']).h+'px',
+      'width:'+fmtDims.w+'px',
+      'height:'+fmtDims.h+'px',
       'overflow:hidden',
-      "font-family:'" + pcorp + "',sans-serif",
-      'color:' + tcoulFinal,
-      'padding:8% 7%',  // proportionnel — identique au viewer
-      'box-sizing:border-box',
-      'display:flex','flex-direction:column',
-      'justify-content:center','align-items:flex-start','text-align:left'
+      'border-radius:0',
+      'box-sizing:border-box'
     ].join(';') + ';';
 
-    // Fond — séparé pour préserver gradients
+    // Photo de fond par slide
+    const photoBgSrc = cvFondPhotoParSlide[i] || null;
+
+    // Fond (même logique que viewer)
     if(isSlide1Photo){
-      div.style.background = '#000';
-    } else {
-      appliqueFondCSS(div, fondCSSStr);
+      outer.style.background = '#000';
+    } else if(!photoBgSrc) {
+      appliqueFondCSS(outer, fondCSSStr);
     }
 
-    // ── Photo de fond par slide (si applicable) ──
-    var photoBgSrc = cvFondPhotoParSlide[i] || null;
-    var photoBgHtml = photoBgSrc
-      ? '<img src="'+photoBgSrc+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:1;"/>'
-        + '<div style="position:absolute;inset:0;background:rgba(0,0,0,.40);z-index:1;"></div>'
-      : '';
+    // Calcul des tailles proportionnelles (base sur la largeur du format)
+    const scaleFactor = fmtDims.w / 360; // le FS slide fait ~360px de large
+    const sstitreTxt = s.sousTitre ? escapeHtml(nettoyerSousTitre(s.sousTitre)) : '';
 
+    // Construction du HTML EXACTEMENT comme le fullscreen mais à grande échelle
+    // en utilisant les mêmes classes CSS (.cv-slide-inner, .cv-slide-titre, .cv-slide-corps)
+    let html = '';
     // Photo slide 1
-    var photoS1Html = isSlide1Photo
-      ? '<img src="'+photoSlide1.src+'" crossOrigin="anonymous" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:0;"/>'
-        + '<div style="position:absolute;inset:0;background:rgba(0,0,0,0.38);z-index:1;"></div>'
-      : '';
+    if(isSlide1Photo){
+      html += '<img src="'+photoSlide1.src+'" crossOrigin="anonymous" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:0;"/>';
+      html += '<div style="position:absolute;inset:0;background:rgba(0,0,0,0.38);z-index:1;"></div>';
+    }
+    // Photo de fond override
+    if(photoBgSrc){
+      html += '<img src="'+photoBgSrc+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;"/>';
+      html += '<div style="position:absolute;inset:0;background:rgba(0,0,0,.40);z-index:1;"></div>';
+    }
 
-    var tFontSize = isSlide1Photo ? fontSizeTitre(s.titre, .82, 72).px : (s.type==='hook' ? 72 : 54);
-    var tMargin   = isSlide1Photo ? '8px' : '24px';
-    var tExtra    = isSlide1Photo ? 'border-bottom:6px solid '+soulCoul+';padding-bottom:12px;' : '';
-    var bFontSize = s.type === 'hook' ? 36 : 32;
-    var logoHtml  = (s.type === 'cta' && CFG.logoUrl)
-      ? '<img src="'+CFG.logoUrl+'" style="max-width:160px;max-height:60px;object-fit:contain;opacity:.8;margin-top:auto;"/>'
-      : '';
-    var sousTitreHtml = s.sousTitre
-      ? '<div style="font-size:32px;opacity:.7;margin-bottom:24px;">'+escapeHtml(s.sousTitre)+'</div>'
-      : '';
+    // Inner : MÊME structure que .cv-slide-inner du viewer
+    // Tailles de police mises à l'échelle du format final
+    const titreSizePx = Math.round((isSlide1Photo ? fontSizeTitre(s.titre, 1.15, 44).rem * 16 : (s.type==='hook' ? 36 : 28)) * scaleFactor);
+    const sstitreSizePx = Math.round(0.78 * 16 * scaleFactor);
+    const corpsSizePx = Math.round(0.85 * 16 * scaleFactor);
 
-    div.innerHTML = photoS1Html + photoBgHtml
-      + '<div style="position:relative;z-index:2;display:flex;flex-direction:column;height:100%;width:100%;">'
-      +   '<div style="font-family:\''+ptit+'\',serif;font-size:'+tFontSize+'px;font-weight:700;line-height:1.3;margin-bottom:'+tMargin+';'+tExtra+';width:100%;">'+titreHtml+'</div>'
-      +   sousTitreHtml
-      +   '<div style="font-size:'+bFontSize+'px;line-height:1.7;flex:1;white-space:pre-wrap;width:100%;">'+(isSlide1Photo ? '' : corpsHtml)+'</div>'
-      +   logoHtml
-      + '</div>';
+    const accentExtra = isSlide1Photo ? 'border-bottom:'+Math.round(6*scaleFactor)+'px solid '+soulCoul+';padding-bottom:'+Math.round(12*scaleFactor)+'px;' : '';
 
-    document.body.appendChild(div);
+    html += '<div class="cv-slide-inner" style="position:relative;z-index:2;font-family:\''+pcorp+'\',sans-serif;color:'+tcoulFinal+';padding:8% 7%;">';
+    html += '  <div class="cv-slide-titre" style="font-family:\''+ptit+'\',serif;font-size:'+titreSizePx+'px;line-height:'+lhTitre+';'+accentExtra+'">'+titreHtml+'</div>';
+    if(sstitreTxt){
+      html += '  <div class="cv-slide-sstitre" style="font-size:'+sstitreSizePx+'px;line-height:'+lhTitre+';">'+sstitreTxt+'</div>';
+    }
+    html += '  <div class="cv-slide-corps" style="font-size:'+corpsSizePx+'px;line-height:'+lhCorps+';">'+(isSlide1Photo ? '' : corpsHtml)+'</div>';
+    // Logo sur slide CTA
+    if(s.type === 'cta' && CFG.logoUrl){
+      html += '  <img src="'+CFG.logoUrl+'" class="cv-slide-logo" style="position:absolute;bottom:'+Math.round(20*scaleFactor)+'px;right:'+Math.round(24*scaleFactor)+'px;max-width:'+Math.round(80*scaleFactor)+'px;max-height:'+Math.round(40*scaleFactor)+'px;object-fit:contain;opacity:.85;"/>';
+    }
+    html += '</div>';
 
-    var nomFichier = 'carrousel-slide-' + String(i+1).padStart(2,'0') + '.png';
-    var bgColor = isSlide1Photo ? '#000000' : fondBase;
+    outer.innerHTML = html;
+    document.body.appendChild(outer);
+
+    const bgColor = isSlide1Photo ? '#000000' : fondBase;
+    const nomFichier = 'carrousel-slide-' + String(i+1).padStart(2,'0') + '.png';
 
     try {
-      await new Promise(function(r){ setTimeout(r, 100); });
-
-      var fmtDims = CAR_FORMATS[carFormatRatio] || CAR_FORMATS['3:4'];
-      var canvas = await window.html2canvas(div, {
+      await new Promise(r => setTimeout(r, 150));
+      const canvas = await window.html2canvas(outer, {
         scale:           2,
         useCORS:         true,
         allowTaint:      true,
@@ -5086,51 +5229,53 @@ async function exporterPNG(){
         width:           fmtDims.w,
         height:          fmtDims.h
       });
-
-      await new Promise(function(resolve, reject){
-        canvas.toBlob(function(blob){
-          if(!blob){ reject(new Error('blob null')); return; }
-
-          // iOS PWA : share vers galerie photos
-          if(useShareAPI){
-            var file = new File([blob], nomFichier, {type:'image/png'});
-            if(navigator.canShare && navigator.canShare({files:[file]})){
-              navigator.share({files:[file], title:'Slide '+(i+1)})
-                .then(function(){ setTimeout(resolve, 500); })
-                .catch(function(err){
-                  // Annulé ou erreur → fallback download
-                  var u = URL.createObjectURL(blob);
-                  var a = document.createElement('a');
-                  a.href=u; a.download=nomFichier;
-                  document.body.appendChild(a); a.click();
-                  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(u); resolve(); }, 600);
-                });
-              return;
-            }
-          }
-
-          // Desktop / Android : téléchargement direct
-          var u = URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.href=u; a.download=nomFichier; a.style.display='none';
-          document.body.appendChild(a); a.click();
-          setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(u); resolve(); }, 600);
-
-        }, 'image/png');
-      });
-
-      toast('⬇️ Slide '+(i+1)+'/'+slides.length, 'ok');
-      await new Promise(function(r){ setTimeout(r, 300); });
-
+      const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+      if(blob) blobs.push({ name: nomFichier, blob });
+      toast('🎨 Slide '+(i+1)+'/'+slides.length+' rendue', 'ok');
     } catch(e){
       console.error('Export slide '+(i+1)+':', e);
       toast('⚠️ Erreur slide '+(i+1)+' : '+e.message, 'err');
     } finally {
-      if(document.body.contains(div)) document.body.removeChild(div);
+      if(document.body.contains(outer)) document.body.removeChild(outer);
     }
   }
 
-  toast('✅ '+slides.length+' slides générées !', 'ok');
+  if(blobs.length === 0){
+    toast('⚠️ Aucune slide générée', 'err');
+    return;
+  }
+
+  // ─── DISTRIBUTION ─────────────────────────────────────────
+  // iOS PWA : partage multi-fichier en 1 seule action système (Enregistrer dans Photos)
+  if(useShareAPI){
+    const files = blobs.map(b => new File([b.blob], b.name, { type: 'image/png' }));
+    if(navigator.canShare({ files })){
+      try {
+        await navigator.share({ files, title: 'Carrousel ('+files.length+' slides)' });
+        toast('✅ Partagé vers Photos !', 'ok');
+        return;
+      } catch(err){
+        // Annulé ou erreur → fallback ZIP
+        console.log('Share multi-fichier refusé, fallback ZIP', err);
+      }
+    }
+  }
+
+  // Desktop / Android / fallback : un seul ZIP téléchargé
+  await chargerScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+  const zip = new window.JSZip();
+  blobs.forEach(b => zip.file(b.name, b.blob));
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(zipBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'carrousel-' + new Date().toISOString().split('T')[0] + '.zip';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 800);
+
+  toast('✅ '+blobs.length+' slides téléchargées en ZIP !', 'ok');
 }
 
 

@@ -660,6 +660,43 @@
     .sp-detail-actions .btn{margin-top:0;flex:1;min-width:100px;font-size:.78rem;padding:9px 12px;}
     #toast.err{border-color:var(--rose);color:var(--rose);}
 
+    /* États du bouton "Enregistrer ma semaine" */
+    .btn-enreg-saved{
+      background: linear-gradient(135deg, #1a3d2e, #244532) !important;
+      color: #7dd3a8 !important;
+      border: 1px solid rgba(125,211,168,.35) !important;
+    }
+    .btn-enreg-saved:hover{
+      background: linear-gradient(135deg, #1e4534, #2a4e3b) !important;
+    }
+    .btn-enreg-loading{
+      background: linear-gradient(135deg, #333, #444) !important;
+      color: #999 !important;
+      cursor: not-allowed !important;
+      pointer-events: none;
+    }
+    .btn-enreg-spinner{
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: btn-spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes btn-spin { to { transform: rotate(360deg); } }
+    .enreg-note{
+      font-size:.72rem;
+      color:var(--gris-clair);
+      text-align:center;
+      margin-top:.5rem;
+      padding:.4rem .6rem;
+      background:rgba(125,211,168,.06);
+      border:1px solid rgba(125,211,168,.15);
+      border-radius:8px;
+    }
+
     /* ─ COMPTEUR POSTS ACCUEIL ─ */
     .posts-compteur{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:14px;padding:1rem 1.2rem;margin-bottom:1rem;}
     .pc-row{display:flex;align-items:flex-start;gap:.6rem;margin-bottom:.5rem;width:auto;justify-content:flex-start;}
@@ -1637,7 +1674,7 @@
     </div>
 
     <div class="bq"><div class="ql"><div class="qn">8</div><span class="qc">Sujet libre</span></div><p class="qt">Un sujet ou format que tu veux tester cette semaine ?</p><textarea id="q8" oninput="autosaveDraft()" placeholder="Optionnel…" style="min-height:60px;"></textarea><div class="opt">Optionnel</div></div>
-    <button class="btn btn-rose btn-full" onclick="enrSemaine()">💾 Enregistrer ma semaine</button>
+    <button class="btn btn-rose btn-full" id="btn-enr-semaine" onclick="enrSemaine()">💾 Enregistrer ma semaine</button>
   </section>
 
   <!-- ══ GÉNÉRER ══ -->
@@ -2255,6 +2292,11 @@
         <label class="lbl">Lien dossier Photos Drive</label>
         <input type="url" id="cfg-drive-photos" placeholder="https://drive.google.com/drive/folders/…"/>
 
+        <div class="conn-sep"></div>
+        <label class="lbl">Streak & compteurs</label>
+        <button class="btn btn-ghost" id="btn-corriger-streak" onclick="corrigerMonStreak()" style="width:100%;font-size:.82rem;margin-top:.3rem;">🔧 Corriger mon streak</button>
+        <div class="opt" style="margin-top:.4rem;font-size:.68rem;line-height:1.4;">À utiliser si ton compteur de semaines ne reflète pas ton historique réel. Le calcul est basé sur les semaines que tu as effectivement enregistrées.</div>
+
       </div>
     </div>
 
@@ -2855,7 +2897,7 @@ let CAL = { vue:'mois', annee:new Date().getFullYear(), mois:new Date().getMonth
 // INIT
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded',()=>{
-  initTheme(); initUI(); chargerCompte(); affDate(); construireStoriesUI(); majGenFormats(getGenReseau()); majRythme();
+  initTheme(); initUI(); chargerCompte(); affDate(); construireStoriesUI(); majGenFormats(getGenReseau()); majRythme(); etatBoutonSemaine();
   syncConfigDepuisSheets(); // Sync multi-appareils au démarrage
   majCompteurBrouillons(); // Init compteur idées
   initAuth(); // Contrôle d'accès Google Sign-In
@@ -3140,7 +3182,7 @@ function go(id, btn){
   const smFs = document.getElementById('streak-modal-fond'); if(smFs) smFs.classList.remove('on');
   document.querySelector('.scroll').style.overflow = '';
   editId = null; storyModalIndex = null;
-  if(id==='p-semaine') restaurerDraft();
+  if(id==='p-semaine'){ restaurerDraft(); etatBoutonSemaine(); }
   // Quand on quitte la page Semaine, synchro silencieuse du draft
   else if(document.getElementById('p-semaine') && document.getElementById('p-semaine').classList.contains('on')){
     syncConfigVersSheets();
@@ -3207,14 +3249,78 @@ const STREAK_MESSAGES = {
         msg:'365 jours à tenir ta promesse éditoriale. Peu de professionnels peuvent en dire autant. Félicitations.' },
 };
 
+
+// ══════════════════════════════════════════
+// Corriger rétroactivement le streak
+// Scanne le localStorage pour compter les semaines consécutives
+// en partant de la plus récente enregistrée (ou de cette semaine si vide)
+// ══════════════════════════════════════════
+function recalculerStreakReel(){
+  const lundiCourant = lundiSem(new Date());
+  const lundiCourantStr = lundiCourant.toISOString().split('T')[0];
+
+  // Déterminer le point de départ :
+  // - Si la semaine courante est enregistrée → on part d'elle
+  // - Sinon → on part de la semaine précédente (dernière potentielle)
+  let pointDepart;
+  if(ls('roze_sem_' + lundiCourantStr) === '1'){
+    pointDepart = lundiCourant;
+  } else {
+    // La semaine courante n'est pas encore enregistrée → on part de la précédente
+    pointDepart = new Date(lundiCourant.getTime() - 7*86400000);
+  }
+
+  // Compter en remontant : tant qu'on trouve des semaines consécutives enregistrées
+  let streak = 0;
+  let cursor = new Date(pointDepart.getTime());
+  while(ls('roze_sem_' + cursor.toISOString().split('T')[0]) === '1'){
+    streak++;
+    cursor = new Date(cursor.getTime() - 7*86400000);
+    // Garde-fou : ne pas remonter plus de 500 semaines (10 ans) par sécurité
+    if(streak > 500) break;
+  }
+
+  const ancien = parseInt(ls('roze_streak') || '0');
+  localStorage.setItem('roze_streak', streak);
+  afficherStreak();
+
+  return { ancien, nouveau: streak };
+}
+
+function corrigerMonStreak(){
+  const btn = document.getElementById('btn-corriger-streak');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Calcul en cours…'; }
+
+  const { ancien, nouveau } = recalculerStreakReel();
+
+  setTimeout(()=>{
+    if(btn){ btn.disabled = false; btn.textContent = '🔧 Corriger mon streak'; }
+    // Synchro vers le Sheets aussi
+    syncConfigVersSheets();
+    if(ancien === nouveau){
+      toast('✅ Ton streak était déjà correct (' + nouveau + ' semaines)', 'ok');
+    } else {
+      toast('✅ Streak corrigé : ' + ancien + ' → ' + nouveau + ' semaines', 'ok');
+    }
+  }, 400);
+}
+
 function calculerEtMajStreak(){
   const lundi     = lundiSem(new Date());
   const lundiStr  = lundi.toISOString().split('T')[0];
   const lundiPrecStr = new Date(lundi.getTime() - 7*86400000).toISOString().split('T')[0];
 
+  // SÉCURITÉ : si la semaine courante est déjà marquée enregistrée,
+  // ne pas ré-incrémenter le streak (empêche le bug des clics multiples)
+  // NB : enrSemaine() n'appelle cette fonction que si !estMAJ, donc normalement
+  // on n'arrive ici que pour une première fois dans la semaine. Mais double-sécurité.
+  if(ls('roze_sem_' + lundiStr) === '1'){
+    afficherStreak();
+    return;
+  }
+
   // La semaine précédente était-elle enregistrée ?
   const semPrec = ls('roze_sem_' + lundiPrecStr) === '1';
-  // La semaine actuelle vient d'être enregistrée (on est dans enrSemaine)
   const streakActuel = parseInt(ls('roze_streak') || '0');
 
   let nouveauStreak;
@@ -3293,8 +3399,63 @@ function fermerStreakModal(){
   document.getElementById('streak-modal-fond').classList.remove('on');
 }
 
+// ══════════════════════════════════════════
+// ÉTATS DU BOUTON "Enregistrer ma semaine"
+// 3 états possibles :
+//   - normal    : première fois de la semaine
+//   - saved     : semaine déjà enregistrée (mise à jour possible)
+//   - loading   : requête en cours (bouton désactivé + spinner)
+// Rafraîchit automatiquement chaque lundi (basé sur la date).
+// ══════════════════════════════════════════
+function etatBoutonSemaine(){
+  const btn = document.getElementById('btn-enr-semaine');
+  if(!btn) return;
+  // Retirer les classes d'état
+  btn.classList.remove('btn-enreg-saved','btn-enreg-loading');
+  btn.disabled = false;
+
+  // Vérifier si la semaine courante est déjà enregistrée
+  const lundi    = lundiSem(new Date());
+  const lundiStr = lundi.toISOString().split('T')[0];
+  const dejaEnr  = ls('roze_sem_' + lundiStr) === '1';
+
+  // Retirer toute note précédente
+  const oldNote = document.getElementById('enreg-note');
+  if(oldNote) oldNote.remove();
+
+  if(dejaEnr){
+    btn.classList.add('btn-enreg-saved');
+    btn.innerHTML = '✅ Semaine enregistrée — Mettre à jour';
+    // Note explicative sous le bouton
+    const note = document.createElement('div');
+    note.id = 'enreg-note';
+    note.className = 'enreg-note';
+    note.textContent = 'Tu peux modifier tes réponses et mettre à jour jusqu\'à dimanche 23h59.';
+    btn.parentNode.insertBefore(note, btn.nextSibling);
+  } else {
+    btn.innerHTML = '💾 Enregistrer ma semaine';
+  }
+}
+
 async function enrSemaine(){
+  const btn = document.getElementById('btn-enr-semaine');
+  // Sécurité : bloquer double-clic même si le CSS loading ne s'est pas appliqué
+  if(btn && btn.disabled) return;
+
   if(!CFG.as){ toast('⚙️ Configure d\'abord l\'URL Google Sheets dans Mon Compte → Connexions','err'); return; }
+
+  // Détecter si c'est une mise à jour ou première fois
+  const lundi    = lundiSem(new Date());
+  const lundiStr = lundi.toISOString().split('T')[0];
+  const estMAJ   = ls('roze_sem_' + lundiStr) === '1';
+
+  // ── ÉTAT LOADING : désactiver + spinner ──
+  if(btn){
+    btn.disabled = true;
+    btn.classList.add('btn-enreg-loading');
+    btn.innerHTML = '<span class="btn-enreg-spinner"></span>' + (estMAJ ? 'Mise à jour…' : 'Enregistrement…');
+  }
+
   const d={
     action: 'enregistrer_semaine',
     semaine: getSemaineCourante(),
@@ -3309,20 +3470,41 @@ async function enrSemaine(){
     const r=await fetch(CFG.as,{method:'POST',body:JSON.stringify(d)});
     const j=await r.json();
     if(j.succes){
-      calculerEtMajStreak();
-      const lundi=lundiSem(new Date());
-      localStorage.setItem('roze_sem_'+lundi.toISOString().split('T')[0],'1');
-      majAccueil();
-      viderDraft();
-      syncConfigVersSheets(); // Propager aux autres appareils
-      // Adapter le toast selon le statut de la mémoire évolutive
-      if (j.memoire_succes === false) {
-        toast('⚠️ Semaine enregistrée — mais mise à jour mémoire IA échouée : ' + (j.memoire_message || 'erreur inconnue'), 'err');
-      } else {
-        toast('✅ Semaine enregistrée — mémoire IA mise à jour !','ok');
+      // Marquer la semaine comme enregistrée (pour les futurs clics)
+      localStorage.setItem('roze_sem_'+lundiStr,'1');
+
+      // Ne calculer le streak que si c'est la PREMIÈRE fois de la semaine
+      // (sinon on re-incrémenterait à chaque mise à jour — c'était le bug)
+      if(!estMAJ){
+        calculerEtMajStreak();
       }
-    } else toast('❌ '+(j.erreur||'Erreur'),'err');
-  }catch{ toast('❌ Impossible de joindre Google Sheets','err'); }
+
+      majAccueil();
+      // Garder les réponses en draft si on peut re-modifier — sinon vider
+      // Choix : on garde la matière en draft pour permettre mise à jour facile
+      // viderDraft(); // désactivé pour permettre mise à jour
+      syncConfigVersSheets();
+
+      // Toast adapté : "enregistrée" vs "mise à jour"
+      const prefixe = estMAJ ? '✏️ Matière mise à jour' : '✅ Semaine enregistrée';
+      if (j.memoire_succes === false) {
+        toast('⚠️ ' + prefixe + ' — mais mise à jour mémoire IA échouée : ' + (j.memoire_message || 'erreur inconnue'), 'err');
+      } else {
+        toast(prefixe + (estMAJ ? ' !' : ' — mémoire IA mise à jour !'),'ok');
+      }
+    } else {
+      toast('❌ '+(j.erreur||'Erreur'),'err');
+    }
+  }catch{
+    toast('❌ Impossible de joindre Google Sheets','err');
+  } finally {
+    // ── SORTIE LOADING : rafraîchir l'état visuel ──
+    if(btn){
+      btn.classList.remove('btn-enreg-loading');
+      btn.disabled = false;
+    }
+    etatBoutonSemaine(); // Passe en mode "saved" si succès, ou retour normal si échec
+  }
 }
 
 // ══════════════════════════════════════════

@@ -2684,16 +2684,45 @@
       <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:.4rem;">
         <div style="flex:1;min-width:130px;">
           <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.25rem;display:flex;justify-content:space-between;">
-            <span>Titre</span><span id="ed-lh-titre-val">1.25</span>
+            <span>Titre</span><span id="ed-lh-titre-val">1.15</span>
           </div>
-          <input type="range" id="ed-lh-titre" min="1.0" max="1.8" step="0.05" value="1.25" oninput="majInterligne('titre',this.value)" style="width:100%;"/>
+          <input type="range" id="ed-lh-titre" min="1.0" max="1.8" step="0.05" value="1.15" oninput="majInterligne('titre',this.value)" style="width:100%;"/>
         </div>
         <div style="flex:1;min-width:130px;">
           <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.25rem;display:flex;justify-content:space-between;">
-            <span>Corps</span><span id="ed-lh-corps-val">1.5</span>
+            <span>Corps</span><span id="ed-lh-corps-val">1.20</span>
           </div>
-          <input type="range" id="ed-lh-corps" min="1.1" max="2.0" step="0.05" value="1.5" oninput="majInterligne('corps',this.value)" style="width:100%;"/>
+          <input type="range" id="ed-lh-corps" min="1.1" max="2.0" step="0.05" value="1.20" oninput="majInterligne('corps',this.value)" style="width:100%;"/>
         </div>
+      </div>
+    </div>
+
+    <!-- Taille de police titre + corps -->
+    <div class="ed-section">
+      <span class="ed-label">🔤 Taille de la police</span>
+      <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:.4rem;">
+        <div style="flex:1;min-width:130px;">
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.25rem;display:flex;justify-content:space-between;">
+            <span>Titre</span><span id="ed-fs-titre-val">100%</span>
+          </div>
+          <input type="range" id="ed-fs-titre" min="0.7" max="1.4" step="0.05" value="1.0" oninput="majTaillePolice('titre',this.value)" style="width:100%;"/>
+        </div>
+        <div style="flex:1;min-width:130px;">
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.25rem;display:flex;justify-content:space-between;">
+            <span>Corps</span><span id="ed-fs-corps-val">100%</span>
+          </div>
+          <input type="range" id="ed-fs-corps" min="0.7" max="1.4" step="0.05" value="1.0" oninput="majTaillePolice('corps',this.value)" style="width:100%;"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bouton : appliquer les espacements + tailles à toutes les slides -->
+    <div class="ed-section">
+      <button class="btn btn-ghost" id="ed-btn-propager" onclick="propagerMiseEnPage()" style="width:100%;font-size:.82rem;">
+        📐 Appliquer ces espacements & tailles à toutes les slides
+      </button>
+      <div class="opt" style="margin-top:.4rem;font-size:.68rem;line-height:1.4;">
+        Copie l'interligne titre/corps et les tailles de police de cette slide vers toutes les autres.
       </div>
     </div>
 
@@ -4537,7 +4566,7 @@ function afficherCarrousel(slides, legende, reseau, containerId){
 
 
               <div class="cv-slide-titre" style="font-family:'${ptit}',serif;font-size:${i===0 ? fontSizeTitre(s.titre, .82, 48).rem+'rem' : ''};${(i===0&&photoSlide1) ? 'color:'+meilleureTexteCouleur('#000000',c1,c2)+';border-bottom:3px solid '+couleurSoulignement(meilleureTexteCouleur('#000000',c1,c2),c1,c2)+';padding-bottom:4px;' : ''}">${rendreTitreAccent(s.titre||'', accentSlide(c1, fondSlide(s.num,slides.length,c1,c2)), fondSlide(s.num,slides.length,c1,c2))}</div>
-              ${s.sousTitre ? '<div style="font-size:.65rem;opacity:.7;margin-bottom:4px;">' + escapeHtml(nettoyerSousTitre(s.sousTitre)) + '</div>' : ''}
+              <div class="cv-slide-sstitre" style="font-size:.65rem;opacity:.7;margin-bottom:4px;${s.sousTitre ? '' : 'display:none;'}">${s.sousTitre ? escapeHtml(nettoyerSousTitre(s.sousTitre)) : ''}</div>
               <div class="cv-slide-corps">${nettoyerCorpsSlide(s.corps||'')}</div>
               ${(s.type === 'cta' && CFG.logoUrl) ? '<img class="cv-slide-logo" src="' + CFG.logoUrl + '" alt="logo"/>' : ''}
             </div>
@@ -4585,7 +4614,8 @@ function cvSelectSlide(idx){
 }
 
 let overridesStabilo = {};
-let overridesLH = {};  // Interligne custom par slide : { idx: {titre:1.25, corps:1.5} }
+let overridesLH = {};  // Interligne custom par slide : { idx: {titre:1.15, corps:1.20} }
+let overridesFS = {};  // Taille de police custom par slide (facteur 0.7-1.4) : { idx: {titre:1.0, corps:1.0} }
 
 function majInterligne(type, val){
   const v = parseFloat(val);
@@ -4608,6 +4638,111 @@ function majInterligne(type, val){
     const target = fsSlide.querySelector(type === 'titre' ? '.cv-slide-titre' : '.cv-slide-corps');
     if(target) target.style.lineHeight = v;
   }
+}
+
+// ═══════════════════════════════════════════════════
+// Taille de police : facteur multiplicatif (0.7 à 1.4)
+// Stockée dans overridesFS[idx] = { titre: 1.0, corps: 1.0 }
+// Appliquée via font-size en % (100% = taille par défaut)
+// ═══════════════════════════════════════════════════
+function majTaillePolice(type, val){
+  const v = parseFloat(val);
+  const idx = cvSlideActive;
+  if(idx === undefined || idx === null) return;
+  overridesFS[idx] = overridesFS[idx] || {};
+  overridesFS[idx][type] = v;
+  // Maj du label en pourcentage (1.0 → "100%")
+  const lbl = document.getElementById('ed-fs-'+type+'-val');
+  if(lbl) lbl.textContent = Math.round(v * 100) + '%';
+  // Appliquer : on utilise CSS "zoom" pour un scale proportionnel au texte
+  // Mais zoom n'est pas fiable sur Firefox → on utilise transform: scale + origin
+  // Plus simple et universel : font-size en %
+  const appliquerScale = (el) => {
+    if(!el) return;
+    // On stocke la taille originale dans un data-attr la 1ère fois
+    if(!el.dataset.fsBase){
+      const computed = window.getComputedStyle(el).fontSize;
+      el.dataset.fsBase = parseFloat(computed); // en pixels
+    }
+    const base = parseFloat(el.dataset.fsBase);
+    el.style.fontSize = (base * v) + 'px';
+  };
+  // Viewer
+  const slideEl = document.getElementById('cv-slide-'+idx);
+  if(slideEl){
+    appliquerScale(slideEl.querySelector(type === 'titre' ? '.cv-slide-titre' : '.cv-slide-corps'));
+    // Le sous-titre suit la taille du titre (plus petit mais proportionnel)
+    if(type === 'titre'){
+      const sstitre = slideEl.querySelector('.cv-slide-sstitre');
+      appliquerScale(sstitre);
+    }
+  }
+  // Fullscreen
+  const fsSlide = document.getElementById('cv-fs-slide-'+idx);
+  if(fsSlide){
+    appliquerScale(fsSlide.querySelector(type === 'titre' ? '.cv-slide-titre' : '.cv-slide-corps'));
+    if(type === 'titre'){
+      const sstitre = fsSlide.querySelector('.cv-slide-sstitre');
+      appliquerScale(sstitre);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// Propagation : copier interligne + taille de la slide courante vers TOUTES
+// ═══════════════════════════════════════════════════
+function propagerMiseEnPage(){
+  const idx = cvSlideActive;
+  if(!carrouselCourant || idx === undefined || idx === null) return;
+  const refLH = overridesLH[idx] || { titre: 1.15, corps: 1.20 };
+  const refFS = overridesFS[idx] || { titre: 1.0, corps: 1.0 };
+  const n = carrouselCourant.slides.length;
+
+  // Copier vers chaque slide autre que la référence
+  for(let i = 0; i < n; i++){
+    if(i === idx) continue;
+    overridesLH[i] = {
+      titre: refLH.titre !== undefined ? refLH.titre : 1.15,
+      corps: refLH.corps !== undefined ? refLH.corps : 1.20
+    };
+    overridesFS[i] = {
+      titre: refFS.titre !== undefined ? refFS.titre : 1.0,
+      corps: refFS.corps !== undefined ? refFS.corps : 1.0
+    };
+    // Appliquer au DOM immédiatement pour feedback visuel
+    ['titre','corps'].forEach(type => {
+      const slideEl = document.getElementById('cv-slide-'+i);
+      const fsSlide = document.getElementById('cv-fs-slide-'+i);
+      // Interligne
+      [slideEl, fsSlide].forEach(el => {
+        if(!el) return;
+        const target = el.querySelector(type === 'titre' ? '.cv-slide-titre' : '.cv-slide-corps');
+        if(target) target.style.lineHeight = overridesLH[i][type];
+        // Taille (via reconstitution de la base si jamais vue)
+        if(target){
+          if(!target.dataset.fsBase){
+            const computed = window.getComputedStyle(target).fontSize;
+            target.dataset.fsBase = parseFloat(computed);
+          }
+          const base = parseFloat(target.dataset.fsBase);
+          target.style.fontSize = (base * overridesFS[i][type]) + 'px';
+        }
+        // Sous-titre (suit le titre)
+        if(type === 'titre'){
+          const sst = el.querySelector('.cv-slide-sstitre');
+          if(sst){
+            if(!sst.dataset.fsBase){
+              sst.dataset.fsBase = parseFloat(window.getComputedStyle(sst).fontSize);
+            }
+            sst.style.fontSize = (parseFloat(sst.dataset.fsBase) * overridesFS[i].titre) + 'px';
+          }
+        }
+      });
+    });
+  }
+
+  // Feedback utilisateur
+  toast('✅ Espacements & tailles appliqués aux ' + n + ' slides','ok');
 }
 
 
@@ -4638,12 +4773,21 @@ function ouvrirEditSlide(idx){
   if(el_st) el_st.value = nettoyerSousTitre(s.sousTitre||'');
   // Interligne actuel (stocké dans overridesLH ou valeurs par défaut)
   const lh = overridesLH[idx] || {};
-  const lhTit = lh.titre || 1.25;
-  const lhCor = lh.corps || 1.5;
+  const lhTit = lh.titre || 1.15;
+  const lhCor = lh.corps || 1.20;
   const slTit = document.getElementById('ed-lh-titre');
   const slCor = document.getElementById('ed-lh-corps');
   if(slTit){ slTit.value = lhTit; const v=document.getElementById('ed-lh-titre-val'); if(v) v.textContent = lhTit.toFixed(2); }
   if(slCor){ slCor.value = lhCor; const v=document.getElementById('ed-lh-corps-val'); if(v) v.textContent = lhCor.toFixed(2); }
+
+  // Taille de police actuelle (facteur — 1.0 = défaut)
+  const fs = overridesFS[idx] || {};
+  const fsTit = fs.titre || 1.0;
+  const fsCor = fs.corps || 1.0;
+  const sfTit = document.getElementById('ed-fs-titre');
+  const sfCor = document.getElementById('ed-fs-corps');
+  if(sfTit){ sfTit.value = fsTit; const v=document.getElementById('ed-fs-titre-val'); if(v) v.textContent = Math.round(fsTit*100)+'%'; }
+  if(sfCor){ sfCor.value = fsCor; const v=document.getElementById('ed-fs-corps-val'); if(v) v.textContent = Math.round(fsCor*100)+'%'; }
   const ovSt = overridesStabilo[idx] || {};
   const coul = ovSt.couleur || CFG.couleur1 || '#E8186D';
   if(el_m) el_m.value = ovSt.mot || '';
@@ -4690,14 +4834,20 @@ function appliquerEditSlide(){
   s.sousTitre = sstitre;
   overridesStabilo[idx] = { mot, couleur: coul, actif: edStabiloActif };
   majPreviewStabilo(mot || 'Aperçu stabilo', coul);
-  // Mettre à jour le rendu de la slide
-  const slideEl = document.getElementById('cv-slide-' + idx);
-  if(!slideEl) return;
+
+  // ─── Mettre à jour le rendu de la slide (viewer ET fullscreen s'il est ouvert) ───
+  const cibles = [
+    document.getElementById('cv-slide-' + idx),
+    document.getElementById('cv-fs-slide-' + idx)
+  ].filter(el => el);
+  if(cibles.length === 0) return;
+
   const fond   = fondSlide(s.num, carrouselCourant.slides.length, CFG.couleur1||'#E8186D', CFG.couleur2||'#111');
   const tcoul  = texteSlide(fond);
+
+  // Calcul du titre HTML (stabilo éventuel)
   let titreHtml;
   if(!edStabiloActif){
-    // Stabilo désactivé : titre en texte simple
     titreHtml = escapeHtml(titre);
   } else if(mot && titre.includes(mot)){
     const rgb = hexToRgbPhoto(coul);
@@ -4707,15 +4857,31 @@ function appliquerEditSlide(){
       escapeHtml(mot),
       '<span style="background:'+bg+';border-radius:3px;padding:1px 5px 2px;-webkit-box-decoration-break:clone;color:'+txtC+';">'+escapeHtml(mot)+'</span>'
     );
-  } else if(edStabiloActif) {
-    titreHtml = rendreTitreStabilo(titre, coul, tcoul);
   } else {
-    titreHtml = escapeHtml(titre);
+    titreHtml = rendreTitreStabilo(titre, coul, tcoul);
   }
-  const titreEl = slideEl.querySelector('.cv-slide-titre');
-  if(titreEl) titreEl.innerHTML = titreHtml;
-  const corpsEl = slideEl.querySelector('.cv-slide-corps');
-  if(corpsEl) corpsEl.innerHTML = corps.split('\n').map(function(l){ return escapeHtml(l); }).join('<br>');
+
+  // Application sur viewer ET fullscreen
+  cibles.forEach(slideEl => {
+    const titreEl = slideEl.querySelector('.cv-slide-titre');
+    if(titreEl) titreEl.innerHTML = titreHtml;
+
+    const corpsEl = slideEl.querySelector('.cv-slide-corps');
+    if(corpsEl) corpsEl.innerHTML = corps.split('\n').map(function(l){ return escapeHtml(l); }).join('<br>');
+
+    // Sous-titre : mise à jour LIVE + affichage/masquage selon contenu
+    const sstEl = slideEl.querySelector('.cv-slide-sstitre');
+    if(sstEl){
+      const sstClean = nettoyerSousTitre(sstitre);
+      if(sstClean && sstClean.trim().length > 0){
+        sstEl.innerHTML = escapeHtml(sstClean);
+        sstEl.style.display = '';
+      } else {
+        sstEl.innerHTML = '';
+        sstEl.style.display = 'none';
+      }
+    }
+  });
 }
 
 
@@ -5327,8 +5493,8 @@ async function exporterPNG(){
 
     // Interligne custom si défini
     const lh = overridesLH[i] || {};
-    const lhTitre = lh.titre || 1.25;
-    const lhCorps = lh.corps || 1.5;
+    const lhTitre = lh.titre || 1.15;
+    const lhCorps = lh.corps || 1.20;
 
     // Conteneur externe (format final) avec les MÊMES styles que .cv-fs-slide
     const outer = document.createElement('div');
@@ -5370,10 +5536,15 @@ async function exporterPNG(){
     }
 
     // Inner : MÊME structure que .cv-slide-inner du viewer
-    // Tailles de police mises à l'échelle du format final
-    const titreSizePx = Math.round((isSlide1Photo ? fontSizeTitre(s.titre, 1.15, 44).rem * 16 : (s.type==='hook' ? 36 : 28)) * scaleFactor);
-    const sstitreSizePx = Math.round(0.78 * 16 * scaleFactor);
-    const corpsSizePx = Math.round(0.85 * 16 * scaleFactor);
+    // Tailles de police mises à l'échelle du format final — avec facteur utilisateur (overridesFS)
+    const fsCust = overridesFS[i] || {};
+    const fsTitreMult = fsCust.titre || 1.0;
+    const fsCorpsMult = fsCust.corps || 1.0;
+    const titreBasePx = isSlide1Photo ? fontSizeTitre(s.titre, 1.15, 44).rem * 16 : (s.type==='hook' ? 36 : 28);
+    const titreSizePx = Math.round(titreBasePx * fsTitreMult * scaleFactor);
+    // Sous-titre suit le facteur titre (proportionnel)
+    const sstitreSizePx = Math.round(0.78 * 16 * fsTitreMult * scaleFactor);
+    const corpsSizePx = Math.round(0.85 * 16 * fsCorpsMult * scaleFactor);
 
     const accentExtra = isSlide1Photo ? 'border-bottom:'+Math.round(6*scaleFactor)+'px solid '+soulCoul+';padding-bottom:'+Math.round(12*scaleFactor)+'px;' : '';
 
@@ -5836,7 +6007,7 @@ function setPhotoStyle(style, btn){
 
 // Générer le hook de titre pour le post Photo via l'IA
 async function genHookPhoto(textePost){
-  if(!CFG.api && !CFG.apiGemini) return textePost.split('\n')[0].replace(/^[#*]+\s*/,'').substring(0,80);
+  if(!CFG.api && !CFG.apiGemini) { const lignesUtiles = textePost.split('\n').map(l => nettoyerTitreCandidat(l)).filter(l => l.length > 3); return lignesUtiles[0] || 'Ton titre'; }
   try{
     const prompt = 'Génère UN SEUL hook accrocheur (max 12 mots) pour ce post.'
       +'\nTypes possibles (choisis le plus fort) :'
@@ -5848,7 +6019,7 @@ async function genHookPhoto(textePost){
     const rep = await appelIA(prompt);
     return rep.trim().replace(/^["«]+|["»]+$/g,'').substring(0,80);
   }catch(e){
-    return textePost.split('\n')[0].replace(/^[#*]+\s*/,'').substring(0,80);
+    { const lignesUtiles = textePost.split('\n').map(l => nettoyerTitreCandidat(l)).filter(l => l.length > 3); return lignesUtiles[0] || 'Ton titre'; }
   }
 }
 
@@ -6614,6 +6785,25 @@ function nettoyerJsonNewlines(s){
 }
 
 
+
+
+// ════════════════════════════════════════════════════
+// Nettoyer un candidat de titre pour éviter les meta-labels
+// Utilisé pour genPhotoTitre (visuel photo) et hooks extraits
+// ════════════════════════════════════════════════════
+function nettoyerTitreCandidat(ligne){
+  if(!ligne) return '';
+  let s = ligne.trim();
+  // Retirer marqueurs markdown en début/fin : **, *, #, -
+  s = s.replace(/^[\s#*\-_]+/, '').replace(/[\s#*_]+$/, '').trim();
+  // Si c'est un pur meta-label → vider
+  const metaLabels = /^(texte du post|post|hook|corps|cta|introduction|conclusion|ouverture|accroche|appel à action|légende|caption|titre|sous-titre|partie\s*\d*|étape\s*\d*|slide\s*\d*)\s*:?\s*$/i;
+  if(metaLabels.test(s)) return '';
+  // Retirer préfixe "Titre :", "Hook :", etc. suivi du vrai contenu
+  s = s.replace(/^(titre|hook|accroche|ouverture|post)\s*:\s*/i, '').trim();
+  return s.substring(0, 80);
+}
+
 // Nettoyer les artefacts IA dans le texte généré
 // [ligne vide] → saut de ligne, réflexions IA → supprimées
 function nettoyerTexteIA(texte){
@@ -6627,6 +6817,15 @@ function nettoyerTexteIA(texte){
     // Supprimer lignes commençant par LÉGENDE: ou CONSEIL: si restantes
     .replace(/^LÉGENDE\s*:[^\n]*/gim, '')
     .replace(/^CONSEIL\s*:[^\n]*/gim, '')
+    // ── ANTI-META : supprimer les TITRES DE SECTION meta IA n'importe où dans le texte ──
+    // Patterns : "**Texte du post**", "**Hook**", "**Corps**", "**CTA**", "**Introduction**", "**Conclusion**", 
+    //            "**Partie X**", "**Post :**", etc.
+    // Ces titres sont des artefacts de structuration IA qu'on ne veut JAMAIS afficher
+    .replace(/^\s*\*\*\s*(texte du post|post|hook|corps|cta|introduction|conclusion|ouverture|fermeture|accroche|appel à action|légende|caption|titre|sous-titre|partie\s*\d*|étape\s*\d*|section\s*\d*|slide\s*\d*|paragraphe\s*\d*)\s*[:：]?\s*\*\*\s*$/gim, '')
+    // Variantes sans ** (juste "Texte du post :" seul sur une ligne)
+    .replace(/^\s*(texte du post|post|hook|corps du post|corps|cta|appel à action|légende|caption|titre|slide\s*\d*|partie\s*\d*|étape\s*\d*)\s*:?\s*$/gim, '')
+    // Titres Markdown # ## ### qui sont des meta-labels
+    .replace(/^#{1,3}\s*(texte du post|post|hook|corps|cta|légende|caption)\s*:?\s*$/gim, '')
     // Nettoyer les sauts de ligne multiples (> 2 consécutifs)
     .replace(/\n{3,}/g, '\n\n')
     .trim();
@@ -6919,7 +7118,9 @@ async function genUnPost(){
       const psZone = document.getElementById('gen-photo-style-zone');
       if(format === 'Photo' && psZone){
         psZone.style.display='block';
-        genPhotoTitre = t.split('\n')[0].replace(/^[#*]+\s*/,'').substring(0,80);
+        // Prendre la PREMIÈRE ligne non-meta du post comme candidat de titre
+        const lignesUtiles = t.split('\n').map(l => nettoyerTitreCandidat(l)).filter(l => l.length > 3);
+        genPhotoTitre = lignesUtiles[0] || 'Ton titre';
         genPhotoStyle = 'fond';
         initPhotoZone();
         // Générer un hook optimisé en arrière-plan et rafraîchir le preview

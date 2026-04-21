@@ -5466,10 +5466,13 @@ async function exporterPNG(){
   toast('⏳ Rendu des '+slides.length+' slides…','ok');
   await chargerScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
 
-  // Détection iOS PWA pour share multi-fichier vers galerie
+  // Détection plateforme
   const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) && !window.MSStream;
-  const isPWA = window.navigator.standalone === true;
-  const useShareAPI = isIOS && navigator.share && navigator.canShare;
+  const isAndroid = /Android/.test(navigator.userAgent);
+  const isMobile = isIOS || isAndroid;
+  // Utiliser la Web Share API sur iOS ET Android si dispo
+  // → L'utilisateur peut choisir "Enregistrer dans les images" → galerie système
+  const useShareAPI = isMobile && navigator.share && navigator.canShare;
 
   // ── Rendu offscreen : chaque slide est un clone EXACT du .cv-fs-slide ──
   // Utilisation des MÊMES classes CSS que le viewer/fullscreen pour rendu identique
@@ -5594,23 +5597,66 @@ async function exporterPNG(){
     return;
   }
 
-  // ─── DISTRIBUTION ─────────────────────────────────────────
-  // iOS PWA : partage multi-fichier en 1 seule action système (Enregistrer dans Photos)
+  // ─── DISTRIBUTION (cascade 3 niveaux) ─────────────────────
+  //
+  // NIVEAU 1 — Mobile (iOS/Android) avec Web Share API : partage multi-fichier
+  //   → User choisit "Enregistrer dans les images" dans le menu système
+  //   → Les photos arrivent directement dans la galerie (Photos iOS / Galerie Android)
+  //
+  // NIVEAU 2 — Mobile sans Share API, OU share refusé : téléchargements individuels
+  //   → Chaque slide est téléchargée séparément (1 notification par slide)
+  //   → Les fichiers arrivent dans Téléchargements (limitation PWA Android)
+  //   → Note : contrairement au ZIP, la galerie Android indexe les images du dossier
+  //     Téléchargements → visibles dans l'app Galerie > Téléchargements
+  //
+  // NIVEAU 3 — Desktop : ZIP unique (logique PC)
+  // ═══════════════════════════════════════════════════════════
+
+  // NIVEAU 1 : Web Share API multi-fichier (mobile moderne)
   if(useShareAPI){
     const files = blobs.map(b => new File([b.blob], b.name, { type: 'image/png' }));
     if(navigator.canShare({ files })){
       try {
         await navigator.share({ files, title: 'Carrousel ('+files.length+' slides)' });
-        toast('✅ Partagé vers Photos !', 'ok');
+        toast('✅ Partagé ! Choisis "Enregistrer dans les images" pour l\'ajouter à ta galerie.', 'ok');
         return;
       } catch(err){
-        // Annulé ou erreur → fallback ZIP
-        console.log('Share multi-fichier refusé, fallback ZIP', err);
+        // AbortError = user a annulé intentionnellement → on respecte et on sort
+        if(err && err.name === 'AbortError'){
+          console.log('Partage annulé par l\'utilisateur');
+          return;
+        }
+        // Autre erreur (NotAllowedError, etc.) → fallback niveau 2
+        console.log('Share multi-fichier indisponible, fallback téléchargements individuels', err);
       }
     }
   }
 
-  // Desktop / Android / fallback : un seul ZIP téléchargé
+  // NIVEAU 2 : Téléchargements individuels (mobile sans Share API, ou échec niveau 1)
+  if(isMobile){
+    // Déclencher les téléchargements un par un avec un léger délai pour éviter
+    // que le navigateur bloque les downloads multiples automatiques
+    for(let i = 0; i < blobs.length; i++){
+      const b = blobs[i];
+      const url = URL.createObjectURL(b.blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = b.name;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      // Cleanup + délai entre deux téléchargements
+      await new Promise(resolve => setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        resolve();
+      }, 350));
+    }
+    toast('✅ '+blobs.length+' slides téléchargées (voir dossier Téléchargements ou app Galerie).', 'ok');
+    return;
+  }
+
+  // NIVEAU 3 : Desktop → ZIP unique
   await chargerScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
   const zip = new window.JSZip();
   blobs.forEach(b => zip.file(b.name, b.blob));
@@ -6831,6 +6877,65 @@ function nettoyerTexteIA(texte){
     .trim();
 }
 
+// ═══════════════════════════════════════════════════
+// Récupération de JSON tronqué : extrait toutes les slides complètes
+// présentes AVANT la troncature et reconstruit un JSON valide.
+// ALGORITHME : on traverse le JSON en ignorant tout ce qui est dans les strings
+// (pour ne pas compter les { } qui seraient dans un texte). On collecte les
+// objets {...} à chaque fois qu'on ferme un objet imbriqué de niveau profond
+// (pas au niveau racine — c'est le niveau 1+ à l'intérieur du tableau).
+// ═══════════════════════════════════════════════════
+function recupererJsonTronque(jsonStr){
+  const slides = [];
+  let depth = 0;                 // Profondeur d'imbrication actuelle
+  let start = -1;                // Début de l'objet en cours à depth>=2
+  let inString = false;          // Sommes-nous dans une string JSON ?
+  let escapeNext = false;        // Le prochain caractère est-il échappé (\")?
+
+  for(let i = 0; i < jsonStr.length; i++){
+    const c = jsonStr[i];
+
+    // Gestion des strings : on ignore les { } à l'intérieur
+    if(escapeNext){ escapeNext = false; continue; }
+    if(c === '\\' && inString){ escapeNext = true; continue; }
+    if(c === '"'){ inString = !inString; continue; }
+    if(inString) continue;
+
+    if(c === '{'){
+      depth++;
+      // On enregistre le début d'un objet imbriqué (une slide est au niveau 2)
+      // depth=1 = objet racine, depth=2 = objet dans le tableau slides
+      if(depth === 2) start = i;
+    } else if(c === '}'){
+      // Avant de décrémenter : si on ferme un objet au niveau 2, on extrait
+      if(depth === 2 && start > -1){
+        const obj = jsonStr.substring(start, i+1);
+        if(obj.indexOf('"num"') > -1 || obj.indexOf('"titre"') > -1){
+          try{
+            let cleaned = obj.replace(/\n/g, '\\n').replace(/\r/g, '');
+            cleaned = cleaned.replace(/,\s*([}\]])/g, '$1');
+            const slide = JSON.parse(cleaned);
+            if(slide && typeof slide === 'object'){
+              slides.push(slide);
+            }
+          }catch(e){ /* ignore objet non parsable */ }
+        }
+        start = -1;
+      }
+      depth--;
+    }
+  }
+
+  // Chercher aussi une légende partielle si présente (même tronquée elle vaut mieux que rien)
+  let legende = '';
+  const legMatch = jsonStr.match(/"legende"\s*:\s*"([^"]*)/);
+  if(legMatch){
+    legende = legMatch[1].replace(/\\n/g, '\n');
+  }
+
+  return slides.length > 0 ? { slides, legende } : null;
+}
+
 function splitTexteLegende(texte){
   if(!texte) return {texte:'', legende:''};
 
@@ -6839,7 +6944,6 @@ function splitTexteLegende(texte){
   t = t.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/,'').trim();
 
   // Tentative extraction JSON carrousel — détection souple (LI et IG)
-  // Chercher n'importe quelle accolade ouvrante suivie de "slides" (avec espaces/newlines variés)
   const slidesRegex = /\{[\s\S]*?"slides"\s*:/;
   const slidesMatch = t.match(slidesRegex);
   let jIdx = slidesMatch ? t.indexOf(slidesMatch[0]) : -1;
@@ -6853,21 +6957,20 @@ function splitTexteLegende(texte){
   }
 
   if(jIdx > -1){
-    // Trouver l'accolade fermante correspondante
+    // Chercher l'accolade fermante correspondante
     let depth = 0, endIdx = -1;
     for(let i=jIdx; i<t.length; i++){
       if(t[i]==='{') depth++;
       else if(t[i]==='}') { depth--; if(depth===0){ endIdx=i; break; } }
     }
+
+    // ─── CAS 1 : JSON bien fermé (nominal) ───
     if(endIdx > -1){
       let jsonStr = t.slice(jIdx, endIdx+1);
-      // Nettoyer les newlines dans les strings avant JSON.parse
       jsonStr = nettoyerJsonNewlines(jsonStr);
-      // Tentative 1 : parse direct
       try{
         const data = JSON.parse(jsonStr);
         if(data.slides && Array.isArray(data.slides) && data.slides.length > 0){
-          // Restaurer les \n en vraies newlines dans la légende
           const legende = (data.legende||'').replace(/\\n/g,'\n');
           return { texte:t, legende, isCarrousel:true, slides:data.slides };
         }
@@ -6880,8 +6983,19 @@ function splitTexteLegende(texte){
             const legende = (data.legende||'').replace(/\\n/g,'\n');
             return { texte:t, legende, isCarrousel:true, slides:data.slides };
           }
-        }catch(e2){}
+        }catch(e2){
+          // Tentative 3 : récupération partielle (slides extraites manuellement)
+          const rec = recupererJsonTronque(jsonStr);
+          if(rec) return { texte:t, legende:rec.legende, isCarrousel:true, slides:rec.slides, isPartial:true };
+        }
       }
+    }
+
+    // ─── CAS 2 : JSON TRONQUÉ (pas d'accolade fermante trouvée) ───
+    if(endIdx === -1){
+      const jsonStr = t.slice(jIdx);
+      const rec = recupererJsonTronque(jsonStr);
+      if(rec) return { texte:t, legende:rec.legende, isCarrousel:true, slides:rec.slides, isPartial:true };
     }
   }
 
@@ -7078,6 +7192,10 @@ async function genUnPost(){
       document.getElementById('gen-legende').value = nettoyerTexteIA(l);
       if(format !== 'Stories') legZone.classList.add('on');
       actions.style.display='flex';
+      // Signaler à l'user si le JSON était tronqué (récupération partielle)
+      if(parsed.isPartial){
+        toast('⚠️ Carrousel partiellement récupéré (' + parsed.slides.length + ' slides). Regénère pour un résultat complet.', 'err');
+      }
     } else {
       result.textContent = t;
       result.classList.add('on');

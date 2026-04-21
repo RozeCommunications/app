@@ -6860,18 +6860,19 @@ function nettoyerTexteIA(texte){
     // Lignes de réflexion IA typiques à supprimer
     .replace(/^(ok[,\s]|d'accord[,\s]|bien[,\s]|voici[,\s]|j'ai[,\s]|je\s+vais[,\s]|alors[,\s]|voilà[,\s]|parfait[,\s])[^\n]{0,200}\n?/gim, '')
     .replace(/^(ok j'ai tous les éléments|j'ai bien compris|je vais créer|laisse-moi|je comprends)[^\n]*\n?/gim, '')
-    // Supprimer lignes commençant par LÉGENDE: ou CONSEIL: si restantes
-    .replace(/^LÉGENDE\s*:[^\n]*/gim, '')
-    .replace(/^CONSEIL\s*:[^\n]*/gim, '')
+    // NOTE : LÉGENDE: / SCRIPT: / CONSEIL: sont des MARQUEURS STRUCTURELS
+    // utilisés par renderScriptReel / renderScriptVideoLI — NE PAS les supprimer.
+    // (Ancien filtre supprimé ici pour éviter de casser le parser Réel/Vidéo)
     // ── ANTI-META : supprimer les TITRES DE SECTION meta IA n'importe où dans le texte ──
-    // Patterns : "**Texte du post**", "**Hook**", "**Corps**", "**CTA**", "**Introduction**", "**Conclusion**", 
-    //            "**Partie X**", "**Post :**", etc.
-    // Ces titres sont des artefacts de structuration IA qu'on ne veut JAMAIS afficher
-    .replace(/^\s*\*\*\s*(texte du post|post|hook|corps|cta|introduction|conclusion|ouverture|fermeture|accroche|appel à action|légende|caption|titre|sous-titre|partie\s*\d*|étape\s*\d*|section\s*\d*|slide\s*\d*|paragraphe\s*\d*)\s*[:：]?\s*\*\*\s*$/gim, '')
-    // Variantes sans ** (juste "Texte du post :" seul sur une ligne)
-    .replace(/^\s*(texte du post|post|hook|corps du post|corps|cta|appel à action|légende|caption|titre|slide\s*\d*|partie\s*\d*|étape\s*\d*)\s*:?\s*$/gim, '')
-    // Titres Markdown # ## ### qui sont des meta-labels
-    .replace(/^#{1,3}\s*(texte du post|post|hook|corps|cta|légende|caption)\s*:?\s*$/gim, '')
+    // RÈGLE : ne supprimer QUE les labels purs sans contenu sur la même ligne.
+    // ATTENTION : LÉGENDE: / SCRIPT: / CONSEIL: sont des MARQUEURS STRUCTURELS utilisés
+    // par le parser (renderScriptReel, renderScriptVideoLI, etc.) → JAMAIS les supprimer.
+    // On cible uniquement les labels en gras (**...**) ou markdown (# ## ###) sans contenu.
+    .replace(/^\s*\*\*\s*(texte du post|post|hook|corps|cta|introduction|conclusion|ouverture|fermeture|accroche|appel à action|titre|sous-titre|partie\s*\d*|étape\s*\d*|section\s*\d*|slide\s*\d*|paragraphe\s*\d*)\s*[:：]?\s*\*\*\s*$/gim, '')
+    // Variantes sans ** — EXCLURE LÉGENDE: / SCRIPT: / CONSEIL: qui sont structurels
+    .replace(/^\s*(texte du post|post|hook|corps du post|corps|cta|appel à action|titre|slide\s*\d*|partie\s*\d*|étape\s*\d*)\s*:?\s*$/gim, '')
+    // Titres Markdown # ## ### méta — SANS légende/script/conseil
+    .replace(/^#{1,3}\s*(texte du post|post|hook|corps|cta)\s*:?\s*$/gim, '')
     // Nettoyer les sauts de ligne multiples (> 2 consécutifs)
     .replace(/\n{3,}/g, '\n\n')
     .trim();

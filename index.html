@@ -660,6 +660,25 @@
     .sp-detail-actions .btn{margin-top:0;flex:1;min-width:100px;font-size:.78rem;padding:9px 12px;}
     #toast.err{border-color:var(--rose);color:var(--rose);}
 
+    /* Badge figure narrative */
+    .gen-figure-badge{
+      display:inline-flex; align-items:center; gap:.4rem;
+      font-size:.72rem; color:var(--gris-clair);
+      background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);
+      border-radius:20px; padding:.25rem .7rem; margin-top:.6rem;
+      cursor:default;
+    }
+    .gen-figure-badge .fig-levier{
+      color:rgba(255,255,255,.35); font-size:.65rem; font-style:italic;
+    }
+    .btn-autre-figure{
+      font-size:.75rem; color:var(--gris-clair); background:transparent;
+      border:1px solid rgba(255,255,255,.15); border-radius:20px;
+      padding:.25rem .8rem; cursor:pointer; transition:all .2s;
+      margin-left:.4rem;
+    }
+    .btn-autre-figure:hover{ border-color:var(--rose-clair); color:var(--rose-clair); }
+
     /* États du bouton "Enregistrer ma semaine" */
     .btn-enreg-saved{
       background: linear-gradient(135deg, #1a3d2e, #244532) !important;
@@ -686,6 +705,25 @@
       margin-right: 6px;
     }
     @keyframes btn-spin { to { transform: rotate(360deg); } }
+    .veille-reddit-bloc{
+      background:rgba(255,69,0,.05); /* couleur Reddit orange atténuée */
+      border:1px solid rgba(255,69,0,.2);
+      border-radius:10px; padding:.8rem 1rem;
+      margin-top:1rem;
+    }
+    .veille-reddit-titre{
+      font-size:.75rem; font-weight:700; color:rgba(255,130,80,.9);
+      text-transform:uppercase; letter-spacing:.05em; margin-bottom:.5rem;
+    }
+    .veille-reddit-item{
+      font-size:.78rem; color:var(--blanc-doux); line-height:1.5;
+      padding:.4rem 0; border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .veille-reddit-item:last-child{ border-bottom:none; }
+    .veille-reddit-kw{
+      font-size:.65rem; color:rgba(255,130,80,.7);
+      font-weight:600; margin-right:.4rem;
+    }
     .enreg-note{
       font-size:.72rem;
       color:var(--gris-clair);
@@ -1675,6 +1713,8 @@
 
     <div class="bq"><div class="ql"><div class="qn">8</div><span class="qc">Sujet libre</span></div><p class="qt">Un sujet ou format que tu veux tester cette semaine ?</p><textarea id="q8" oninput="autosaveDraft()" placeholder="Optionnel…" style="min-height:60px;"></textarea><div class="opt">Optionnel</div></div>
     <button class="btn btn-rose btn-full" id="btn-enr-semaine" onclick="enrSemaine()">💾 Enregistrer ma semaine</button>
+    <!-- Zone veille Reddit — affichée après enregistrement si des résultats existent -->
+    <div id="veille-reddit-zone" style="display:none;margin-top:.8rem;"></div>
   </section>
 
   <!-- ══ GÉNÉRER ══ -->
@@ -1773,6 +1813,14 @@
       <div class="creer-loader" id="gen-inline-loader" style="margin-top:.6rem;"><div class="creer-mini-ring"></div><span id="gen-inline-loader-txt">Génération en cours…</span></div>
       <span class="creer-lbl" id="lbl-gen-texte" style="display:none!important;margin-top:.8rem;"></span>
       <div class="creer-result" id="gen-result"></div>
+      <div id="gen-figure-zone" style="display:none;margin-top:.5rem;display:flex;align-items:center;flex-wrap:wrap;gap:.3rem;">
+        <span class="gen-figure-badge" id="gen-figure-badge">
+          <span>✨</span>
+          <span id="gen-figure-nom">–</span>
+          <span class="fig-levier" id="gen-figure-levier"></span>
+        </span>
+        <button class="btn-autre-figure" id="btn-autre-figure" onclick="autreFigure()">↻ Autre figure</button>
+      </div>
 
       <!-- Légende -->
       <div class="creer-legende" id="gen-legende-zone">
@@ -3206,7 +3254,7 @@ function go(id, btn){
   const smFs = document.getElementById('streak-modal-fond'); if(smFs) smFs.classList.remove('on');
   document.querySelector('.scroll').style.overflow = '';
   editId = null; storyModalIndex = null;
-  if(id==='p-semaine'){ restaurerDraft(); etatBoutonSemaine(); }
+  if(id==='p-semaine'){ restaurerDraft(); etatBoutonSemaine(); chargerVeilleReddit(); }
   // Quand on quitte la page Semaine, synchro silencieuse du draft
   else if(document.getElementById('p-semaine') && document.getElementById('p-semaine').classList.contains('on')){
     syncConfigVersSheets();
@@ -3431,6 +3479,102 @@ function fermerStreakModal(){
 //   - loading   : requête en cours (bouton désactivé + spinner)
 // Rafraîchit automatiquement chaque lundi (basé sur la date).
 // ══════════════════════════════════════════
+
+// ══════════════════════════════════════════
+// FIGURES NARRATIVES — Gestion côté PWA
+// ══════════════════════════════════════════
+
+// Pool de figures par pilier (miroir du côté AS pour navigation "Autre figure")
+const FIGURES_PWA = {
+  expertise:  ['E1','E2','E3','E4'],
+  autorite:   ['A1','A2','A3','A4'],
+  visibilite: ['V1','V2','V3','V4'],
+  activite:   ['Ac1','Ac2','Ac3']
+};
+
+const FIGURES_NOMS_PWA = {
+  E1: 'La preuve par le chiffre',   E2: 'Le mythe déconstruit',
+  E3: 'Le tutoriel incarné',         E4: 'Le cas client raconté',
+  A1: "L'opinion tranchée",          A2: 'La coulisse révélatrice',
+  A3: 'La lettre ouverte',           A4: 'Le bilan de secteur',
+  V1: 'La liste actionnable',        V2: 'La question miroir',
+  V3: 'Le before/after narratif',    V4: 'La tendance réagée',
+  Ac1: "La coulisse d'activité",    Ac2: "L'offre incarnée",
+  Ac3: 'La promo narrative'
+};
+
+function afficherBadgeFigure(figure){
+  const zone = document.getElementById('gen-figure-zone');
+  const nomEl = document.getElementById('gen-figure-nom');
+  const levierEl = document.getElementById('gen-figure-levier');
+  if(!zone || !nomEl) return;
+  if(nomEl) nomEl.textContent = figure.nom;
+  if(levierEl) levierEl.textContent = figure.levier ? '— ' + figure.levier : '';
+  zone.style.display = 'flex';
+}
+
+function cacherBadgeFigure(){
+  const zone = document.getElementById('gen-figure-zone');
+  if(zone) zone.style.display = 'none';
+  genFigureCourante = null;
+}
+
+// Bouton "Autre figure" : sélectionne la figure suivante dans le pool du pilier courant
+// et relance la génération avec cette figure forcée
+async function autreFigure(){
+  const pilier = genPilier || 'autorite';
+  const pool = FIGURES_PWA[pilier] || FIGURES_PWA['autorite'];
+  const codeCourant = genFigureCourante ? genFigureCourante.code : null;
+  let idx = codeCourant ? pool.indexOf(codeCourant) : -1;
+  // Passer à la figure suivante (rotation)
+  const prochainIdx = (idx + 1) % pool.length;
+  const prochainCode = pool[prochainIdx];
+  // Forcer cette figure pour la prochaine génération
+  genFigureForce = prochainCode;
+  // Informer l'utilisateur
+  const nomProchain = FIGURES_NOMS_PWA[prochainCode] || prochainCode;
+  toast('🔄 Génération avec : ' + nomProchain, 'ok');
+  // Relancer la génération
+  await genererContenu();
+}
+
+
+// ══════════════════════════════════════════
+// VEILLE REDDIT — affichage dans la page Semaine
+// ══════════════════════════════════════════
+async function chargerVeilleReddit(){
+  const zone = document.getElementById('veille-reddit-zone');
+  if(!zone || !CFG.as) return;
+  try{
+    const r = await fetch(CFG.as, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'lire_veille_auto' })
+    });
+    const j = await r.json();
+    const veille = (j.veille || []).slice(-9); // 9 dernières entrées max
+    if(veille.length === 0){ zone.style.display='none'; return; }
+
+    const html = [
+      '<div class="veille-reddit-bloc">',
+      '  <div class="veille-reddit-titre">🔎 Veille Reddit — cette semaine</div>'
+    ];
+    veille.reverse().forEach(v => {
+      html.push(
+        '<div class="veille-reddit-item">' +
+        '<span class="veille-reddit-kw">[' + escapeHtml(v.requete||'') + ']</span>' +
+        escapeHtml(v.resultat||'') +
+        '</div>'
+      );
+    });
+    html.push('</div>');
+
+    zone.innerHTML = html.join('');
+    zone.style.display = 'block';
+  }catch(e){
+    zone.style.display = 'none';
+  }
+}
+
 function etatBoutonSemaine(){
   const btn = document.getElementById('btn-enr-semaine');
   if(!btn) return;
@@ -3481,10 +3625,13 @@ async function enrSemaine(){
   }
 
   const d={
-    action: 'enregistrer_semaine',
-    semaine: getSemaineCourante(),
-    ia:      CFG.ia || 'claude',
-    cle_ia:  CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+    action:     'enregistrer_semaine',
+    semaine:    getSemaineCourante(),
+    ia:         CFG.ia || 'claude',
+    cle_ia:     CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+    // Profil pour la veille Reddit (génération des requêtes depuis le profil)
+    cat_metier: CFG.catMetier || '',
+    cible:      CFG.cible     || '',
     questions: {
       q1:v('q1'), q2:v('q2'), q3:v('q3'), q4:v('q4'),
       q5:v('q5'), q6:v('q6'), q7:v('q7'), q8:v('q8')
@@ -3508,13 +3655,17 @@ async function enrSemaine(){
       // Choix : on garde la matière en draft pour permettre mise à jour facile
       // viderDraft(); // désactivé pour permettre mise à jour
       syncConfigVersSheets();
+      // Recharger la veille si de nouveaux résultats Reddit
+      if((j.veille_reddit || 0) > 0) setTimeout(chargerVeilleReddit, 1500);
 
       // Toast adapté : "enregistrée" vs "mise à jour"
       const prefixe = estMAJ ? '✏️ Matière mise à jour' : '✅ Semaine enregistrée';
       if (j.memoire_succes === false) {
         toast('⚠️ ' + prefixe + ' — mais mise à jour mémoire IA échouée : ' + (j.memoire_message || 'erreur inconnue'), 'err');
       } else {
-        toast(prefixe + (estMAJ ? ' !' : ' — mémoire IA mise à jour !'),'ok');
+        const nbReddit = j.veille_reddit || 0;
+        const suffixeR = (!estMAJ && nbReddit > 0) ? (' + ' + nbReddit + ' actu(s) Reddit 🔎') : '';
+        toast(prefixe + (estMAJ ? ' !' : ' — mémoire IA mise à jour !' + suffixeR),'ok');
       }
     } else {
       toast('❌ '+(j.erreur||'Erreur'),'err');
@@ -5925,6 +6076,8 @@ function q7EffacerPhoto(){
 // ══════════════════════════════════════════
 let genPhotoStyle = 'brute'; // style actif
 let genPhotoTitre = '';      // titre hook extrait du post
+let genFigureCourante = null; // { code, nom, levier } de la figure utilisée
+let genFigureForce = null;    // code de figure forcée (bouton Autre figure)
 
 // ── Variables état fond photo ──
 let photoFondCouleur  = null;  // null = utiliser CFG.couleur1
@@ -7137,6 +7290,7 @@ async function genUnPost(){
       actu:            actuTexte || '',
       stats_eviter:    buildStatsEviterBloc(),
       anti_redondance: contexteAntiRedondance(),
+      figure_forcee:   genFigureForce || '',    // code de figure forcée (bouton Autre figure)
       // Nouveaux paramètres de personnalisation
       cat_metier:      CFG.catMetier  || '',
       tronc:           CFG.tronc      || '',
@@ -7154,6 +7308,16 @@ async function genUnPost(){
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
     const texte = nettoyerIntroIA(j.texte || '');
+
+    // Stocker et afficher la figure utilisée
+    if(j.figure_code && j.figure_nom){
+      genFigureCourante = { code: j.figure_code, nom: j.figure_nom, levier: j.figure_levier || '' };
+      genFigureForce = null; // Réinitialiser — la prochaine génération sera aussi auto
+      afficherBadgeFigure(genFigureCourante);
+    } else {
+      genFigureCourante = null;
+      cacherBadgeFigure();
+    }
 
     inlineLoader.classList.remove('on');
     if(btnGen) btnGen.disabled=false;
@@ -7379,7 +7543,7 @@ function supprimerGenPanel(){
   const psZone   = document.getElementById('gen-photo-style-zone');
   const cvInline = document.getElementById('gen-cv-inline');
   const csSrc    = document.getElementById('gen-source-chip');
-  if(result){  result.textContent=''; result.classList.remove('on'); result.dataset.scriptTexte=''; result.dataset.isCarrousel='0'; }
+  if(result){  result.textContent=''; result.classList.remove('on'); result.dataset.scriptTexte=''; result.dataset.isCarrousel='0'; } cacherBadgeFigure();
   if(cvInline) cvInline.innerHTML='';
   if(legZone)  legZone.classList.remove('on');
   const leg = document.getElementById('gen-legende');

@@ -339,6 +339,8 @@
       font-size:.82rem;color:var(--blanc-doux);
       line-height:1.6;white-space:pre-wrap;
     }
+    .res-item-lbl-script{ font-size:.68rem; color:var(--rose-clair); font-weight:600; text-transform:uppercase; letter-spacing:.04em; margin-left:.5rem; }
+    .res-item-legende-script{ font-size:.78rem; color:var(--gris-clair); margin-top:.6rem; padding:.5rem .7rem; background:rgba(255,255,255,.04); border-radius:8px; line-height:1.5; }
     .res-item-legende{
       font-size:.75rem;color:var(--gris-clair);
       font-style:italic;
@@ -7620,16 +7622,29 @@ async function genSemaine(){
     // Sauvegarder chaque post
     for(let i=0;i<resultats.length;i++){
       const res = resultats[i];
-      const parsed = splitTexteLegende(nettoyerTexteIA(res.texte||''));
+      const texteNet = nettoyerTexteIA(res.texte||'');
+      const parsed = splitTexteLegende(texteNet);
       const {legende:l} = parsed;
       const t = parsed.isCarrousel ? res.texte : parsed.texte;
+      // Pour les formats script (Réel, Vidéo, Stories) : conserver le texte brut original
+      // car le parser a besoin de SCRIPT: / LÉGENDE: / CONSEIL: intacts
+      const isScript = res.typeContenu === 'Réel' || res.typeContenu === 'Vidéo' || res.typeContenu === 'Stories';
+      const texteStocke = isScript ? (res.texte || '') : t;
+      // Extraire la légende depuis le brut pour les scripts
+      let legendeScript = l;
+      if(isScript){
+        const lm = (res.texte||'').match(/LÉGENDE:\s*([\s\S]*?)(?=CONSEIL:|$)/i);
+        legendeScript = lm ? lm[1].trim() : '';
+      }
       const date = res.date || posts[i]?.date || jours[i % jours.length];
       const id = Date.now()+i;
-      await sauvegarderEtSyncPost({id, reseau:res.reseau, typeContenu:res.typeContenu, texte:t, legende:l,
+      await sauvegarderEtSyncPost({id, reseau:res.reseau, typeContenu:res.typeContenu,
+        texte:texteStocke, legende:legendeScript,
         date, dateProg:date, dateGen:dateAujourdhui(),
         dateAffiche:new Date(date+'T12:00:00').toLocaleDateString('fr-FR'), statut:'À relire'});
-      resultats[i] = {...res, texte:t, legende:l, id,
+      resultats[i] = {...res, texte:texteStocke, legende:legendeScript, id,
         label:`${res.reseau} · ${res.typeContenu}`,
+        isScript,
         isCarrousel: parsed.isCarrousel, slides: parsed.slides};
     }
 
@@ -7688,6 +7703,32 @@ function afficherRes(resultats){
         wrap.appendChild(cvDiv);
         body.appendChild(wrap);
         afficherCarrousel(r.slides, r.legende||'', r.reseau||'Instagram', wrapperId);
+        return;
+      }
+
+      // Formats script (Réel, Vidéo, Stories) → tableau dédié
+      if(r.isScript && r.texte && (r.texte.includes('SCRIPT:') || r.texte.includes('| Temps |') || r.texte.includes('| Slide |') || r.texte.includes('| Durée |'))){
+        const scriptId = 'script-res-'+Date.now()+'-'+idx;
+        const wrap = document.createElement('div');
+        wrap.className = 'res-item';
+        const lbl = r.typeContenu === 'Stories' ? 'Script stories' : r.typeContenu === 'Réel' ? 'Script Réel' : 'Script vidéo';
+        wrap.innerHTML = `<div class="res-item-meta">
+          <span class="res-item-type">${r.typeContenu}</span>
+          ${dateAff ? `<span class="res-item-date">📅 ${dateAff}</span>` : ''}
+          <span class="res-item-lbl-script">${lbl}</span>
+          <button class="btn btn-sm btn-ghost" onclick="ouvrirEdit(${r.id})" style="margin:0;padding:.25rem .6rem;font-size:.72rem;">✏️ Éditer</button>
+        </div>`;
+        const scriptDiv = document.createElement('div');
+        scriptDiv.id = scriptId;
+        wrap.appendChild(scriptDiv);
+        if(r.legende){
+          const legDiv = document.createElement('div');
+          legDiv.className = 'res-item-legende-script';
+          legDiv.innerHTML = '<strong>Légende</strong><br/>' + escapeHtml(r.legende);
+          wrap.appendChild(legDiv);
+        }
+        body.appendChild(wrap);
+        afficherResultatScript(r.texte, r.typeContenu, scriptId);
         return;
       }
 

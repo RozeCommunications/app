@@ -4413,21 +4413,32 @@ let cvSlideActive = 0;
 // RENDU TABLEAU SCRIPT (Réel / Vidéo LI / Stories)
 // ══════════════════════════════════════════
 function parseMarkdownTable(text) {
-  // Extrait un tableau markdown et retourne array de {cols}
+  if (!text) return null;
+  // Ligne qui contient un pipe = ligne de tableau potentielle
   const lines = text.split('\n').filter(l => l.includes('|'));
-  const rows = lines.filter(l => !l.match(/^[\s|:-]+$/));
+  if (lines.length < 2) return null;
+
+  // Ligne séparatrice : que des |, -, :, espaces → à exclure des données
+  const isSeparateur = l => /^[\s|:\-]+$/.test(l);
+
+  // Extraire les lignes de données (pas les séparateurs)
+  const rows = lines.filter(l => !isSeparateur(l));
   if (rows.length < 2) return null;
-  const headers = rows[0].split('|').map(c => c.trim()).filter(c => c);
-  const data = rows.slice(1).map(row => {
-    const cells = row.split('|').map(c => c.trim()).filter((c, i, arr) => {
-      // Garder toutes les cellules sauf première et dernière si vides (pipes extérieurs)
-      return true;
-    });
-    // Retirer cellules vides aux extrémités causées par les pipes
-    const cleaned = row.split('|');
-    const trimmed = cleaned.slice(1, cleaned.length - 1).map(c => c.trim());
-    return trimmed;
-  });
+
+  // Parser une ligne : split sur |, trim, exclure les cellules vides aux extrémités
+  function parseLigne(row) {
+    const parts = row.split('|');
+    // Enlever premier et dernier élément si vides (pipes extérieurs)
+    const start = parts[0].trim() === '' ? 1 : 0;
+    const end   = parts[parts.length-1].trim() === '' ? parts.length-1 : parts.length;
+    return parts.slice(start, end).map(c => c.trim());
+  }
+
+  const headers = parseLigne(rows[0]);
+  // Données : toutes les lignes sauf la première (headers)
+  const data = rows.slice(1).map(parseLigne).filter(r => r.length >= 2);
+
+  if (data.length === 0) return null;
   return { headers, data };
 }
 
@@ -7009,6 +7020,10 @@ function nettoyerTitreCandidat(ligne){
 // [ligne vide] → saut de ligne, réflexions IA → supprimées
 function nettoyerTexteIA(texte){
   if(!texte) return '';
+  // Garde-fou : si c'est un JSON carrousel, ne pas appliquer les filtres texte
+  // (les regex peuvent supprimer des lignes comme "type": "hook" ou altérer le JSON)
+  const trimmed = texte.trim();
+  if(trimmed.includes('"slides"') && (trimmed.startsWith('{') || trimmed.includes('```'))) return trimmed.replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/\s*```$/,'').trim();
   return texte
     // [ligne vide] → saut de ligne réel
     .replace(/\[ligne vide\]/gi, '\n')
@@ -7324,8 +7339,19 @@ async function genUnPost(){
     inlineLoader.classList.remove('on');
     if(btnGen) btnGen.disabled=false;
 
-    const texteNet = nettoyerTexteIA(texte);
-    const parsed = splitTexteLegende(texteNet);
+    // Pour les carrousels : parser le JSON brut AVANT nettoyerTexteIA
+    // (nettoyerTexteIA peut altérer le JSON et empêcher JSON.parse de fonctionner)
+    const parsedBrut = splitTexteLegende(texte);
+    let texteNet, parsed;
+    if(parsedBrut.isCarrousel){
+      // Carrousel détecté sur le texte brut → on garde ce parsing
+      parsed = parsedBrut;
+      texteNet = texte; // JSON brut, pas nettoyé
+    } else {
+      // Pas un carrousel → nettoyage normal puis re-parse
+      texteNet = nettoyerTexteIA(texte);
+      parsed = splitTexteLegende(texteNet);
+    }
     const {legende:l} = parsed;
     const t = parsed.isCarrousel ? texteNet : parsed.texte;
 
@@ -7378,9 +7404,9 @@ async function genUnPost(){
         // gen-result reste caché pour post texte
         result.classList.remove('on');
         result.textContent = t; // stocké en dataset pour sauvegarder
-        // Renommer le label de la zone légende
+        // Label légende : on garde "Légende & hashtags" — pas de "Ton post"
         const lblLeg = document.querySelector('#gen-legende-zone .creer-lbl');
-        if(lblLeg) lblLeg.textContent = 'Ton post';
+        if(lblLeg) lblLeg.textContent = 'Légende & hashtags';
       } else if(format === 'Photo'){
         // Photo : même logique que Post texte — texte + hashtags dans la légende
         const texteFinal = t.trim();
@@ -7390,7 +7416,7 @@ async function genUnPost(){
         result.classList.remove('on');
         result.textContent = t;
         const lblLeg3 = document.querySelector('#gen-legende-zone .creer-lbl');
-        if(lblLeg3) lblLeg3.textContent = 'Ton post';
+        if(lblLeg3) lblLeg3.textContent = 'Légende & hashtags';
       } else {
         document.getElementById('lbl-gen-texte').textContent = 'Texte du post';
         const lblLeg2 = document.querySelector('#gen-legende-zone .creer-lbl');
@@ -7622,10 +7648,18 @@ async function genSemaine(){
     // Sauvegarder chaque post
     for(let i=0;i<resultats.length;i++){
       const res = resultats[i];
-      const texteNet = nettoyerTexteIA(res.texte||'');
-      const parsed = splitTexteLegende(texteNet);
+      // Carrousel : parser le JSON brut avant nettoyerTexteIA (même fix que genUnPost)
+      const parsedBrutSem = splitTexteLegende(res.texte||'');
+      let texteNet, parsed;
+      if(parsedBrutSem.isCarrousel){
+        parsed = parsedBrutSem;
+        texteNet = res.texte||'';
+      } else {
+        texteNet = nettoyerTexteIA(res.texte||'');
+        parsed = splitTexteLegende(texteNet);
+      }
       const {legende:l} = parsed;
-      const t = parsed.isCarrousel ? res.texte : parsed.texte;
+      const t = parsed.isCarrousel ? texteNet : parsed.texte;
       // Pour les formats script (Réel, Vidéo, Stories) : conserver le texte brut original
       // car le parser a besoin de SCRIPT: / LÉGENDE: / CONSEIL: intacts
       const isScript = res.typeContenu === 'Réel' || res.typeContenu === 'Vidéo' || res.typeContenu === 'Stories';

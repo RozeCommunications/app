@@ -2578,8 +2578,8 @@
     </div>
 
     <!-- Texte principal -->
-    <div id="edit-texte-hd" style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Texte du post</div>
-    <textarea class="edit-zone" id="edit-texte" placeholder="Texte du post…"></textarea>
+    <div id="edit-texte-hd" style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Légende & hashtags</div>
+    <textarea class="edit-zone" id="edit-texte" placeholder="Légende & hashtags…"></textarea>
     <!-- Zone carrousel (visible uniquement pour les posts carrousel) -->
     <div id="edit-carrousel-zone" style="display:none;">
       <div style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Aperçu carrousel</div>
@@ -6976,15 +6976,36 @@ function limiterHashtags(texte, max=5){
 }
 
 function nettoyerJsonNewlines(s){
-  // Remplace les vraies newlines à l'intérieur des strings JSON
-  // pour éviter "Invalid control character" lors du JSON.parse
+  // Remplace les vraies newlines + guillemets non-échappés à l'intérieur des strings JSON
+  // Les deux causes principales de JSON.parse invalid sur les réponses IA carrousel
   const result = [];
   let inString = false;
+  let prevEscape = false;
   for(let i=0; i<s.length; i++){
     const c = s[i];
-    if(c === '"' && (i===0 || s[i-1] !== '\\')){
-      inString = !inString;
-      result.push(c);
+    if(prevEscape){ prevEscape = false; result.push(c); continue; }
+    if(c === '\\' && inString){ prevEscape = true; result.push(c); continue; }
+    if(c === '"'){
+      if(!inString){
+        // Ouverture de string
+        inString = true;
+        result.push(c);
+      } else {
+        // Fermeture possible — vérifier si c'est suivi de : , } ] (structure JSON)
+        // ou si c'est un guillemet non échappé au milieu d'une valeur
+        let j = i + 1;
+        while(j < s.length && (s[j] === ' ' || s[j] === '\t')) j++;
+        const next = s[j] || '';
+        if(next === ':' || next === ',' || next === '}' || next === ']' || next === ''){
+          // Guillemet fermant légitime
+          inString = false;
+          result.push(c);
+        } else {
+          // Guillemet non-échappé à l'intérieur d'une valeur → échapper
+          result.push('\\');
+          result.push('"');
+        }
+      }
     } else if(inString && c === '\n'){
       result.push('\\n');
     } else if(inString && c === '\r'){
@@ -7418,7 +7439,7 @@ async function genUnPost(){
         const lblLeg3 = document.querySelector('#gen-legende-zone .creer-lbl');
         if(lblLeg3) lblLeg3.textContent = 'Légende & hashtags';
       } else {
-        document.getElementById('lbl-gen-texte').textContent = 'Texte du post';
+        document.getElementById('lbl-gen-texte').style.display = 'none';
         const lblLeg2 = document.querySelector('#gen-legende-zone .creer-lbl');
         if(lblLeg2) lblLeg2.textContent = 'Légende & hashtags';
         document.getElementById('gen-legende').value = l;
@@ -8866,10 +8887,11 @@ function ouvrirCreer(ds, opts){
       afficherResultatScript(opts.texte, opts.format || 'Réel', cvId);
       document.getElementById('gen-legende').value = opts.legende || '';
     } else {
-      lbl.style.display = 'block'; lbl.textContent = 'Texte du post';
+      lbl.style.display = 'none';
       result.textContent = parsed.texte || opts.texte;
-      result.classList.add('on');
-      document.getElementById('gen-legende').value = parsed.legende || opts.legende || '';
+      document.getElementById('gen-legende').value = (parsed.legende || opts.legende || '') || (parsed.texte || opts.texte || '');
+      const lblLegOC = document.querySelector('#gen-legende-zone .creer-lbl');
+      if(lblLegOC) lblLegOC.textContent = 'Légende & hashtags';
     }
     legZone.classList.add('on');
     actions.style.display = 'flex';

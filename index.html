@@ -8648,10 +8648,29 @@ async function genDepuisSujet(){
     const r = await fetch(CFG.as, {method:'POST', body:JSON.stringify(body)});
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
-    const {texte:t,legende:l} = splitTexteLegende(nettoyerTexteIA(j.texte||''));
-    document.getElementById('edit-texte').value=t;
-    document.getElementById('edit-legende').value=l;
+
+    // Parser le JSON brut AVANT nettoyerTexteIA (même logique que genUnPost)
+    const texteIA = nettoyerIntroIA(j.texte || '');
+    const parsedBrut = splitTexteLegende(texteIA);
+    let legende = parsedBrut.legende || '';
+    let texteAffiche = texteIA;
+    if(!parsedBrut.isCarrousel){
+      const texteNet = nettoyerTexteIA(texteIA);
+      const parsedNet = splitTexteLegende(texteNet);
+      legende = parsedNet.legende || '';
+      texteAffiche = parsedNet.texte || texteNet;
+    }
+
     document.getElementById('sujet-manuel-zone').style.display='none';
+
+    // Afficher via ouvrirCreer — gère le rendu carrousel, script et texte
+    const datePost = it.date || dateAujourdhui();
+    ouvrirCreer(datePost, {
+      reseau:  it.reseau      || 'LinkedIn',
+      format:  it.typeContenu || 'Post texte',
+      texte:   texteIA,
+      legende: legende,
+    });
     toast('✅ Post généré depuis ton sujet !','ok');
   }catch(e){ toast('❌ '+e.message,'err'); }
   loader.classList.remove('on');
@@ -8888,8 +8907,12 @@ function ouvrirCreer(ds, opts){
       document.getElementById('gen-legende').value = opts.legende || '';
     } else {
       lbl.style.display = 'none';
-      result.textContent = parsed.texte || opts.texte;
-      document.getElementById('gen-legende').value = (parsed.legende || opts.legende || '') || (parsed.texte || opts.texte || '');
+      result.classList.remove('on');
+      result.textContent = parsed.texte || opts.texte; // stocké pour sauvegarde
+      // Pour Post texte et Photo : tout le contenu va dans la légende
+      const textePost = parsed.texte || opts.texte || '';
+      const legendePost = parsed.legende || opts.legende || '';
+      document.getElementById('gen-legende').value = legendePost || textePost;
       const lblLegOC = document.querySelector('#gen-legende-zone .creer-lbl');
       if(lblLegOC) lblLegOC.textContent = 'Légende & hashtags';
     }

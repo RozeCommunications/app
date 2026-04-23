@@ -7309,7 +7309,9 @@ async function genUnPost(){
     // Si toggle actu activé OU pilier=expertise → lancer la recherche web
     const cbActu = document.getElementById('cb-actu');
     const pilierActuel = genPilier || 'autorite';
-    if((cbActu && cbActu.checked) || pilierActuel === 'expertise'){
+    // rechercherActu utilise l'API Claude web_search — seulement si clé Claude disponible
+    const peutRechercher = !!CFG.api;
+    if(peutRechercher && ((cbActu && cbActu.checked) || pilierActuel === 'expertise')){
       inlineLoaderTxt.textContent = '🔍 Recherche une donnée de ton secteur…';
       if(!actuTexte) await rechercherActu(); // Ne pas relancer si déjà chargée
     }
@@ -7394,7 +7396,29 @@ async function genUnPost(){
       if(legendeScript) document.getElementById('gen-legende').value = legendeScript[1].trim();
       if(format !== 'Stories') legZone.classList.add('on');
       actions.style.display='flex';
-    } else if(parsed.isCarrousel){
+    } else if(parsed.isCarrousel || format === 'Carrousel'){
+      // Si format=Carrousel mais parsed.isCarrousel=false : tenter une récupération directe
+      let slidesFinales = parsed.slides;
+      let legendeFinale = l;
+      if(!parsed.isCarrousel && format === 'Carrousel'){
+        // Dernière tentative : parser le texte brut original
+        const parsedRetry = splitTexteLegende(texte);
+        if(parsedRetry.isCarrousel){
+          slidesFinales = parsedRetry.slides;
+          legendeFinale = parsedRetry.legende;
+        } else {
+          // Impossible de parser → afficher message d'erreur sans montrer le JSON
+          result.textContent = '';
+          result.classList.remove('on');
+          document.getElementById('lbl-gen-texte').style.display='block';
+          document.getElementById('lbl-gen-texte').textContent='⚠️ Carrousel non rendu — regénère';
+          document.getElementById('gen-legende').value = '';
+          legZone.classList.remove('on');
+          actions.style.display='flex';
+          toast('⚠️ Carrousel non rendu. Regénère.', 'err');
+          return;
+        }
+      }
       document.getElementById('lbl-gen-texte').style.display='block';
       document.getElementById('lbl-gen-texte').textContent='Aperçu carrousel';
       result.textContent='';
@@ -7402,13 +7426,14 @@ async function genUnPost(){
       const cvId='gen-cv-inline';
       let cvDiv=document.getElementById(cvId);
       if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv, result.nextSibling); }
-      afficherCarrousel(parsed.slides, l, reseau, cvId);
-      document.getElementById('gen-legende').value = nettoyerTexteIA(l);
+      cvDiv.innerHTML='';
+      afficherCarrousel(slidesFinales, legendeFinale, reseau, cvId);
+      document.getElementById('gen-legende').value = nettoyerTexteIA(legendeFinale);
       if(format !== 'Stories') legZone.classList.add('on');
       actions.style.display='flex';
       // Signaler à l'user si le JSON était tronqué (récupération partielle)
       if(parsed.isPartial){
-        toast('⚠️ Carrousel partiellement récupéré (' + parsed.slides.length + ' slides). Regénère pour un résultat complet.', 'err');
+        toast('⚠️ Carrousel partiellement récupéré (' + (slidesFinales||[]).length + ' slides). Regénère pour un résultat complet.', 'err');
       }
     } else {
       result.textContent = t;

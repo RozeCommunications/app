@@ -7643,7 +7643,8 @@ async function genSemaine(){
       resultats[i] = {...res, texte:texteStocke, legende:legendeScript, id,
         label:`${res.reseau} · ${res.typeContenu}`,
         isScript,
-        isCarrousel: parsed.isCarrousel, slides: parsed.slides};
+        isCarrousel: isCarrouselFormat,
+        slides: isCarrouselFormat ? (parseCarrouselRobuste(res.texte||'').slides || []) : []};
     }
 
     loader.classList.remove('on');

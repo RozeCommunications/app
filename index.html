@@ -1370,7 +1370,6 @@
     .pc-story-btn-arrow{ font-size:1rem; flex-shrink:0; opacity:.7; }
     .pc-story-btn-publier.publiee .pc-story-btn-arrow{ display:none; }
 
-
     .pc-vdivider{
       width:1px;
       background:var(--gris-border);
@@ -1887,8 +1886,6 @@
             <label class="ed-color-swatch"><input type="color" id="ph-beton-c2" oninput="phApplyFond()"/></label>
           </div>
         </div>
-
-
 
         <!-- Photo -->
         <div id="ph-cfg-photo" style="display:none;">
@@ -2622,7 +2619,6 @@
   </div>
 </div>
 
-
 <!-- ══ MODALE STORY DU JOUR ══ -->
 <div class="overlay" id="ov-story" onclick="fermerStory(event)">
   <div class="sheet">
@@ -2648,7 +2644,6 @@
   </div>
 </div>
 
-
 <!-- ══ MODALE CRÉATION POST (clic sur jour calendrier) ══ -->
 <!-- Réutilise exactement gen-panel — même interface que l'onglet Générer -->
 <div class="overlay" id="ov-creer" style="align-items:stretch;padding:0;">
@@ -2662,7 +2657,6 @@
     <div id="creer-panel-zone" style="flex:1;overflow-y:auto;padding:0 1rem 1.5rem;"></div>
   </div>
 </div>
-
 
 <!-- ══ MODALE FÉLICITATIONS STREAK ══ -->
 <div class="streak-modal-fond" id="streak-modal-fond" onclick="fermerStreakModal()">
@@ -2843,8 +2837,6 @@
         </div>
       </div>
 
-
-
       <!-- Photo de fond — aperçu inline quand importée -->
       <div id="ed-cfg-photo" style="display:none;margin-top:.6rem;">
         <div id="ed-photo-preview-wrap" style="display:none;">
@@ -2993,8 +2985,6 @@ function initUI(){
   majAccueil();
 }
 
-
-
 // ══════════════════════════════════════════
 // STORY DU JOUR — COMPTEUR ACCUEIL
 // ══════════════════════════════════════════
@@ -3094,8 +3084,6 @@ async function sqpGenerer(){
   const matiere  = (await matiereSemaineEnrichie()).matiere;
   const angleBloc = saisie ? '\nANGLE / CONTEXTE SAISI : ' + saisie + '\n' : '';
 
-
-
   const body = {
     action:  'generer_post',
     ia:      CFG.ia || 'claude',
@@ -3127,7 +3115,6 @@ async function sqpGenerer(){
     toast('❌ ' + e.message,'err');
   }
 }
-
 
 function sqpSauvegarder(){
   const texte = document.getElementById('sqp-texte').value.trim();
@@ -3277,9 +3264,6 @@ function go(id, btn){
   if(id==='p-generer') majGenFormats(getGenReseau());
 }
 
-
-
-
 function scrollGuide(){ go('p-compte'); setTimeout(()=>document.getElementById('guide-pwa').scrollIntoView({behavior:'smooth'}),300); }
 
 function toggleDuoTab(id){
@@ -3323,7 +3307,6 @@ const STREAK_MESSAGES = {
         msg:'365 jours à tenir ta promesse éditoriale. Peu de professionnels peuvent en dire autant. Félicitations.' },
 };
 
-
 // ══════════════════════════════════════════
 // Corriger rétroactivement le streak
 // Scanne le localStorage pour compter les semaines consécutives
@@ -3359,24 +3342,6 @@ function recalculerStreakReel(){
   afficherStreak();
 
   return { ancien, nouveau: streak };
-}
-
-function corrigerMonStreak(){
-  const btn = document.getElementById('btn-corriger-streak');
-  if(btn){ btn.disabled = true; btn.textContent = '⏳ Calcul en cours…'; }
-
-  const { ancien, nouveau } = recalculerStreakReel();
-
-  setTimeout(()=>{
-    if(btn){ btn.disabled = false; btn.textContent = '🔧 Corriger mon streak'; }
-    // Synchro vers le Sheets aussi
-    syncConfigVersSheets();
-    if(ancien === nouveau){
-      toast('✅ Ton streak était déjà correct (' + nouveau + ' semaines)', 'ok');
-    } else {
-      toast('✅ Streak corrigé : ' + ancien + ' → ' + nouveau + ' semaines', 'ok');
-    }
-  }, 400);
 }
 
 function calculerEtMajStreak(){
@@ -3539,7 +3504,6 @@ async function autreFigure(){
   // Relancer la génération
   await genererContenu();
 }
-
 
 // ══════════════════════════════════════════
 // VEILLE REDDIT — affichage dans la page Semaine
@@ -3746,7 +3710,6 @@ function majGenFormats(reseau){
   ).join('');
 }
 
-
 // ══════════════════════════════════════════
 // PILIERS DE CONTENU
 // ══════════════════════════════════════════
@@ -3771,68 +3734,11 @@ function setGenPilier(chip, pilier){
 
 }
 
-function setCreerPilier(chip, pilier){
-  document.querySelectorAll('#creer-piliers .pilier-chip').forEach(c=>{
-    c.className = 'pilier-chip';
-  });
-  chip.classList.add(PILIER_CLASSES[pilier]||'on-aut2');
-  creerPilier = pilier;
-  const autreZone = document.getElementById('creer-pilier-autre-zone');
-  if(autreZone) autreZone.classList.toggle('on', pilier==='activite');
-}
-
-
-
-
-
-function buildPilierBloc(pilier, autreTexte){
-  if(!pilier) return '';
-  const instructions = {
-    visibilite: `PILIER : VISIBILITÉ
-Objectif : attirer de nouveaux regards, toucher au-delà de l'audience existante.
-RECHERCHE WEB OBLIGATOIRE : cherche une actualité récente (moins de 3 mois) liée au secteur d'activité du professionnel ou à sa cible de clientèle.
-Thèmes possibles : actualité du secteur + avis personnel, tendance marquante, post avec humour ou autodérision, prise de position sur un sujet qui touche la cible.
-Ton : accessible, engageant, parfois décalé. Doit donner envie d'être partagé ou commenté.`,
-
-    autorite: `PILIER : AUTORITÉ
-Objectif : prouver la valeur par les preuves humaines et créer l'attachement à la personne.
-SOURCES PRIORITAIRES : verbatims clients, success stories, anecdotes fondatrices, valeurs, coulisses du quotidien (depuis Mon Compte et le fichier profil).
-Thèmes possibles : retour client mot pour mot + contexte, expérience vécue + enseignement, résultat client chiffré ou qualitatif, détail d'une méthode ou d'un service, coulisses pro, valeur incarnée par une situation réelle, anecdote personnelle sur le "pourquoi ce métier".
-Ton : authentique, humain, direct. Jamais publicitaire.`,
-
-    expertise: `PILIER : EXPERTISE
-Objectif : enseigner, positionner comme référence, donner de la valeur immédiate et actionnable.
-SOURCES : connaissances métier + données du profil + éventuellement une donnée chiffrée issue d'une recherche web.
-Thèmes possibles : "Les N choses que [cible] devrait savoir sur [sujet]", "La seule façon de [résultat] selon [profession]", "Cette astuce permet de [bénéfice concret]", erreur fréquente + bonne pratique, série pédagogique sur un sujet précis.
-Ton : pédagogique, précis, concret. Chaque post doit apporter quelque chose d'actionnable immédiatement.`,
-
-        activite: `PILIER : ACTIVITÉ
-Objectif : montrer l'activité, mettre en avant une offre ou annoncer une promotion — selon le sujet fourni.
-
-NIVEAU 1 — MONTRER L'ACTIVITÉ (si aucun sujet de vente n'est mentionné) :
-Contenu : coulisses, produits en situation, savoir-faire, journée type, avant/après, process.
-Ton : incarné, humain, pas de vente. Donne envie de travailler avec ce professionnel.
-
-NIVEAU 2 — METTRE EN AVANT UNE OFFRE (si un produit/service spécifique est mentionné) :
-Partir de la situation vécue par le client → décrire le bénéfice → invitation douce.
-Jamais de prix ni de CTA commercial direct.
-
-NIVEAU 3 — PROMOTION DIRECTE (si le sujet mentionne un prix, une date ou "promo") :
-Annoncer l'événement dès le hook. Être direct. CTA vers l'achat, la réservation ou le déplacement en boutique.
-Urgence réelle uniquement — jamais artificielle.`
-  };
-  return `
-
-${instructions[pilier]||instructions.activite}
-`;
-}
-
 // Reset piliers à l'ouverture des panneaux
 function resetGenPiliers(){
   genPilier = null;
   document.querySelectorAll('#gen-piliers .pilier-chip').forEach(c=>c.className='pilier-chip');
 }
-function resetCreerPiliers(){ resetGenPiliers(); }
 
 function setGenReseau(chip, reseau){
   document.querySelectorAll('#gen-reseaux .chip').forEach(c=>c.classList.remove('on'));
@@ -3848,18 +3754,6 @@ function setGenFormat(chip){
   const fmt = chip.dataset.fmt;
   const photoZone = document.getElementById('gen-photo-hint');
   if(photoZone) photoZone.style.display = (fmt==='Photo'||fmt==='Carrousel') ? 'block' : 'none';
-}
-
-// Sélection format — modale Créer
-function setCreerFormat(chip){
-  document.querySelectorAll('#creer-formats .chip').forEach(c=>c.classList.remove('on'));
-  chip.classList.add('on');
-  const fmt = chip.dataset.fmt;
-  const photoZone = document.getElementById('creer-photo-hint');
-  if(photoZone) photoZone.style.display = (fmt==='Photo'||fmt==='Carrousel') ? 'block' : 'none';
-  // Afficher légende selon format
-  const legZone = document.getElementById('creer-legende-zone');
-  if(legZone) legZone.classList.toggle('on', fmt!=='Post texte');
 }
 
 function getGenReseau(){
@@ -4247,7 +4141,6 @@ function contexteAntiRedondance(){
 // GÉNÉRATION
 // ══════════════════════════════════════════
 
-
 // ══════════════════════════════════════════
 // CHARTE VISUELLE — PRÉVISUALISATIONS
 // ══════════════════════════════════════════
@@ -4407,7 +4300,6 @@ const CAR_FORMATS = {
 };
 let overridesSlide = {};  // { slideIndex: style } — surcharge par slide
 let cvSlideActive = 0;
-
 
 // ══════════════════════════════════════════
 // RENDU TABLEAU SCRIPT (Réel / Vidéo LI / Stories)
@@ -4603,8 +4495,6 @@ function majCompteurMotsInterdits() {
   // Pas de compteur affiché — simple validation silencieuse
 }
 
-
-
 // ── Rendu titre avec accent [ACCENT]...[/ACCENT] ──
 // Applique la couleur de charte sur le groupe marqué
 
@@ -4657,7 +4547,6 @@ function nettoyerSousTitre(st){
   if(!st) return '';
   return st.replace(/\[FORMAT:[A-Z]\]/gi, '').trim();
 }
-
 
 function appliquerOverridesLH(){
   if(!carrouselCourant) return;
@@ -4727,7 +4616,6 @@ function afficherCarrousel(slides, legende, reseau, containerId){
               <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'beton')"   title="Matière" style="background:${c2};opacity:.7"></button>
             </div>
             <div class="cv-slide-inner" style="position:relative;z-index:1;font-family:'${pcorp}',sans-serif;color:${i===0&&photoSlide1 ? meilleureTexteCouleur('#000000',c1,c2) : texteSlide(fondSlide(s.num, slides.length, c1, c2))};">
-
 
               <div class="cv-slide-titre" style="font-family:'${ptit}',serif;font-size:${i===0 ? fontSizeTitre(s.titre, .82, 48).rem+'rem' : ''};${(i===0&&photoSlide1) ? 'color:'+meilleureTexteCouleur('#000000',c1,c2)+';border-bottom:3px solid '+couleurSoulignement(meilleureTexteCouleur('#000000',c1,c2),c1,c2)+';padding-bottom:4px;' : ''}">${rendreTitreAccent(s.titre||'', accentSlide(c1, fondSlide(s.num,slides.length,c1,c2)), fondSlide(s.num,slides.length,c1,c2))}</div>
               <div class="cv-slide-sstitre" style="font-size:.65rem;opacity:.7;margin-bottom:4px;${s.sousTitre ? '' : 'display:none;'}">${s.sousTitre ? escapeHtml(nettoyerSousTitre(s.sousTitre)) : ''}</div>
@@ -4909,7 +4797,6 @@ function propagerMiseEnPage(){
   toast('✅ Espacements & tailles appliqués aux ' + n + ' slides','ok');
 }
 
-
 function fermerEditSlide(e){
   if(e && e.type === 'click' && e.target !== document.getElementById('cv-edit-overlay')) return;
   const ov = document.getElementById('cv-edit-overlay');
@@ -5047,8 +4934,6 @@ function appliquerEditSlide(){
     }
   });
 }
-
-
 
 // Rendu unifié titre/corps slide — tient compte de overridesStabilo
 // Utilisé dans le viewer fullscreen ET dans l'export PNG/PDF
@@ -5199,7 +5084,6 @@ function afficherTooltipCanva(reseau){
   document.body.appendChild(tip);
 }
 
-
 // ── Photo de fond carrousel (global) ──
 let cvFondPhotoSrc = null;
 
@@ -5222,7 +5106,6 @@ function setCvFondPhoto(input){
 
 // ── Photo de fond par slide ──
 const cvFondPhotoParSlide = {};
-
 
 function edImporterPhoto(input){
   const file = input.files && input.files[0];
@@ -5282,7 +5165,6 @@ function setCvFondPhotoSlide(input, slideIdx){
   };
   reader.readAsDataURL(file);
 }
-
 
 // ════════════════════════════════════════════════════════
 // ÉDITEUR FOND — Modale carrousel + Zone photo
@@ -5534,7 +5416,6 @@ function resetOverrides(){
   majFondsSlides();
 }
 
-
 // ── Applique un string CSS de fond sur un élément DOM ──
 // Sépare les déclarations correctement sans shadowing de variable
 function appliqueFondCSS(el, cssString){
@@ -5612,7 +5493,6 @@ function majFondsSlides(){
     }
   });
 }
-
 
 // ══════════════════════════════════════════
 // EXPORT PNG (Instagram) — html2canvas
@@ -5837,7 +5717,6 @@ async function exporterPNG(){
   toast('✅ '+blobs.length+' slides téléchargées en ZIP !', 'ok');
 }
 
-
 // ══════════════════════════════════════════
 // EXPORT PDF (LinkedIn) — jsPDF
 // ══════════════════════════════════════════
@@ -5911,7 +5790,6 @@ function chargerPolice(nom){
   document.head.appendChild(link);
 }
 
-
 // ══════════════════════════════════════════
 // MINI-EXPLORATEUR DRIVE
 // ══════════════════════════════════════════
@@ -5959,35 +5837,8 @@ function couleurSoulignement(texteCouleur, c1, c2){
     .reduce((best, c) => ratioContraste(texteCouleur, c) > ratioContraste(texteCouleur, best) ? c : best, opts[0]);
 }
 
-
-
 function fermerDriveExplorer(){
   document.getElementById('drive-explorer').style.display = 'none';
-}
-
-function afficherDossiersDrive(){
-  driveEtatActuel = 'dossiers';
-  driveDossierActif = null;
-  document.getElementById('drive-back-btn').style.display = 'none';
-  document.getElementById('drive-exp-titre').textContent = 'Mes dossiers photos';
-  const zone = document.getElementById('drive-exp-contenu');
-  if(!CFG.drivePhotos){
-    zone.innerHTML = '<div class="drive-vide"><p style="margin-bottom:.6rem;">Lien Drive non configur\u00e9.</p>'
-      + '<button class="btn btn-ghost btn-sm" onclick="go(\'p-compte\')" style="margin-top:0;">Configurer dans Mon Compte</button></div>';
-    return;
-  }
-  let grid = '<div class="drive-dossiers">';
-  DRIVE_DOSSIERS.forEach(function(d){
-    grid += '<div class="drive-dossier" onclick="ouvrirDossier(\'' + d.nom.replace(/'/g, "\\'") + '\',\'' + d.ic + '\')">'
-      + '<span class="fd-ic">' + d.ic + '</span>'
-      + '<span class="fd-nom">' + d.nom + '</span>'
-      + '</div>';
-  });
-  grid += '</div>';
-  grid += '<div style="padding:.5rem .7rem;border-top:1px solid var(--gris-border);">'
-    + '<a href="' + CFG.drivePhotos + '" target="_blank" style="font-size:.72rem;color:var(--rose-clair);text-decoration:none;">'
-    + 'Ouvrir le Drive complet</a></div>';
-  zone.innerHTML = grid;
 }
 
 function ouvrirDossier(nomDossier, ic){
@@ -6290,8 +6141,6 @@ async function q7ImporterPhoto(){
   }
 }
 
-
-
 // ══════════════════════════════════════════
 // LECTURE FICHIER ROZE_MODELES
 // ══════════════════════════════════════════
@@ -6329,7 +6178,6 @@ function effacerSession(){
 
 // Rétro-compatibilité — fonctions utilisées ailleurs
 function getSessionEmail(){ return localStorage.getItem(AUTH_KEY) || ''; }
-function getSessionNom(){   return localStorage.getItem(AUTH_NOM)  || ''; }
 
 function initAuth(){
   const session = lireSession();
@@ -6794,11 +6642,6 @@ function viderDraft(){
   });
 }
 
-
-
-
-
-
 // ══════════════════════════════════════════
 // SÉLECTEUR IA — Claude / Gemini
 // ══════════════════════════════════════════
@@ -6819,8 +6662,6 @@ function setIA(ia, save=true){
   if(cClaude) cClaude.classList.toggle('on', ia==='claude');
   if(cGemini) cGemini.classList.toggle('on', ia==='gemini');
 }
-
-
 
 // Appel unifié — route vers Claude ou Gemini
 async function appelIA(prompt){
@@ -6855,7 +6696,6 @@ async function appelGemini(prompt){
   if(d.error) throw new Error('CLE_INVALIDE_GEMINI');
   return d.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
-
 
 // ══════════════════════════════════════════
 // TRADUCTEUR D'ERREURS API — messages clairs pour l'utilisateur
@@ -7017,9 +6857,6 @@ function nettoyerJsonNewlines(s){
   return result.join('');
 }
 
-
-
-
 // ════════════════════════════════════════════════════
 // Nettoyer un candidat de titre pour éviter les meta-labels
 // Utilisé pour genPhotoTitre (visuel photo) et hooks extraits
@@ -7127,7 +6964,6 @@ function recupererJsonTronque(jsonStr){
 
   return slides.length > 0 ? { slides, legende } : null;
 }
-
 
 // ══════════════════════════════════════════════════════════
 // parseCarrouselRobuste — pipeline unifié pour tous les flux
@@ -7596,7 +7432,6 @@ async function genUnPost(){
   }
 }
 
-
 async function regenLegendePaneau(){
   if(!verifierCleIA()) return;
   const texte  = document.getElementById('gen-result').textContent.trim();
@@ -7820,7 +7655,6 @@ async function genSemaine(){
     toast('❌ Erreur : ' + e.message,'err');
   }
 }
-
 
 function afficherRes(resultats){
   const zone = document.getElementById('zone-res');
@@ -8295,7 +8129,6 @@ async function syncPostVersSheets(post) {
   }
 }
 
-
 // Sync mise à jour complète d'un post édité vers Sheets
 async function syncPostMajVersSheets(post) {
   if(!CFG.as || !navigator.onLine) return;
@@ -8499,7 +8332,6 @@ function getSemaineCourante(){
 window.addEventListener('online', () => {
   setTimeout(viderQueueSync, 1500);
 });
-
 
 function sauvegarderPost(item){
   const b=getBiblio();
@@ -8820,7 +8652,6 @@ function navCal(d){
   rendreCal();
 }
 
-
 function apercuPost(it){
   const texte = it.texte || '';
   const type  = it.typeContenu || '';
@@ -8913,7 +8744,6 @@ function rendreSemaine(){
   }
 }
 
-
 // ══════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════
 // MODALE CRÉATION / DUPLICATION POST DEPUIS CALENDRIER
@@ -8921,7 +8751,6 @@ function rendreSemaine(){
 // ══════════════════════════════════════════════════════════════
 let creerDate   = null;
 let creerModeId = null; // null=création, id=duplication
-
 
 function ouvrirLegal(){
   const ov = document.getElementById('ov-legal');
@@ -9096,12 +8925,6 @@ function resetGenPanel(){
 
 // Stubs de compatibilité (appelés depuis anciens contextes)
 function setCreerReseau(chip, reseau){ if(chip) chip.classList.add('on'); }
-function majCreerFormats(r){ majGenFormats(r); }
-function getCreerReseau(){ return getGenReseau(); }
-function getCreerFormat(){ return getGenFormat(); }
-function genCreerPost(){ genUnPost(); }
-function sauvegarderCreer(){ sauvegarderGenPanel(); }
-function copierCreer(){ copierGenPanel(); }
 
 let _jourDs = null;
 function ouvrirJour(ds, items){
@@ -9349,7 +9172,6 @@ const EXEMPLES_STORY = {
 };
 
 let storyModalIndex = null; // index dans STORIES_CFG
-
 
 // ══════════════════════════════════════════
 // PANNEAU STORIES CALENDRIER

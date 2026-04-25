@@ -3951,29 +3951,29 @@ function construireRequeteRecherche(metier, sujetSaisi, pilier){
 
 async function rechercherActu(){
   // Délègue à l'Apps Script — qui gère le choix du modèle via fallback automatique
-  // Plus aucun modèle ou clé API codé en dur côté PWA
+  // Silencieuse en cas d'échec : ne bloque jamais la génération
   const sujetSaisi = (document.getElementById('gen-sujet')||{}).value?.trim() || '';
   const metier     = CFG.metier || '';
   const pilier     = genPilier || 'autorite';
   const urlSources = lireURLsSources();
   const urlActive  = urlSources.length ? urlSources[prochainIndexSource(urlSources.length)] : '';
 
-  // Déterminer quelle clé utiliser selon l'IA active
-  // (la recherche web nécessite Claude — si l'user est en Gemini, on utilise quand même CFG.api)
   const cleRecherche = CFG.api;
-  if(!cleRecherche){
-    // Pas de clé Claude → recherche impossible, silencieux
-    actuTexte = '';
-    return;
-  }
+  if(!cleRecherche){ actuTexte = ''; return; }
+  if(!CFG.as){ actuTexte = ''; return; }
 
   const wl = document.getElementById('web-loader');
   wl.classList.add('on');
   document.getElementById('actu-result').classList.remove('on');
 
   try{
+    // Timeout de 20 secondes — iOS Safari tue les requêtes trop longues
+    const controller = new AbortController();
+    const timeoutId  = setTimeout(() => controller.abort(), 20000);
+
     const r = await fetch(CFG.as, {
       method: 'POST',
+      signal: controller.signal,
       body: JSON.stringify({
         action:     'recherche_actu',
         cle_ia:     cleRecherche,
@@ -3983,18 +3983,19 @@ async function rechercherActu(){
         url_source: urlActive
       })
     });
+    clearTimeout(timeoutId);
+
     const j = await r.json();
-
-    if(j.erreur) throw new Error(j.erreur);
-
-    actuTexte = j.actu || '';
+    // Pas de throw si erreur — silencieux, on génère sans actu
+    actuTexte = (j && !j.erreur && j.actu) ? j.actu : '';
     if(actuTexte){
       document.getElementById('actu-txt').textContent = actuTexte;
       document.getElementById('actu-result').classList.add('on');
     }
   }catch(e){
+    // Timeout, réseau instable, ou erreur AS → silencieux
+    // La génération se fera sans actu — pas de toast d'erreur
     actuTexte = '';
-    toast('❌ Recherche web échouée','err');
   }
   wl.classList.remove('on');
 }
@@ -7226,7 +7227,9 @@ async function genUnPost(){
     const pilierActuel = genPilier || 'autorite';
     // rechercherActu utilise l'API Claude web_search — seulement si clé Claude disponible
     const peutRechercher = !!CFG.api;
-    if(peutRechercher && ((cbActu && cbActu.checked) || pilierActuel === 'expertise')){
+    // La recherche web est uniquement à la demande (toggle) — jamais automatique
+    // L'auto-déclenchement pour expertise causait des timeouts et erreurs iOS
+    if(peutRechercher && cbActu && cbActu.checked){
       inlineLoaderTxt.textContent = '🔍 Recherche une donnée de ton secteur…';
       if(!actuTexte) await rechercherActu(); // Ne pas relancer si déjà chargée
     }

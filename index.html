@@ -7128,6 +7128,119 @@ function recupererJsonTronque(jsonStr){
   return slides.length > 0 ? { slides, legende } : null;
 }
 
+
+// ══════════════════════════════════════════════════════════
+// parseCarrouselRobuste — pipeline unifié pour tous les flux
+// Prend le texte brut sorti de l'IA, retourne {slides, legende, ok, isPartial}
+// Utilisé par genUnPost, genSemaine, ouvrirCreer, genDepuisSujet
+// ══════════════════════════════════════════════════════════
+function parseCarrouselRobuste(texteIA) {
+  if (!texteIA) return { ok: false };
+
+  // Étape 1 : Nettoyer les backticks markdown sans toucher au JSON
+  let t = texteIA.trim()
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/i, '')
+    .replace(/\s*```$/,'')
+    .trim();
+
+  // Étape 2 : Trouver le début du JSON { "slides": ...
+  const jStart = (() => {
+    const idx = t.indexOf('"slides"');
+    if (idx < 0) return -1;
+    return t.lastIndexOf('{', idx);
+  })();
+
+  if (jStart < 0) return { ok: false };
+
+  // Étape 3 : Trouver la fin par comptage d'accolades
+  let depth = 0, jEnd = -1;
+  for (let i = jStart; i < t.length; i++) {
+    if (t[i] === '{') depth++;
+    else if (t[i] === '}') { depth--; if (depth === 0) { jEnd = i; break; } }
+  }
+
+  const jsonStr = jEnd > -1 ? t.slice(jStart, jEnd + 1) : t.slice(jStart);
+  const isPartial = jEnd < 0;
+
+  // Étape 4 : Nettoyer les guillemets non échappés et les vrais newlines dans les strings
+  function nettoyerPourParse(s) {
+    const r = [];
+    let inStr = false, prevEsc = false;
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (prevEsc) { prevEsc = false; r.push(c); continue; }
+      if (c === '\\' && inStr) { prevEsc = true; r.push(c); continue; }
+      if (c === '"') {
+        if (!inStr) { inStr = true; r.push(c); continue; }
+        // Guillemet fermant ou non échappé ?
+        let j = i + 1;
+        while (j < s.length && (s[j] === ' ' || s[j] === '\t')) j++;
+        const next = s[j] || '';
+        if (':,}]'.includes(next) || next === '') {
+          inStr = false; r.push(c);
+        } else {
+          r.push('\\'); r.push('"'); // échapper
+        }
+        continue;
+      }
+      if (inStr && c === '\n') { r.push('\\n'); continue; }
+      if (inStr && c === '\r') continue;
+      r.push(c);
+    }
+    return r.join('');
+  }
+
+  // Étape 5 : Tenter JSON.parse avec nettoyage progressif
+  let data = null;
+  const tentatives = [
+    jsonStr,
+    nettoyerPourParse(jsonStr),
+    nettoyerPourParse(jsonStr).replace(/,\s*([}\]])/g, '$1'), // trailing commas
+  ];
+
+  for (const essai of tentatives) {
+    try { data = JSON.parse(essai); break; } catch(e) { /* continuer */ }
+  }
+
+  // Étape 6 : Si tout échoue, récupération slide par slide (JSON tronqué)
+  if (!data) {
+    const slidesRecup = [];
+    let depth2 = 0, slideStart = -1;
+    const propre = nettoyerPourParse(jsonStr);
+    for (let i = 0; i < propre.length; i++) {
+      const c = propre[i];
+      if (c === '{') {
+        depth2++;
+        if (depth2 === 2) slideStart = i;
+      } else if (c === '}') {
+        if (depth2 === 2 && slideStart > -1) {
+          try {
+            const obj = JSON.parse(propre.slice(slideStart, i + 1));
+            if (obj.num && obj.titre) slidesRecup.push(obj);
+          } catch(e) {}
+          slideStart = -1;
+        }
+        depth2--;
+      }
+    }
+    if (slidesRecup.length > 0) {
+      return { ok: true, slides: slidesRecup, legende: '', isPartial: true };
+    }
+    return { ok: false };
+  }
+
+  const slides = data.slides || [];
+  if (!slides.length) return { ok: false };
+
+  return {
+    ok: true,
+    slides,
+    legende: data.legende || '',
+    isPartial: isPartial || slides.length < 3
+  };
+}
+
 function splitTexteLegende(texte){
   if(!texte) return {texte:'', legende:''};
 
@@ -7362,80 +7475,51 @@ async function genUnPost(){
     inlineLoader.classList.remove('on');
     if(btnGen) btnGen.disabled=false;
 
-    // Pour les carrousels : parser le JSON brut AVANT nettoyerTexteIA
-    // (nettoyerTexteIA peut altérer le JSON et empêcher JSON.parse de fonctionner)
-    const parsedBrut = splitTexteLegende(texte);
-    let texteNet, parsed;
-    if(parsedBrut.isCarrousel){
-      // Carrousel détecté sur le texte brut → on garde ce parsing
-      parsed = parsedBrut;
-      texteNet = texte; // JSON brut, pas nettoyé
-    } else {
-      // Pas un carrousel → nettoyage normal puis re-parse
-      texteNet = nettoyerTexteIA(texte);
-      parsed = splitTexteLegende(texteNet);
-    }
-    const {legende:l} = parsed;
-    const t = parsed.isCarrousel ? texteNet : parsed.texte;
-
-    // Formats tableau : Réel, Vidéo, Stories → affichage dédié
+    // ── Pipeline unifié d'affichage ──────────────────────────────
     if(format === 'Réel' || format === 'Vidéo' || format === 'Stories'){
+      // Formats tableau → rendu dédié
       document.getElementById('lbl-gen-texte').style.display='block';
       document.getElementById('lbl-gen-texte').textContent = format === 'Stories' ? 'Script stories' : format === 'Réel' ? 'Script Réel' : 'Script vidéo';
-      result.textContent='';
-      result.classList.remove('on');
-      // Stocker le texte brut complet pour la sauvegarde (gen-result est vide pour ces formats)
+      result.textContent=''; result.classList.remove('on');
       result.dataset.scriptTexte = texte;
       const cvId = 'gen-script-inline';
       let cvDiv = document.getElementById(cvId);
       if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv,result.nextSibling); }
-      cvDiv.innerHTML = '';
+      cvDiv.innerHTML='';
       afficherResultatScript(texte, format, cvId);
-      // Légende dans le champ si présente (Réel / Vidéo)
       const legendeScript = texte.match(/LÉGENDE:\s*([\s\S]*?)(?=CONSEIL:|$)/i);
       if(legendeScript) document.getElementById('gen-legende').value = legendeScript[1].trim();
       if(format !== 'Stories') legZone.classList.add('on');
       actions.style.display='flex';
-    } else if(parsed.isCarrousel || format === 'Carrousel'){
-      // Si format=Carrousel mais parsed.isCarrousel=false : tenter une récupération directe
-      let slidesFinales = parsed.slides;
-      let legendeFinale = l;
-      if(!parsed.isCarrousel && format === 'Carrousel'){
-        // Dernière tentative : parser le texte brut original
-        const parsedRetry = splitTexteLegende(texte);
-        if(parsedRetry.isCarrousel){
-          slidesFinales = parsedRetry.slides;
-          legendeFinale = parsedRetry.legende;
-        } else {
-          // Impossible de parser → afficher message d'erreur sans montrer le JSON
-          result.textContent = '';
-          result.classList.remove('on');
-          document.getElementById('lbl-gen-texte').style.display='block';
-          document.getElementById('lbl-gen-texte').textContent='⚠️ Carrousel non rendu — regénère';
-          document.getElementById('gen-legende').value = '';
-          legZone.classList.remove('on');
-          actions.style.display='flex';
-          toast('⚠️ Carrousel non rendu. Regénère.', 'err');
-          return;
-        }
-      }
-      document.getElementById('lbl-gen-texte').style.display='block';
-      document.getElementById('lbl-gen-texte').textContent='Aperçu carrousel';
-      result.textContent='';
-      result.classList.remove('on');
-      const cvId='gen-cv-inline';
-      let cvDiv=document.getElementById(cvId);
-      if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv, result.nextSibling); }
-      cvDiv.innerHTML='';
-      afficherCarrousel(slidesFinales, legendeFinale, reseau, cvId);
-      document.getElementById('gen-legende').value = nettoyerTexteIA(legendeFinale);
-      if(format !== 'Stories') legZone.classList.add('on');
-      actions.style.display='flex';
-      // Signaler à l'user si le JSON était tronqué (récupération partielle)
-      if(parsed.isPartial){
-        toast('⚠️ Carrousel partiellement récupéré (' + (slidesFinales||[]).length + ' slides). Regénère pour un résultat complet.', 'err');
+    } else if(format === 'Carrousel'){
+      // Carrousel → parseCarrouselRobuste (pipeline unique, robuste)
+      const cv = parseCarrouselRobuste(texte);
+      if(cv.ok){
+        document.getElementById('lbl-gen-texte').style.display='block';
+        document.getElementById('lbl-gen-texte').textContent='Aperçu carrousel';
+        result.textContent=''; result.classList.remove('on');
+        const cvId='gen-cv-inline';
+        let cvDiv=document.getElementById(cvId);
+        if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv, result.nextSibling); }
+        cvDiv.innerHTML='';
+        afficherCarrousel(cv.slides, cv.legende, reseau, cvId);
+        document.getElementById('gen-legende').value = nettoyerTexteIA(cv.legende);
+        legZone.classList.add('on');
+        actions.style.display='flex';
+        if(cv.isPartial) toast('⚠️ Carrousel partiel (' + cv.slides.length + ' slides) — regénère pour compléter.','err');
+      } else {
+        document.getElementById('lbl-gen-texte').style.display='block';
+        document.getElementById('lbl-gen-texte').textContent='⚠️ Carrousel non rendu';
+        result.textContent=''; result.classList.remove('on');
+        actions.style.display='flex';
+        toast('⚠️ Carrousel non rendu — regénère.','err');
       }
     } else {
+      // Post texte, Photo, Vidéo LI texte…
+      const texteNet = nettoyerTexteIA(texte);
+      const parsed = splitTexteLegende(texteNet);
+      const t = parsed.texte || texteNet;
+      const l = parsed.legende || '';
       result.textContent = t;
       result.classList.add('on');
       document.getElementById('lbl-gen-texte').style.display='block';
@@ -7694,28 +7778,27 @@ async function genSemaine(){
     // Sauvegarder chaque post
     for(let i=0;i<resultats.length;i++){
       const res = resultats[i];
-      // Carrousel : parser le JSON brut avant nettoyerTexteIA (même fix que genUnPost)
-      const parsedBrutSem = splitTexteLegende(res.texte||'');
-      let texteNet, parsed;
-      if(parsedBrutSem.isCarrousel){
-        parsed = parsedBrutSem;
-        texteNet = res.texte||'';
-      } else {
-        texteNet = nettoyerTexteIA(res.texte||'');
-        parsed = splitTexteLegende(texteNet);
-      }
-      const {legende:l} = parsed;
-      const t = parsed.isCarrousel ? texteNet : parsed.texte;
-      // Pour les formats script (Réel, Vidéo, Stories) : conserver le texte brut original
-      // car le parser a besoin de SCRIPT: / LÉGENDE: / CONSEIL: intacts
+      // Pipeline unifié — même logique que genUnPost
       const isScript = res.typeContenu === 'Réel' || res.typeContenu === 'Vidéo' || res.typeContenu === 'Stories';
-      const texteStocke = isScript ? (res.texte || '') : t;
-      // Extraire la légende depuis le brut pour les scripts
-      let legendeScript = l;
-      if(isScript){
+      const isCarrouselFormat = res.typeContenu === 'Carrousel';
+      let texteStocke = res.texte || '';
+      let legendeScript = '';
+
+      if(isCarrouselFormat){
+        const cvSem = parseCarrouselRobuste(res.texte||'');
+        texteStocke = res.texte || ''; // garder JSON brut pour sauvegarde
+        legendeScript = cvSem.ok ? nettoyerTexteIA(cvSem.legende||'') : '';
+      } else if(isScript){
         const lm = (res.texte||'').match(/LÉGENDE:\s*([\s\S]*?)(?=CONSEIL:|$)/i);
         legendeScript = lm ? lm[1].trim() : '';
+      } else {
+        const texteNet = nettoyerTexteIA(res.texte||'');
+        const parsed = splitTexteLegende(texteNet);
+        texteStocke = parsed.texte || texteNet;
+        legendeScript = parsed.legende || '';
       }
+      const l = legendeScript;
+      const t = texteStocke;
       const date = res.date || posts[i]?.date || jours[i % jours.length];
       const id = Date.now()+i;
       await sauvegarderEtSyncPost({id, reseau:res.reseau, typeContenu:res.typeContenu,
@@ -8674,16 +8757,18 @@ async function genDepuisSujet(){
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
 
-    // Parser le JSON brut AVANT nettoyerTexteIA (même logique que genUnPost)
+    // Pipeline unifié — parseCarrouselRobuste pour les carrousels
     const texteIA = nettoyerIntroIA(j.texte || '');
-    const parsedBrut = splitTexteLegende(texteIA);
-    let legende = parsedBrut.legende || '';
-    let texteAffiche = texteIA;
-    if(!parsedBrut.isCarrousel){
-      const texteNet = nettoyerTexteIA(texteIA);
-      const parsedNet = splitTexteLegende(texteNet);
+    let legende = '';
+    if(it.typeContenu === 'Carrousel'){
+      const cv = parseCarrouselRobuste(texteIA);
+      legende = cv.ok ? nettoyerTexteIA(cv.legende||'') : '';
+    } else if(it.typeContenu==='Réel'||it.typeContenu==='Vidéo'||it.typeContenu==='Stories'){
+      const lm = texteIA.match(/LÉGENDE:\s*([\s\S]*?)(?=CONSEIL:|$)/i);
+      legende = lm ? lm[1].trim() : '';
+    } else {
+      const parsedNet = splitTexteLegende(nettoyerTexteIA(texteIA));
       legende = parsedNet.legende || '';
-      texteAffiche = parsedNet.texte || texteNet;
     }
 
     document.getElementById('sujet-manuel-zone').style.display='none';
@@ -8911,38 +8996,51 @@ function ouvrirCreer(ds, opts){
     result.dataset.date        = ds;
     result.dataset.isCarrousel = '0';
 
-    const parsed = splitTexteLegende(opts.texte);
-    if(parsed.isCarrousel){
-      lbl.style.display = 'block'; lbl.textContent = 'Aperçu carrousel';
-      result.dataset.isCarrousel = '1';
-      result.dataset.slides      = JSON.stringify(parsed.slides);
-      const cvId = 'gen-cv-inline';
-      let cvDiv = document.getElementById(cvId);
-      if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv, result.nextSibling); }
-      afficherCarrousel(parsed.slides, parsed.legende, reseau, cvId);
-      document.getElementById('gen-legende').value = parsed.legende || opts.legende || '';
-    } else if(opts.texte.includes('SCRIPT:') || opts.texte.includes('| Temps |') || opts.texte.includes('| Durée |')){
-      lbl.style.display = 'block'; lbl.textContent = opts.format === 'Stories' ? 'Script stories' : opts.format === 'Réel' ? 'Script Réel' : 'Script vidéo';
+    // Pipeline identique à genUnPost — carrousel, script, texte
+    const fmt = opts.format || result.dataset.format || 'Post texte';
+    const isFmtScript = fmt === 'Réel' || fmt === 'Vidéo' || fmt === 'Stories';
+    const isFmtCarrousel = fmt === 'Carrousel';
+
+    if(isFmtCarrousel){
+      const cv = parseCarrouselRobuste(opts.texte || '');
+      if(cv.ok){
+        lbl.style.display='block'; lbl.textContent='Aperçu carrousel';
+        result.textContent=''; result.classList.remove('on');
+        result.dataset.isCarrousel='1';
+        const cvId='gen-cv-inline';
+        let cvDiv=document.getElementById(cvId);
+        if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv,result.nextSibling); }
+        cvDiv.innerHTML='';
+        afficherCarrousel(cv.slides, cv.legende, reseau, cvId);
+        document.getElementById('gen-legende').value = nettoyerTexteIA(cv.legende || opts.legende || '');
+        if(cv.isPartial) toast('⚠️ Carrousel partiel — regénère pour compléter.','err');
+      } else {
+        lbl.style.display='block'; lbl.textContent='⚠️ Carrousel non rendu';
+        result.textContent=''; result.classList.remove('on');
+        toast('⚠️ Carrousel non rendu — regénère.','err');
+      }
+    } else if(isFmtScript || opts.texte && (opts.texte.includes('SCRIPT:') || opts.texte.includes('| Temps |') || opts.texte.includes('| Durée |'))){
+      lbl.style.display='block';
+      lbl.textContent = fmt==='Stories' ? 'Script stories' : fmt==='Réel' ? 'Script Réel' : 'Script vidéo';
+      result.textContent=''; result.classList.remove('on');
       result.dataset.scriptTexte = opts.texte;
-      const cvId = 'gen-script-inline';
-      let cvDiv = document.getElementById(cvId);
-      if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv, result.nextSibling); }
-      cvDiv.innerHTML = '';
-      afficherResultatScript(opts.texte, opts.format || 'Réel', cvId);
-      document.getElementById('gen-legende').value = opts.legende || '';
+      const cvId='gen-script-inline';
+      let cvDiv=document.getElementById(cvId);
+      if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv,result.nextSibling); }
+      cvDiv.innerHTML='';
+      afficherResultatScript(opts.texte, fmt, cvId);
+      const legScript = (opts.texte||'').match(/LÉGENDE:\s*([\s\S]*?)(?=CONSEIL:|$)/i);
+      document.getElementById('gen-legende').value = legScript ? legScript[1].trim() : (opts.legende||'');
     } else {
-      lbl.style.display = 'none';
+      lbl.style.display='none';
       result.classList.remove('on');
-      result.textContent = parsed.texte || opts.texte; // stocké pour sauvegarde
-      // Pour Post texte et Photo : tout le contenu va dans la légende
-      const textePost = parsed.texte || opts.texte || '';
-      const legendePost = parsed.legende || opts.legende || '';
+      result.textContent = opts.texte || '';
+      const textePost = nettoyerTexteIA(opts.texte||'');
+      const legendePost = opts.legende || '';
       document.getElementById('gen-legende').value = legendePost || textePost;
-      const lblLegOC = document.querySelector('#gen-legende-zone .creer-lbl');
-      if(lblLegOC) lblLegOC.textContent = 'Légende & hashtags';
     }
     legZone.classList.add('on');
-    actions.style.display = 'flex';
+    actions.style.display='flex';
   }
 
   document.getElementById('ov-creer').classList.add('on');

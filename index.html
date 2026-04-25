@@ -3950,82 +3950,48 @@ function construireRequeteRecherche(metier, sujetSaisi, pilier){
 }
 
 async function rechercherActu(){
+  // Délègue à l'Apps Script — qui gère le choix du modèle via fallback automatique
+  // Plus aucun modèle ou clé API codé en dur côté PWA
   const sujetSaisi = (document.getElementById('gen-sujet')||{}).value?.trim() || '';
   const metier     = CFG.metier || '';
   const pilier     = genPilier || 'autorite';
   const urlSources = lireURLsSources();
+  const urlActive  = urlSources.length ? urlSources[prochainIndexSource(urlSources.length)] : '';
 
-  // Rotation séquentielle par index — 1 source par génération
-  const urlActive = urlSources.length
-    ? urlSources[prochainIndexSource(urlSources.length)]
-    : null;
+  // Déterminer quelle clé utiliser selon l'IA active
+  // (la recherche web nécessite Claude — si l'user est en Gemini, on utilise quand même CFG.api)
+  const cleRecherche = CFG.api;
+  if(!cleRecherche){
+    // Pas de clé Claude → recherche impossible, silencieux
+    actuTexte = '';
+    return;
+  }
 
   const wl = document.getElementById('web-loader');
   wl.classList.add('on');
   document.getElementById('actu-result').classList.remove('on');
 
   try{
-    let actuBrut = '';
+    const r = await fetch(CFG.as, {
+      method: 'POST',
+      body: JSON.stringify({
+        action:     'recherche_actu',
+        cle_ia:     cleRecherche,
+        metier:     metier,
+        pilier:     pilier,
+        sujet:      sujetSaisi,
+        url_source: urlActive
+      })
+    });
+    const j = await r.json();
 
-    // Étape 1 : lire la source de veille active si elle existe
-    if(urlActive){
-      try{
-        const rf = await fetch('https://api.anthropic.com/v1/messages',{
-          method:'POST',
-          headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-          body: JSON.stringify({
-            model:'claude-sonnet-4-20250514',
-            max_tokens:500,
-            tools:[{type:'web_search_20250305',name:'web_search'}],
-            messages:[{role:'user',content:`Consulte cette page et extrais les informations les plus récentes et pertinentes.
-URL : ${urlActive}
-Professionnel : métier "${metier}"${sujetSaisi ? ', sujet du post : "'+sujetSaisi+'"' : ''}.
+    if(j.erreur) throw new Error(j.erreur);
 
-RÈGLES D'EXTRACTION :
-- Extrais 1 à 3 faits concrets issus de cette page : chiffres, statistiques, nouvelles fonctionnalités, tendances datées
-- Chaque donnée doit être précise et sourcée (nom du site, date si disponible)
-- Si la page ne contient rien d'exploitable pour ce métier, réponds uniquement : "AUCUNE_DONNÉE"
-- Pas d'introduction — commence directement par les données
-- Format : fait concret + source entre parenthèses`}]
-          })
-        });
-        const d = await rf.json();
-        const rawResult = (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
-        actuBrut = rawResult.includes('AUCUNE_DONNÉE') ? '' : rawResult;
-      }catch(e){}
-    }
-
-    // Étape 2 : recherche web intelligente si pas de source OU source sans résultat
-    if(!actuBrut || actuBrut.length < 30){
-      const query = construireRequeteRecherche(metier, sujetSaisi, pilier);
-
-      const rs = await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body: JSON.stringify({
-          model:'claude-sonnet-4-20250514',
-          max_tokens:350,
-          tools:[{type:'web_search_20250305',name:'web_search'}],
-          messages:[{role:'user',content:`Recherche sur le web : "${query}"
-
-RÈGLES :
-- Extrais 1 à 3 faits concrets, récents, chiffrés ou factuels (chiffres, stats, nouveautés, tendances)
-- Chaque donnée doit être spécifique et sourcée — INTERDIT les généralités vagues
-- Prends la plus récente et la plus surprenante si plusieurs résultats
-- Format : fait exact + source entre parenthèses (nom média, date)
-- Pas d'introduction ni de conclusion — uniquement les données`}]
-        })
-      });
-      const ds = await rs.json();
-      actuBrut = (ds.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').trim();
-    }
-
-    actuTexte = actuBrut || '';
+    actuTexte = j.actu || '';
     if(actuTexte){
       document.getElementById('actu-txt').textContent = actuTexte;
       document.getElementById('actu-result').classList.add('on');
     }
-
   }catch(e){
     actuTexte = '';
     toast('❌ Recherche web échouée','err');
@@ -6753,7 +6719,7 @@ async function appelClaude(prompt){
     r = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:2000,messages:[{role:'user',content:prompt}]})
     });
   } catch(e) {
     throw new Error('RESEAU');
@@ -7410,8 +7376,15 @@ async function genUnPost(){
     result.dataset.date   = datePub;
     result.dataset.reseau = reseau;
     result.dataset.format = format;
-    result.dataset.isCarrousel = parsed.isCarrousel ? '1' : '0';
-    if(parsed.isCarrousel) result.dataset.slides = JSON.stringify(parsed.slides);
+    // parsed n'est défini que dans le bloc else (Post texte/Photo)
+    // Pour Carrousel et formats script, utiliser les variables de leur propre bloc
+    if(format === 'Carrousel'){
+      const cvDataset = parseCarrouselRobuste(texte);
+      result.dataset.isCarrousel = cvDataset.ok ? '1' : '0';
+      if(cvDataset.ok) result.dataset.slides = JSON.stringify(cvDataset.slides);
+    } else {
+      result.dataset.isCarrousel = '0';
+    }
 
     if(btnGen){ btnGen.disabled=false; btnGen.innerHTML='✨ Générer'; }
     afficherChipSource(); // Afficher chip source si actu disponible

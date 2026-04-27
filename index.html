@@ -443,13 +443,7 @@
       display:inline-block;
       flex-shrink:0;
     }
-    /* ── Mini sélecteur par slide ── */
-    .cv-slide-style-picker{
-      position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
-      display:flex;gap:4px;background:rgba(0,0,0,.45);
-      border-radius:999px;padding:4px 8px;
-      opacity:0;transition:opacity .2s;pointer-events:none;
-    opacity:0;transition:opacity .15s;}
+
     .cv-slide:hover .cv-slide-style-picker,.cv-slide.active .cv-slide-style-picker{opacity:1;}
     .cv-slide:hover .cv-slide-style-picker,
     .cv-slide.active .cv-slide-style-picker{
@@ -834,9 +828,130 @@
     .cv-slide{flex-shrink:0;width:180px;height:240px;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;scroll-snap-align:start;transition:transform .15s;border:2px solid transparent;}
     /* Panneau d'édition d'une slide */
     /* ── Modales d'édition (carrousel + photo) ── */
-    .cv-edit-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);align-items:flex-end;}
+    /* ── NOUVELLE UX ÉDITION CARROUSEL ── */
+    .cv-edit-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);align-items:flex-end;}
     .cv-edit-overlay.on{display:flex;}
     .cv-edit-panel{background:var(--anthracite);border:1px solid var(--gris-border);border-radius:20px 20px 0 0;width:100%;max-height:86vh;overflow-y:auto;padding:1rem 1.2rem 2.5rem;animation:su .28s ease;}
+
+    /* Toolbar contextuelle sous les slides */
+    .cv-toolbar-ctx{
+      display:flex;gap:8px;padding:0 1rem 10px;
+      opacity:0;transform:translateY(10px);pointer-events:none;
+      transition:opacity .25s,transform .3s cubic-bezier(.34,1.56,.64,1);
+    }
+    .cv-toolbar-ctx.visible{opacity:1;transform:translateY(0);pointer-events:all;}
+
+    /* Bloc fonds dans toolbar */
+    .cv-tool-fonds-blk{
+      flex:1;background:rgba(255,255,255,.04);
+      border:1px solid var(--gris-border);border-radius:14px;
+      padding:9px 12px;
+    }
+    .cv-tool-fonds-lbl{font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris-clair);margin-bottom:7px;display:block;}
+    .cv-tool-fonds-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+    .cv-fpill{
+      width:26px;height:26px;border-radius:50%;cursor:pointer;
+      border:2px solid transparent;transition:all .18s;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;font-size:.65rem;
+    }
+    .cv-fpill.on{border-color:#fff;transform:scale(1.18);}
+    .cv-fpill:active{transform:scale(.92);}
+
+    /* Bouton texte */
+    .cv-tool-texte-btn{
+      width:52px;flex-shrink:0;background:var(--rose);border-radius:14px;
+      border:none;cursor:pointer;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;gap:3px;padding:8px 0;
+      transition:filter .15s,transform .15s;
+    }
+    .cv-tool-texte-btn:active{filter:brightness(1.15);transform:scale(.96);}
+    .cv-tool-texte-btn span:first-child{font-size:1.1rem;}
+    .cv-tool-texte-btn span:last-child{font-size:.58rem;font-weight:700;color:#fff;letter-spacing:.04em;}
+
+    /* Bouton plus */
+    .cv-tool-plus-btn{
+      width:42px;flex-shrink:0;background:rgba(255,255,255,.04);
+      border:1px solid var(--gris-border);border-radius:14px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;
+    }
+    .cv-tool-plus-btn span:first-child{font-size:.85rem;color:var(--gris-clair);}
+    .cv-tool-plus-btn span:last-child{font-size:.52rem;color:var(--gris-clair);font-weight:600;letter-spacing:.04em;}
+
+    /* Drawer texte (monte depuis le bas) */
+    .cv-txt-drawer{
+      position:fixed;bottom:0;left:0;right:0;
+      background:var(--anthracite);border-radius:20px 20px 0 0;
+      border-top:1px solid var(--gris-border);
+      padding:0 1.2rem 2rem;z-index:600;
+      transform:translateY(100%);
+      transition:transform .35s cubic-bezier(.32,.72,0,1);
+      box-shadow:0 -16px 48px rgba(0,0,0,.6);
+    }
+    .cv-txt-drawer.open{transform:translateY(0);}
+    .cv-drawer-handle{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.1);margin:14px auto 16px;}
+    .cv-drawer-slide-lbl{
+      font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--rose);margin-bottom:14px;display:flex;align-items:center;gap:6px;
+    }
+    .cv-drawer-slide-lbl::before{content:'';width:3px;height:12px;background:var(--rose);border-radius:2px;}
+
+    /* Tabs dans le drawer */
+    .cv-drawer-tabs{display:flex;gap:4px;background:rgba(255,255,255,.04);border-radius:10px;padding:3px;margin-bottom:14px;}
+    .cv-drawer-tab{
+      flex:1;padding:7px 0;text-align:center;font-size:.72rem;font-weight:600;
+      letter-spacing:.03em;border-radius:8px;cursor:pointer;
+      color:var(--gris-clair);transition:all .18s;border:none;background:none;
+    }
+    .cv-drawer-tab.on{background:var(--rose);color:#fff;}
+
+    /* Drawer avancé */
+    .cv-adv-drawer{
+      position:fixed;bottom:0;left:0;right:0;
+      background:var(--anthracite);border-radius:20px 20px 0 0;
+      border-top:1px solid var(--gris-border);
+      padding:0 1.2rem 2.5rem;z-index:600;
+      transform:translateY(100%);
+      transition:transform .35s cubic-bezier(.32,.72,0,1);
+      box-shadow:0 -16px 48px rgba(0,0,0,.7);
+      max-height:80vh;overflow-y:auto;
+    }
+    .cv-adv-drawer.open{transform:translateY(0);}
+    .adv-sec{margin-bottom:18px;}
+    .adv-sec-lbl{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris-clair);margin-bottom:9px;display:block;}
+    .adv-slider-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+    .adv-slider-nm{font-size:.72rem;color:var(--blanc-doux);width:36px;flex-shrink:0;}
+    .adv-slider{flex:1;accent-color:var(--rose);cursor:pointer;}
+    .adv-slider-val{font-size:.68rem;font-weight:700;color:var(--rose);width:36px;text-align:right;flex-shrink:0;}
+    .adv-propagate-btn{
+      width:100%;padding:11px 0;background:rgba(255,255,255,.04);
+      border:1px dashed rgba(255,255,255,.1);border-radius:12px;
+      font-size:.78rem;font-weight:600;color:var(--gris-clair);cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:6px;
+      transition:all .18s;
+    }
+    .adv-propagate-btn:hover{border-color:var(--rose);color:var(--rose);}
+
+    /* Overlay drawers */
+    .cv-drawer-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);
+      z-index:590;opacity:0;pointer-events:none;transition:opacity .3s;
+    }
+    .cv-drawer-overlay.on{opacity:1;pointer-events:all;}
+
+    /* Hint slide active */
+    .cv-active-hint{
+      font-size:.6rem;color:var(--rose);font-weight:700;letter-spacing:.06em;
+      text-transform:uppercase;padding:0 1rem 4px;
+      opacity:0;transition:opacity .25s;min-height:16px;
+    }
+    .cv-active-hint.visible{opacity:1;}
+
+    /* Slides : estompage quand une est active */
+    .cv-slides-wrap.has-active .cv-slide:not(.active){opacity:.42;transform:scale(.97);}
+    .cv-slide{transition:transform .22s cubic-bezier(.34,1.56,.64,1),opacity .22s,outline-color .3s;}
+    .cv-slide.active{outline:2px solid var(--rose);outline-offset:3px;transform:scale(1.04)!important;opacity:1!important;box-shadow:0 6px 24px rgba(232,24,109,.2);}
+    @keyframes cv-pulse{0%,100%{outline-color:rgba(232,24,109,.8);}50%{outline-color:rgba(232,24,109,.3);}}
+    .cv-slide.active{animation:cv-pulse 2.2s ease infinite;}
     .cv-edit-handle{width:36px;height:4px;background:rgba(255,255,255,.18);border-radius:2px;margin:0 auto .8rem;}
     .cv-edit-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;padding-bottom:.7rem;border-bottom:1px solid var(--gris-border);}
     .cv-edit-hd h4{font-size:.92rem;font-weight:700;color:var(--blanc);margin:0;}
@@ -872,7 +987,6 @@
     .cv-edit-section{margin-bottom:.8rem;}
     .cv-edit-textarea{width:100%;min-height:60px;font-size:.82rem;line-height:1.55;resize:vertical;font-family:'DM Sans',sans-serif;}
     .cv-edit-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
-    .cv-stabilo-preview{display:inline-block;padding:2px 8px;border-radius:3px;font-size:.78rem;font-weight:700;}
     .cv-slide:active{transform:scale(.97);}
     .cv-slide.active{border-color:var(--rose);}
     /* ══ RENDU SLIDE UNIFIÉ — même structure pour viewer, fullscreen et export ══ */
@@ -1902,2705 +2016,32 @@
           </div>
         </div>
 
-        <!-- Stabilo toggle -->
-        <div style="margin-top:.8rem;padding-top:.7rem;border-top:1px solid var(--gris-border);">
-          <label class="ed-toggle" onclick="phToggleStabilo()">
-            <div class="ed-toggle-track on" id="ph-stabilo-track"><div class="ed-toggle-thumb"></div></div>
-            <span class="ed-toggle-lbl">Effet surligné (stabilo)</span>
-          </label>
-          <div id="ph-stabilo-cfg" style="margin-top:.5rem;">
-            <label style="display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--gris-clair);">
-              Couleur du stabilo
-              <label class="ed-color-swatch"><input type="color" id="photo-stabilo-couleur" value="#ffffff" oninput="majStabiloCouleur(this.value)"/></label>
+        <!-- Bloc fonds : uni + 3 dégradés + photo -->
+        <div class="cv-tool-fonds-blk">
+          <span class="cv-tool-fonds-lbl">Fond</span>
+          <div class="cv-tool-fonds-row">
+            <div class="cv-fpill on" id="cvp-uni"     title="Uni"       onclick="cvFondPill(this,'uni')"     style="background:${c1}"></div>
+            <div class="cv-fpill"    id="cvp-deg1"    title="Dégradé 1" onclick="cvFondPill(this,'degrade')" style="background:linear-gradient(135deg,${c2},${c1})"></div>
+            <div class="cv-fpill"    id="cvp-deg2"    title="Dégradé 2" onclick="cvFondPill(this,'degrade2')" style="background:linear-gradient(155deg,${c2},${c1} 160%)"></div>
+            <div class="cv-fpill"    id="cvp-mat"     title="Matière"   onclick="cvFondPill(this,'beton')"   style="background:radial-gradient(ellipse at 20% 20%,${c1},${c2})"></div>
+            <label class="cv-fpill"  id="cvp-photo"   title="Photo" style="cursor:pointer;">
+              🖼️<input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhoto(this)"/>
             </label>
+            <div class="cv-fpill" id="cvp-reset" title="Réinitialiser" onclick="resetOverrides()" style="background:rgba(255,255,255,.08);font-size:.65rem;">↺</div>
           </div>
         </div>
-
-        <div id="gen-photo-preview-zone" style="margin-top:.8rem;border-radius:10px;overflow:hidden;aspect-ratio:3/4;max-width:160px;"></div>
-      </div>
-
-      <!-- Actions post généré -->
-      <div class="edit-actions" id="gen-post-actions" style="display:none;">
-        <button class="btn btn-rose" onclick="sauvegarderGenPanel()">💾 Sauvegarder</button>
-        <button class="btn btn-outline" onclick="copierGenPanel()">📋 Copier</button>
-        <button class="btn btn-ghost" id="btn-publier-gen" onclick="publierSurReseau()" style="font-size:.78rem;">🚀 Publier →</button>
-        <button class="btn" onclick="supprimerGenPanel()" aria-label="Supprimer ce post généré" title="Supprimer" style="background:rgba(255,60,60,.1);color:#ff6b6b;border:1px solid rgba(255,60,60,.2);padding:.6rem .9rem;font-size:1rem;">🗑️</button>
-      </div>
-    </div>
-
-    <div class="loader" id="loader"><div class="ring"></div><p>Ton IA génère tes contenus<br/><em>dans ta voix…</em></p></div>
-
-    <!-- ══ PANEL 1 STORY ══ -->
-    <div class="gen-panel" id="gen-story-panel">
-      <h4>📱 Générer 1 story</h4>
-
-      <!-- Date de publication -->
-      <span class="creer-lbl">📅 Date de publication</span>
-      <input type="date" id="gsp-date" style="margin-bottom:.2rem;font-size:16px;width:100%;max-width:100%;box-sizing:border-box;display:block;"/>
-
-      <!-- Type de story = pilier -->
-      <span class="creer-lbl">Type de story</span>
-      <div class="piliers-row" id="gsp-types" style="flex-direction:column;gap:.8rem;">
-        <div class="pilier-chip on" data-type="vente" onclick="setGspType(this,'vente')">
-          <span class="pi">💰</span><span class="pn">Vente</span>
-          <div class="pilier-detail">Contextualisation → douleur client → appel à action vers ton offre</div>
-        </div>
-        <div class="pilier-chip" data-type="valeur" onclick="setGspType(this,'valeur')">
-          <span class="pi">💡</span><span class="pn">Valeur</span>
-          <div class="pilier-detail">1 astuce concrète que ta cible peut appliquer tout de suite</div>
-        </div>
-        <div class="pilier-chip" data-type="lifestyle" onclick="setGspType(this,'lifestyle')">
-          <span class="pi">🌿</span><span class="pn">Lifestyle</span>
-          <div class="pilier-detail">Scène du quotidien pro — un moment, une émotion, ce que ça révèle de qui tu es</div>
+        <!-- Éditer texte -->
+        <button class="cv-tool-texte-btn" onclick="ouvrirTxtDrawer()">
+          <span>✏️</span><span>Texte</span>
+        </button>
+        <!-- Options avancées -->
+        <div class="cv-tool-plus-btn" onclick="ouvrirAdvDrawer()">
+          <span>⚙️</span><span>Plus</span>
         </div>
       </div>
 
-      <!-- Sujet libre -->
-      <span class="creer-lbl" style="margin-top:.5rem;">Sujet <span style="font-weight:400;color:var(--gris-clair);font-size:.75rem;">(optionnel — sinon l'IA choisit)</span></span>
-      <input type="text" id="gsp-sujet" placeholder="Ex : Mon retour sur le dernier salon pro…" style="font-size:16px;"/>
-
-      <!-- Actu web -->
-      <div class="actu-row" style="margin-top:.7rem;" onclick="gspToggleActu(event)">
-        <div class="actu-lbl">
-          🔍 Inclure une actu du secteur
-          <span>Recherche web sur tes références</span>
-        </div>
-        <label class="toggle-sw" onclick="event.stopPropagation()">
-          <input type="checkbox" id="gsp-cb-actu"/>
-          <span class="sw"></span>
-        </label>
-      </div>
-
-      <!-- Bouton générer story — animation intégrée -->
-      <button class="btn btn-rose" id="gsp-btn-gen" onclick="genererStoryPanel()" style="width:100%;margin-top:1rem;padding:1rem;font-size:.95rem;transition:all .2s;">
-        <span id="gsp-btn-label"><span class="sablier-anim" id="gsp-sablier" style="display:none;">⏳</span> <span id="gsp-btn-txt">✨ Générer cette story</span></span>
-      </button>
-      <!-- Loader masqué — conservé pour compat -->
-      <div id="gsp-loader" style="display:none;"><span id="gsp-loader-txt"></span></div>
-
-      <!-- Résultat -->
-      <div id="gsp-result-zone" style="display:none;margin-top:1rem;">
-        <span class="creer-lbl">Script story</span>
-        <div class="res-body" id="gsp-result" style="white-space:pre-wrap;font-size:.82rem;line-height:1.7;padding:1rem;background:var(--gris-input);border-radius:10px;border:1px solid var(--gris-border);min-height:80px;"></div>
-        <div class="gen-post-actions" id="gsp-actions" style="margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap;">
-          <button class="btn btn-ghost btn-sm" onclick="gspCopier()">📋 Copier</button>
-          <button class="btn btn-ghost btn-sm" onclick="gspRegenerer()">🔄 Régénérer</button>
-          <button class="btn btn-ghost btn-sm" onclick="gspSauvegarder()">💾 Sauvegarder</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="zone-res"></div>
-  </section>
-
-  <!-- ══ CALENDRIER ══ -->
-  <section id="p-calendrier" class="page">
-    <div class="titre"><h2>Mon <em>calendrier</em></h2><p>Visualise, édite et planifie</p></div>
-    <div class="cal-top">
-      <div class="cal-nav">
-        <button class="cal-btn" onclick="navCal(-1)" aria-label="Période précédente">‹</button>
-        <div class="cal-per" id="cal-per">—</div>
-        <button class="cal-btn" onclick="navCal(1)" aria-label="Période suivante">›</button>
-      </div>
-      <div class="vue-tog">
-        <button class="vue-b on" id="b-mois" onclick="changeVue('mois',this)">Mois</button>
-        <button class="vue-b" id="b-sem" onclick="changeVue('semaine',this)">Semaine</button>
-      </div>
-    </div>
-
-    <!-- Boutons Stories + Brouillons -->
-    <div class="cal-panels-row">
-      <button class="cal-stories-btn" onclick="toggleStoriesPanel()">
-        <span class="csb-icon">📱</span>
-        <div class="csb-text">
-          <span class="csb-titre">Stories</span>
-          <span class="csb-sub" id="csb-txt">0/7 publiées</span>
-        </div>
-        <span class="csb-chevron">›</span>
-      </button>
-      <button class="cal-stories-btn" onclick="toggleBrouillonsPanel()" id="btn-brouillons">
-        <span class="csb-icon">💡</span>
-        <div class="csb-text">
-          <span class="csb-titre">Idées</span>
-          <span class="csb-sub" id="brouillons-count">0 idée</span>
-        </div>
-        <span class="csb-chevron">›</span>
-      </button>
-    </div>
-
-    <!-- Panneau Stories -->
-    <div class="stories-panel" id="stories-panel">
-      <div class="sp-header">
-        <h4>📱 Stories — semaine en cours</h4>
-        <button class="sp-close" onclick="toggleStoriesPanel()">✕</button>
-      </div>
-      <div id="sp-liste"><!-- rempli par JS --></div>
-    </div>
-
-    <!-- Panneau Brouillons / Idées -->
-    <div class="stories-panel" id="brouillons-panel">
-      <div class="sp-header">
-        <h4>💡 Mes idées de posts</h4>
-        <button class="sp-close" onclick="toggleBrouillonsPanel()">✕</button>
-      </div>
-      <!-- Formulaire ajout rapide -->
-      <div class="brouillon-form">
-        <textarea id="brouillon-texte" class="brouillon-input" placeholder="Note ton idée ici… un angle, une phrase d'accroche, une observation du moment." rows="3"></textarea>
-        <div class="brouillon-form-row">
-          <select id="brouillon-reseau" class="brouillon-select">
-            <option value="">Réseau ?</option>
-            <option value="LinkedIn">💼 LinkedIn</option>
-            <option value="Instagram">📸 Instagram</option>
-            <option value="Story">📱 Story</option>
-          </select>
-          <button class="btn btn-rose btn-sm" onclick="ajouterBrouillon()">+ Sauvegarder</button>
-        </div>
-      </div>
-      <div id="brouillons-liste"><!-- rempli par JS --></div>
-    </div>
-    <div class="cal-hd" id="cal-hd">
-      <div class="cal-dn">L</div><div class="cal-dn">M</div><div class="cal-dn">M</div>
-      <div class="cal-dn">J</div><div class="cal-dn">V</div><div class="cal-dn">S</div><div class="cal-dn">D</div>
-    </div>
-    <div id="cal-grid"></div>
-    <div class="cal-leg">
-      <div class="leg-item"><div class="leg-dot" style="background:#5bb8ff;"></div><span class="leg-lbl">LinkedIn</span></div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--rose-clair);"></div><span class="leg-lbl">Instagram</span></div>
-      <div class="leg-item"><div class="leg-dot" style="background:var(--gris-moyen);opacity:.4;"></div><span class="leg-lbl">Publié</span></div>
-    </div>
-  </section>
-
-  <!-- ══ MON COMPTE ══ -->
-  <section id="p-compte" class="page">
-    <div class="titre"><h2>Mon <em>Compte</em></h2><p>Identité · Charte · Rythme · Connexions</p></div>
-    <div style="height:.2rem;"></div>
-
-    <!-- 1. Duo côte à côte : Carte d'identité + Identité visuelle -->
-    <div class="duo-tabs">
-      <div class="duo-tab" id="tab-identite">
-        <div class="duo-tab-hd" onclick="toggleDuoTab('tab-identite')">
-          <div class="duo-tab-titre"><span>👤</span><span>Identité personnelle</span></div>
-          <span class="duo-tab-chevron">▼</span>
-        </div>
-        <div class="duo-tab-body">
-          <label class="lbl" style="margin-top:.6rem;">Prénom</label>
-          <input type="text" id="cfg-prenom" placeholder="Ex : Martine" autocomplete="given-name" style="font-size:16px;"/>
-          <label class="lbl">Nom</label>
-          <input type="text" id="cfg-nom" placeholder="Ex : Dupont" autocomplete="family-name" autocomplete="family-name" style="font-size:16px;"/>
-          <label class="lbl">Entreprise</label>
-          <input type="text" id="cfg-entreprise" placeholder="Ex : Roze Communications" autocomplete="organization" style="font-size:16px;"/>
-          <label class="lbl">Catégorie métier</label>
-          <select id="cfg-cat-metier" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);" onchange="majCatMetier(this.value)">
-            <option value="">— Choisir une catégorie —</option>
-            <option value="commercant">🛍️ Commerçant (boutique, épicerie, restaurant, fleuriste…)</option>
-            <option value="artisan">🔨 Artisan (plombier, menuisier, électricien, coiffeur…)</option>
-            <option value="creatif">🎨 Créatif / Maker (photographe, graphiste, illustrateur…)</option>
-            <option value="praticien">🌿 Praticien / Thérapeute (coach, ostéo, naturopathe, sophro…)</option>
-            <option value="consultant">💼 Consultant / Expert (conseil, audit, stratégie, comptable…)</option>
-            <option value="formateur">📚 Formateur / Enseignant (formation, coaching certifié, pédagogie…)</option>
-            <option value="independant">⚡ Indépendant / Freelance (autre activité de service)</option>
-            <option value="autre">✏️ Autre (préciser ci-dessous)</option>
-          </select>
-          <label class="lbl" style="margin-top:.5rem;">Métier précis <span style="color:#888;font-size:.7rem;font-weight:400;">(ex : fleuriste, menuisier charpentier, nutritionniste…)</span></label>
-          <input type="text" id="cfg-metier" placeholder="Ex : Fleuriste spécialisée mariages, Expert-comptable TPE…" style="font-size:16px;"/>
-          <label class="lbl" style="margin-top:.6rem;">Type d'activité</label>
-          <div style="display:flex;gap:.5rem;flex-wrap:wrap;" id="cfg-tronc-group">
-            <button type="button" class="ed-chip" id="tronc-produit" onclick="setTronc('produit',this)">📦 Je vends des produits</button>
-            <button type="button" class="ed-chip" id="tronc-service" onclick="setTronc('service',this)">🤝 Je vends des services</button>
-            <button type="button" class="ed-chip" id="tronc-mixte"   onclick="setTronc('mixte',this)">🔀 Les deux</button>
-          </div>
-          <label class="lbl" style="margin-top:.6rem;">Ma cible client <span style="color:#888;font-size:.7rem;font-weight:400;">(décris en 1-2 phrases qui tu aides)</span></label>
-          <textarea id="cfg-cible" rows="2" placeholder="Ex : Artisans du bâtiment qui veulent trouver des clients sans démarcher." style="font-size:15px;resize:vertical;line-height:1.5;"></textarea>
-          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.2rem;">L'IA enrichira cette description automatiquement chaque semaine depuis tes matières.</div>
-
-          <label class="lbl" style="margin-top:.6rem;">
-            Sources de veille
-            <span style="font-weight:400;color:var(--gris-clair);font-size:.75rem;">— URLs uniquement</span>
-            <span id="refs-compteur" style="font-size:.72rem;color:var(--rose-clair);margin-left:.4rem;font-weight:700;">0/10</span>
-          </label>
-          <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.5rem;line-height:1.5;">
-            Une URL par ligne, 10 max. Ex&nbsp;: <code style="font-size:.7rem;background:var(--gris-input);padding:1px 5px;border-radius:4px;">https://www.blogdumoderateur.com/social/</code>
-          </div>
-          <textarea id="cfg-references"
-            rows="5"
-            placeholder="https://www.blogdumoderateur.com/social/&#10;https://later.com/blog/&#10;https://sproutsocial.com/insights/"
-            style="font-size:13px;width:100%;box-sizing:border-box;resize:vertical;font-family:monospace;line-height:1.6;"
-            oninput="validerURLsSources(this)"></textarea>
-          <div id="refs-erreur" style="font-size:.72rem;color:var(--rose);margin-top:.3rem;display:none;"></div>
-          <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.3rem;line-height:1.4;">
-            L'IA puise parmi vos références pour vos contenus, en rotation automatique.
-          </div>
-        </div>
-      </div>
-      <!-- Onglet Réseaux sociaux -->
-      <div class="duo-tab" id="tab-charte">
-        <div class="duo-tab-hd" onclick="toggleDuoTab('tab-charte')">
-          <div class="duo-tab-titre"><span>🎨</span><span>Identité visuelle</span></div>
-          <span class="duo-tab-chevron">▼</span>
-        </div>
-        <div class="duo-tab-body">
-          <label class="lbl" style="margin-top:.6rem;">Couleur principale</label>
-          <div style="display:flex;gap:.5rem;align-items:center;">
-            <input type="text" id="cfg-couleur1" placeholder="#E8186D" style="flex:1;font-size:16px;"/>
-            <div id="preview-couleur1" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--gris-border);flex-shrink:0;"></div>
-          </div>
-          <label class="lbl">Couleur secondaire</label>
-          <div style="display:flex;gap:.5rem;align-items:center;">
-            <input type="text" id="cfg-couleur2" placeholder="#111111" style="flex:1;font-size:16px;"/>
-            <div id="preview-couleur2" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--gris-border);flex-shrink:0;"></div>
-          </div>
-          <label class="lbl">Couleur accent <span style="color:#888;font-size:.7rem;font-weight:400;">(optionnel — pour slides intermédiaires)</span></label>
-          <div style="display:flex;gap:.5rem;align-items:center;">
-            <input type="text" id="cfg-couleur3" placeholder="Ex : #F5A623" style="flex:1;font-size:16px;" oninput="previewCouleur('couleur3')"/>
-            <div id="preview-couleur3" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--gris-border);flex-shrink:0;"></div>
-          </div>
-          <label class="lbl">Couleur neutre <span style="color:#888;font-size:.7rem;font-weight:400;">(optionnel — fond slides neutres)</span></label>
-          <div style="display:flex;gap:.5rem;align-items:center;">
-            <input type="text" id="cfg-couleur4" placeholder="Ex : #F9F4F0" style="flex:1;font-size:16px;" oninput="previewCouleur('couleur4')"/>
-            <div id="preview-couleur4" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--gris-border);flex-shrink:0;"></div>
-          </div>
-          <label class="lbl">Couleur texte</label>
-          <div style="display:flex;gap:.5rem;align-items:center;">
-            <input type="text" id="cfg-couleur-texte" placeholder="#111111" style="flex:1;font-size:16px;"/>
-            <div id="preview-couleur-texte" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--gris-border);flex-shrink:0;"></div>
-          </div>
-          <label class="lbl">Police titres <a href="https://fonts.google.com" target="_blank" style="color:var(--rose-clair);font-weight:400;font-size:.68rem;">(Google Fonts)</a></label>
-          <input type="text" id="cfg-police-titre" placeholder="Ex : Playfair Display…" style="font-size:16px;"/>
-          <label class="lbl">Police corps</label>
-          <input type="text" id="cfg-police-corps" placeholder="Ex : DM Sans…" style="font-size:16px;"/>
-          <label class="lbl" style="margin-top:1rem;">Vocabulaire interdit <span style="color:#888;font-size:.7rem;font-weight:400;">(mots ou expressions que l'IA ne doit jamais utiliser)</span></label>
-          <textarea id="cfg-mots-interdits" rows="3" placeholder="Ex : soin&#10;guérison&#10;traitement" style="font-size:15px;resize:vertical;line-height:1.5;" oninput="majCompteurMotsInterdits()"></textarea>
-          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.2rem;">Un mot ou expression par ligne. Indispensable pour les professions réglementées.</div>
-          <label class="lbl" style="margin-top:1rem;">Émojis de marque <span style="color:#888;font-size:.7rem;font-weight:400;">(1 à 4 max — ta signature visuelle)</span></label>
-          <input type="text" id="cfg-emojis-marque" placeholder="Ex : 🌿 💪 🌙" style="font-size:20px;letter-spacing:.3rem;" maxlength="20"/>
-          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.2rem;">Tape tes émojis via le clavier ou le sélecteur de ton téléphone. Max 4 émojis. Utilisés avec parcimonie dans les légendes.</div>
-          <label class="lbl" style="margin-top:1rem;">URL logo (Drive)</label>
-          <input type="url" id="cfg-logo-url" placeholder="https://drive.google.com/uc?id=…" style="font-size:16px;"/>
-          <div class="opt" style="margin-top:.3rem;">Logo sur la dernière slide uniquement</div>
-        </div>
-      </div><div class="duo-tab" id="tab-reseaux">
-        <div class="duo-tab-hd" onclick="toggleDuoTab('tab-reseaux')">
-          <div class="duo-tab-titre"><span>📲</span><span>Mes réseaux sociaux</span></div>
-          <span class="duo-tab-chevron">▼</span>
-        </div>
-        <div class="duo-tab-body">
-          <label class="lbl">Nom d'utilisateur Instagram</label>
-          <div style="display:flex;gap:.5rem;align-items:center;">
-            <input type="text" id="cfg-insta-user" placeholder="Ex : roze.communications" style="font-size:16px;flex:1;" oninput="majLiensReseaux()"/>
-            <a id="btn-open-insta" href="https://www.instagram.com/" target="_blank"
-               class="btn btn-ghost btn-sm" style="flex-shrink:0;text-decoration:none;white-space:nowrap;">
-              📸 Ouvrir Instagram
-            </a>
-          </div>
-          <label class="lbl" style="margin-top:.6rem;">URL de ton profil LinkedIn</label>
-          <div style="display:flex;gap:.5rem;align-items:center;">
-            <input type="text" id="cfg-linkedin-url" placeholder="Ex : https://www.linkedin.com/in/ton-prenom-nom" style="font-size:16px;flex:1;" oninput="majLiensReseaux()"/>
-            <a id="btn-open-linkedin" href="https://www.linkedin.com/feed/" target="_blank"
-               class="btn btn-ghost btn-sm" style="flex-shrink:0;text-decoration:none;white-space:nowrap;">
-              💼 Ouvrir LinkedIn
-            </a>
-          </div>
-          <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.5rem;line-height:1.4;">Ces liens s'ouvriront directement dans l'app ou le site. Tu peux copier ton post puis publier depuis ton réseau.</div>
-        </div>
-      </div>
-
-      <!-- Onglet Ton & Voix -->
-      <div class="duo-tab" id="tab-ton">
-        <div class="duo-tab-hd" onclick="toggleDuoTab('tab-ton')">
-          <div class="duo-tab-titre"><span>🎙️</span><span>Ton &amp; voix</span></div>
-          <span class="duo-tab-chevron">▼</span>
-        </div>
-        <div class="duo-tab-body">
-          <label class="lbl" style="margin-top:.6rem;">Registre</label>
-          <div style="display:flex;gap:.5rem;" id="cfg-registre-group">
-            <button type="button" class="ed-chip on" id="reg-tutoiement" onclick="setRegistre('tutoiement',this)">Tu</button>
-            <button type="button" class="ed-chip" id="reg-vouvoiement" onclick="setRegistre('vouvoiement',this)">Vous</button>
-          </div>
-          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.3rem;">Appliqué sur tous les posts générés, Instagram et LinkedIn.</div>
-
-          <label class="lbl" style="margin-top:.8rem;">Tonalité principale</label>
-          <select id="cfg-tonalite" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);">
-            <option value="direct">⚡ Direct &amp; tranchant — je dis ce que je pense, sans tourner autour</option>
-            <option value="chaleureux">🤝 Chaleureux &amp; proche — je crée de la proximité, je suis accessible</option>
-            <option value="pedagogue">📖 Pédagogue &amp; posé — j'explique, je rassure, je structure</option>
-            <option value="sobre">🎯 Expert &amp; sobre — professionnel, factuel, peu d'effusion</option>
-            <option value="enthousiaste">🔥 Enthousiaste &amp; énergique — je mets de l'élan dans tout ce que je fais</option>
-          </select>
-
-          <label class="lbl" style="margin-top:.8rem;">Niveau de partage personnel</label>
-          <select id="cfg-partage" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);">
-            <option value="ouvert">🔓 Ouvert — je partage coulisses, doutes, moments perso</option>
-            <option value="equilibre">⚖️ Équilibré — pro avec quelques touches personnelles</option>
-            <option value="reserve">🔒 Réservé — je reste professionnel, peu de perso</option>
-          </select>
-
-          <label class="lbl" style="margin-top:.8rem;">Expressions de marque <span style="color:#888;font-size:.7rem;font-weight:400;">(formules que tu utilises vraiment)</span></label>
-          <textarea id="cfg-expr-marque" rows="2" placeholder="Ex : on ne lâche rien, du concret toujours, sans filtre…" style="font-size:15px;resize:vertical;line-height:1.5;"></textarea>
-          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.2rem;">L'IA les réutilisera naturellement dans tes posts.</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Séparateur section -->
-    <div class="compte-section-lbl">📊 Rythme éditorial</div>
-
-    <!-- 2. Publications LinkedIn -->
-    <div class="acc" id="acc-li">
-      <div class="acc-hd" onclick="toggleAcc('acc-li')">
-        <div class="acc-titre"><span>💼</span><span>Publications LinkedIn</span></div>
-        <div style="display:flex;align-items:center;gap:.5rem;">
-          <label class="toggle-sw" onclick="event.stopPropagation()" style="margin:0;">
-            <input type="checkbox" id="li-actif" checked onchange="majRythme()"/><span class="sw"></span>
-          </label>
-          <span class="acc-chevron">▼</span>
-        </div>
-      </div>
-      <div class="acc-body">
-        <div id="li-formats">
-          <div class="format-ligne" data-reseau="li" data-fmt="Post texte"><span class="format-nom">📝 Post texte</span><div class="compteur"><button class="cpt-btn" onclick="cpt(this,-1)">−</button><span class="cpt-val">1</span><button class="cpt-btn" onclick="cpt(this,1)">+</button></div></div>
-          <div class="format-ligne" data-reseau="li" data-fmt="Carrousel"><span class="format-nom">🎠 Carrousel</span><div class="compteur"><button class="cpt-btn" onclick="cpt(this,-1)">−</button><span class="cpt-val">1</span><button class="cpt-btn" onclick="cpt(this,1)">+</button></div></div>
-          <div class="format-ligne" data-reseau="li" data-fmt="Vidéo"><span class="format-nom">🎬 Vidéo</span><div class="compteur"><button class="cpt-btn" onclick="cpt(this,-1)">−</button><span class="cpt-val">0</span><button class="cpt-btn" onclick="cpt(this,1)">+</button></div></div>
-          <div class="format-ligne" data-reseau="li" data-fmt="Photo"><span class="format-nom">🖼️ Photo</span><div class="compteur"><button class="cpt-btn" onclick="cpt(this,-1)">−</button><span class="cpt-val">0</span><button class="cpt-btn" onclick="cpt(this,1)">+</button></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3. Publications Instagram -->
-    <div class="acc" id="acc-ig">
-      <div class="acc-hd" onclick="toggleAcc('acc-ig')">
-        <div class="acc-titre"><span>📸</span><span>Publications Instagram</span></div>
-        <div style="display:flex;align-items:center;gap:.5rem;">
-          <label class="toggle-sw" onclick="event.stopPropagation()" style="margin:0;">
-            <input type="checkbox" id="ig-actif" checked onchange="majRythme()"/><span class="sw"></span>
-          </label>
-          <span class="acc-chevron">▼</span>
-        </div>
-      </div>
-      <div class="acc-body">
-        <div id="ig-formats">
-          <div class="format-ligne" data-reseau="ig" data-fmt="Photo"><span class="format-nom">🖼️ Photo</span><div class="compteur"><button class="cpt-btn" onclick="cpt(this,-1)">−</button><span class="cpt-val">2</span><button class="cpt-btn" onclick="cpt(this,1)">+</button></div></div>
-          <div class="format-ligne" data-reseau="ig" data-fmt="Carrousel"><span class="format-nom">🎠 Carrousel</span><div class="compteur"><button class="cpt-btn" onclick="cpt(this,-1)">−</button><span class="cpt-val">1</span><button class="cpt-btn" onclick="cpt(this,1)">+</button></div></div>
-          <div class="format-ligne" data-reseau="ig" data-fmt="Réel"><span class="format-nom">🎬 Réel</span><div class="compteur"><button class="cpt-btn" onclick="cpt(this,-1)">−</button><span class="cpt-val">0</span><button class="cpt-btn" onclick="cpt(this,1)">+</button></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4. Stories Instagram -->
-    <div class="acc" id="acc-stories">
-      <div class="acc-hd" onclick="toggleAcc('acc-stories')">
-        <div class="acc-titre"><span>📱</span><span>Stories Instagram</span></div>
-        <span class="acc-badge" id="acc-stories-badge">7 sujets</span>
-        <span class="acc-chevron">▼</span>
-      </div>
-      <div class="acc-body">
-        <div id="stories-config"><!-- rempli par JS --></div>
-      </div>
-    </div>
-
-    <!-- Séparateur section -->
-    <div class="compte-section-lbl">⚙️ Paramètres techniques</div>
-
-    <!-- 5. Connexions -->
-    <div class="acc" id="acc-conn">
-      <div class="acc-hd" onclick="toggleAcc('acc-conn')">
-        <div class="acc-titre"><span>🔗</span><span>Connexions</span></div>
-        <span class="acc-chevron">▼</span>
-      </div>
-      <div class="acc-body" style="padding-top:.6rem;">
-        <label class="lbl">Lien Google Sheets (Apps Script)</label>
-        <input type="url" id="cfg-as" placeholder="https://script.google.com/…" style="font-size:16px;"/>
-        <label class="lbl">Ton IA — choisis ton assistant</label>
-        <div class="ia-selector">
-          <div class="ia-opt" id="ia-opt-claude" onclick="setIA('claude')">
-            <span class="ia-logo">🤖</span>
-            <div class="ia-nom">Claude</div>
-            <div class="ia-desc">Anthropic</div>
-            <span class="ia-badge payant">Payant ~0,30€/mois</span>
-          </div>
-          <div class="ia-opt" id="ia-opt-gemini" onclick="setIA('gemini')">
-            <span class="ia-logo">✦</span>
-            <div class="ia-nom">Gemini</div>
-            <div class="ia-desc">Google</div>
-            <span class="ia-badge gratuit">Gratuit</span>
-          </div>
-        </div>
-        <div class="ia-champ" id="ia-champ-claude">
-          <label class="lbl">Clé API Claude <a href="https://console.anthropic.com" target="_blank" style="color:var(--rose-clair);font-weight:400;font-size:.68rem;">(console.anthropic.com)</a></label>
-          <input type="password" id="cfg-api" placeholder="sk-ant-…" autocomplete="off"/>
-          <div class="opt">Dépose 5€ de crédit — couvre plus d'un an d'utilisation.</div>
-        </div>
-        <div class="ia-champ" id="ia-champ-gemini">
-          <label class="lbl">Clé API Gemini <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#7baeff;font-weight:400;font-size:.68rem;">(aistudio.google.com)</a></label>
-          <input type="password" id="cfg-api-gemini" placeholder="AIza…" autocomplete="off"/>
-          <div class="opt">Tier gratuit — sans carte bancaire. Génère ta clé en 30 secondes.</div>
-        </div>
-        <div class="conn-sep"></div>
-        <label class="lbl">Lien dossier Photos Drive</label>
-        <input type="url" id="cfg-drive-photos" placeholder="https://drive.google.com/drive/folders/…"/>
-
-      </div>
-    </div>
-
-    <div style="margin-top:1.6rem;">
-      <button class="btn btn-rose btn-full" id="btn-sauvegarder" onclick="sauvegarderCompte()" style="padding:1rem;font-size:.95rem;letter-spacing:.02em;">💾 Sauvegarder Mon Compte</button>
-    <p style="text-align:center;margin-top:1.2rem;font-size:.72rem;color:var(--gris-clair);">En utilisant Roze Assistant, tu acceptes nos <button onclick="ouvrirLegal()" style="background:none;border:none;color:var(--rose-clair);text-decoration:underline;cursor:pointer;font-size:.72rem;padding:0;">conditions d'utilisation et politique de confidentialité</button>.</p>
-      <button class="btn btn-ghost" style="width:100%;margin-top:.5rem;font-size:.78rem;color:var(--gris-clair);" onclick="seDeconnecter()">↩️ Se déconnecter</button>
-    </div>
-    
-    <!-- Guide PWA -->
-    <div class="guide-pwa" id="guide-pwa">
-      <h3>📲 Installer l'app sur ton téléphone</h3>
-      <div class="os-tabs">
-        <button class="os-tab on" onclick="osTab(this,'ios')">iPhone / iOS</button>
-        <button class="os-tab" onclick="osTab(this,'android')">Android</button>
-      </div>
-      <div id="g-ios">
-        <div class="g-step"><div class="g-n">1</div><p>Ouvre dans <strong>Safari</strong></p></div>
-        <div class="g-step"><div class="g-n">2</div><p>Icône <strong>Partager</strong> (carré + flèche) en bas</p></div>
-        <div class="g-step"><div class="g-n">3</div><p>Appuie sur <strong>"Sur l'écran d'accueil"</strong></p></div>
-        <div class="g-step"><div class="g-n">4</div><p>Appuie sur <strong>"Ajouter"</strong></p></div>
-      </div>
-      <div id="g-and" style="display:none;">
-        <div class="g-step"><div class="g-n">1</div><p>Ouvre dans <strong>Chrome</strong></p></div>
-        <div class="g-step"><div class="g-n">2</div><p><strong>3 points</strong> en haut à droite</p></div>
-        <div class="g-step"><div class="g-n">3</div><p><strong>"Ajouter à l'écran d'accueil"</strong></p></div>
-        <div class="g-step"><div class="g-n">4</div><p>Appuie sur <strong>"Ajouter"</strong></p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ SE REPÉRER ══ -->
-  <section id="p-aide" class="page">
-    <button class="aide-back" onclick="go('p-accueil')">‹ Retour</button>
-    <div class="titre"><h2>Se <em>repérer</em></h2><p>Glossaire · Piliers · Tutoriel</p></div>
-
-    <!-- Onglets Se repérer -->
-    <div class="aide-tabs">
-      <button class="aide-tab on" onclick="switchAideTab(this,'tab-glossaire')">📖 Glossaire</button>
-      <button class="aide-tab" onclick="switchAideTab(this,'tab-piliers')">🎯 Piliers</button>
-      <button class="aide-tab" onclick="switchAideTab(this,'tab-tuto')">🚀 Tutoriel</button>
-    </div>
-
-    <!-- TAB : GLOSSAIRE -->
-    <div class="aide-tab-content on" id="tab-glossaire">
-    <div class="aide-section">
-      <h3>📖 Glossaire</h3>
-
-      <div class="aide-card">
-        <div class="ac-titre">🔭 Pilier Visibilité</div>
-        <div class="ac-desc">Posts conçus pour attirer de nouvelles personnes qui ne te connaissent pas encore. L'IA cherche automatiquement une actualité récente de ton secteur et t'aide à donner ton avis dessus. Ce type de contenu est partageable et conçu pour sortir de ta communauté existante.</div>
-        <div class="ac-ex">Exemples : "Cette tendance change tout pour les artisans en 2025", un post avec humour sur ton quotidien pro, une prise de position sur une actu de ton secteur.</div>
-      </div>
-
-      <div class="aide-card">
-        <div class="ac-titre">👑 Pilier Autorité</div>
-        <div class="ac-desc">Posts qui prouvent ta valeur par des preuves concrètes et créent un lien humain avec ton audience. L'IA puise dans tes retours clients, tes anecdotes et ta méthode pour construire la confiance.</div>
-        <div class="ac-ex">Exemples : retour client mot pour mot, coulisses de ton travail, résultat client chiffré, pourquoi tu as choisi ce métier.</div>
-      </div>
-
-      <div class="aide-card">
-        <div class="ac-titre">🧠 Pilier Expertise</div>
-        <div class="ac-desc">Posts qui enseignent quelque chose d'utile et te positionnent comme une référence dans ton domaine. Le contenu doit apporter quelque chose d'actionnable à la personne qui lit.</div>
-        <div class="ac-ex">Exemples : "Les 3 erreurs que font les restaurateurs sur Instagram", "Cette astuce de photographe change tout en portrait", une série pédagogique sur ton domaine.</div>
-      </div>
-
-      <div class="aide-card">
-        <div class="ac-titre">🏪 Pilier Activité</div>
-        <div class="ac-desc">3 niveaux selon ton objectif du moment : montrer ton activité au quotidien (coulisses, produits, savoir-faire), mettre en avant une offre ou un service spécifique, ou annoncer une promotion ou un événement limité.</div>
-        <div class="ac-ex">Exemples : "Voici comment je choisis mes matières premières", "Cette semaine je mets en avant mon offre [X]", "Jusqu'au dimanche, -20% sur [produit]".</div>
-      </div>
-
-      <div class="aide-card">
-        <div class="ac-titre">🎠 Carrousel</div>
-        <div class="ac-desc">Publication multi-slides (5 à 8 slides) que l'on fait défiler horizontalement. Format le plus sauvegardé sur Instagram et LinkedIn. L'IA génère chaque slide avec un texte court et lisible, et te propose un export PNG (Instagram) ou PDF (LinkedIn).</div>
-      </div>
-
-      <div class="aide-card">
-        <div class="ac-titre">📱 Stories</div>
-        <div class="ac-desc">Contenus verticaux éphémères (24h) sur Instagram. Elles ont un cadre hebdomadaire fixe : Lifestyle le lundi, Valeur le mardi, Vente le mercredi, etc. Tu paramètres le sujet de chaque jour dans Mon Compte.</div>
-      </div>
-
-      <div class="aide-card">
-        <div class="ac-titre">🔥 Semaines consécutives</div>
-        <div class="ac-desc">Nombre de semaines d'affilée où tu as rempli tes 8 questions hebdomadaires. La régularité est le vrai moteur de la croissance sur les réseaux — c'est ce chiffre qui compte le plus sur le long terme. Un message de félicitations apparaît tous les mois.</div>
-      </div>
-
-      <div class="aide-card">
-        <div class="ac-titre">📁 Google Drive photos</div>
-        <div class="ac-desc">Ton dossier Drive organisé en sous-dossiers (Portraits, Résultats-Clients, Événements…). Pour qu'une photo soit utilisable dans un post, tu dois d'abord l'importer depuis ton téléphone ou ton ordinateur vers le bon dossier Drive — puis l'indiquer dans la question 7 de ta semaine.</div>
-      </div>
-    </div>
-
-    <!-- TUTORIEL -->
-    </div><!-- /tab-glossaire -->
-
-    <!-- TAB : PILIERS DE CONTENU -->
-    <div class="aide-tab-content" id="tab-piliers">
-    <div class="aide-section">
-      <h3>🎯 Les 3 piliers de contenu</h3>
-
-      <div class="pilier-expl" style="margin-bottom:1rem;color:#aaa;font-size:.82rem;line-height:1.6;">
-        Chaque post que tu génères est ancré dans l'un des 3 piliers. Varier les piliers chaque semaine assure une présence équilibrée : attirer, convaincre, apporter de la valeur.
-      </div>
-
-      <div class="aide-card pilier-card-vis">
-        <div class="ac-titre">🔭 Visibilité — Attirer</div>
-        <div class="ac-desc"><strong>Objectif :</strong> toucher des personnes qui ne te connaissent pas encore. Ce pilier est conçu pour sortir de ta communauté existante et être partagé.</div>
-        <div class="pilier-detail">
-          <div class="pd-item">🔍 <strong>Ce que fait l'IA :</strong> cherche automatiquement une actualité récente de ton secteur et t'aide à donner ton avis dessus.</div>
-          <div class="pd-item">🪝 <strong>Type de hook :</strong> donnée chiffrée surprenante — ex : "65% des indépendants publient moins d'une fois par semaine."</div>
-          <div class="pd-item">🎨 <strong>Ton :</strong> accessible, engageant, parfois décalé. Donne envie d'être partagé ou commenté.</div>
-        </div>
-        <div class="ac-ex">Exemples : avis sur une tendance du secteur, post avec humour sur ton quotidien pro, prise de position sur une actu.</div>
-      </div>
-
-      <div class="aide-card pilier-card-aut">
-        <div class="ac-titre">👑 Autorité — Convaincre</div>
-        <div class="ac-desc"><strong>Objectif :</strong> prouver ta valeur par des preuves concrètes et créer un lien humain avec ton audience. Ce pilier convertit les curieux en clients.</div>
-        <div class="pilier-detail">
-          <div class="pd-item">📂 <strong>Ce que fait l'IA :</strong> puise dans tes retours clients, tes anecdotes et ta méthode enregistrés dans ton profil.</div>
-          <div class="pd-item">🪝 <strong>Type de hook :</strong> anecdote personnelle ou client concrète et datée — ex : "Il y a 3 semaines, une cliente m'a dit quelque chose qui m'a arrêtée net."</div>
-          <div class="pd-item">🎨 <strong>Ton :</strong> authentique, humain, direct. Jamais publicitaire.</div>
-        </div>
-        <div class="ac-ex">Exemples : retour client mot pour mot, coulisses de ton travail, résultat client chiffré, pourquoi tu as choisi ce métier.</div>
-      </div>
-
-      <div class="aide-card pilier-card-exp">
-        <div class="ac-titre">🧠 Expertise — Apporter de la valeur</div>
-        <div class="ac-desc"><strong>Objectif :</strong> enseigner quelque chose d'utile et te positionner comme une référence. Ce pilier fidélise et crédibilise.</div>
-        <div class="pilier-detail">
-          <div class="pd-item">📚 <strong>Ce que fait l'IA :</strong> génère des conseils actionnables ancrés dans ton domaine, avec des structures pédagogiques claires.</div>
-          <div class="pd-item">🪝 <strong>Type de hook :</strong> affirmation contre-intuitive ou erreur fréquente — ex : "La plupart des artisans font cette erreur sur leurs stories sans le savoir."</div>
-          <div class="pd-item">🎨 <strong>Ton :</strong> pédagogique, précis, concret. Chaque post apporte quelque chose d'actionnable.</div>
-        </div>
-        <div class="ac-ex">Exemples : "Les 3 erreurs que font les restaurateurs sur Instagram", astuce méconnue de ton secteur, série pédagogique.</div>
-      </div>
-
-      <div class="aide-card">
-        <div class="ac-titre">🏪 Pilier Activité</div>
-        <div class="ac-desc">3 niveaux selon ton objectif du moment : montrer ton activité au quotidien (coulisses, produits, savoir-faire), mettre en avant une offre ou un service spécifique, ou annoncer une promotion ou un événement limité.</div>
-        <div class="ac-ex">Exemples : "Voici comment je choisis mes matières premières", "Cette semaine je mets en avant mon offre [X]", "Jusqu'au dimanche, -20% sur [produit]".</div>
-      </div>
-
-      <div class="pilier-conseil">
-        💡 <strong>Conseil :</strong> sur une semaine type, vise 1 post Visibilité + 1 Autorité + 1 Expertise. C'est l'équilibre qui permet à la fois d'attirer, de convaincre et de fidéliser.
-      </div>
-
-    </div>
-    </div><!-- /tab-piliers -->
-
-    <!-- TAB : TUTORIEL -->
-    <div class="aide-tab-content" id="tab-tuto">
-    <div class="aide-section">
-      <h3>🚀 Comment utiliser l'outil</h3>
-
-      <div class="aide-card">
-        <div class="ac-titre" style="margin-bottom:.6rem;">Chaque semaine — le rituel en 2 temps</div>
-        <div class="tuto-step"><div class="tuto-num">1</div><div class="tuto-txt"><strong>Lundi soir — 5 min</strong><br/>Va dans l'onglet <strong>Semaine</strong> et réponds aux 8 questions. Aucune obligation de tout remplir — même 3 réponses suffisent pour alimenter l'IA.</div></div>
-        <div class="tuto-step"><div class="tuto-num">2</div><div class="tuto-txt"><strong>Mardi matin — 20 min</strong><br/>Va dans <strong>Générer</strong> → choisis ton pilier, ton réseau, ton format → clique sur Générer → ajuste si besoin → copie ou sauvegarde dans le calendrier.</div></div>
-      </div>
-
-      <div class="aide-card">
-        <div class="ac-titre" style="margin-bottom:.6rem;">Générer un post — étape par étape</div>
-        <div class="tuto-step"><div class="tuto-num">1</div><div class="tuto-txt"><strong>Choisis un pilier</strong> — Visibilité, Autorité ou Expertise. Ce choix oriente tout le post (sources, ton, thème).</div></div>
-        <div class="tuto-step"><div class="tuto-num">2</div><div class="tuto-txt"><strong>Choisis le réseau</strong> — LinkedIn ou Instagram. Le format et la longueur s'adaptent automatiquement.</div></div>
-        <div class="tuto-step"><div class="tuto-num">3</div><div class="tuto-txt"><strong>Choisis le format</strong> — Texte, Photo, Carrousel ou Réel. Pour un carrousel, tu verras les slides générées et pourras les exporter.</div></div>
-        <div class="tuto-step"><div class="tuto-num">4</div><div class="tuto-txt"><strong>Sujet (optionnel)</strong> — si tu as une idée précise, écris-la. Sinon laisse vide : l'IA choisit depuis ta matière de la semaine.</div></div>
-        <div class="tuto-step"><div class="tuto-num">5</div><div class="tuto-txt"><strong>Clique sur Générer</strong> — le texte apparaît directement. Lis-le, ajuste ce qui ne sonne pas comme toi, puis copie ou sauvegarde.</div></div>
-        <div class="tuto-step"><div class="tuto-num">6</div><div class="tuto-txt"><strong>Sauvegarde dans le calendrier</strong> — choisis la date de publication et clique sur Sauvegarder. Le post apparaît dans ton calendrier avec son statut "À relire".</div></div>
-      </div>
-
-      <div class="aide-card">
-        <div class="ac-titre">💡 Conseils pour de meilleurs résultats</div>
-        <div class="ac-desc" style="line-height:2;">
-          — Plus tu remplis les 8 questions avec des détails précis et vrais, plus l'IA génère dans ta voix.<br/>
-          — Relis toujours le post généré à voix haute : si tu ne te reconnais pas dans ce que tu entends, reformule.<br/>
-          — Utilise le bouton Régénérer si le premier résultat ne te convient pas — chaque génération est différente.<br/>
-          — Varie les piliers d'une semaine à l'autre pour ne pas lasser ton audience.<br/>
-          — Pour les stories vente, le plus important est d'avoir un mot-clé clair (ex : "COACHING", "DEVIS") que tes abonnés peuvent t'envoyer en DM.
-        </div>
-      </div>
-    </div>
-
-    </div><!-- /tab-tuto -->
-    <button class="btn btn-rose btn-full" onclick="go('p-accueil')" style="margin-top:1.2rem;">Retour à l'accueil</button>
-  </section>
-
-</div><!-- /scroll -->
-
-<!-- TAB BAR -->
-<nav class="tabs">
-  <button class="tab on" onclick="go('p-accueil',this)"><i>🏠</i>Accueil</button>
-  <button class="tab" onclick="go('p-semaine',this)"><i>✍️</i>Semaine</button>
-  <button class="tab" onclick="go('p-generer',this)"><i>✨</i>Générer</button>
-  <button class="tab" onclick="go('p-calendrier',this)"><i>📅</i>Calendrier</button>
-  <button class="tab" onclick="go('p-compte',this)"><i>👤</i>Compte</button>
-</nav>
-
-<!-- ══ MODALE ÉDITION POST ══ -->
-<!-- Modale liste posts du jour -->
-<div class="overlay" id="ov-jour" onclick="fermerJour(event)">
-  <div class="sheet" id="sheet-jour">
-    <div class="sheet-handle"></div>
-    <div class="sheet-hd">
-      <h3 id="jour-titre">Posts du jour</h3>
-      <button class="sheet-close" onclick="fermerJour()" aria-label="Fermer">✕</button>
-    </div>
-    <div id="jour-liste" style="display:flex;flex-direction:column;gap:.6rem;margin-top:.4rem;"></div>
-    <button class="btn btn-ghost btn-full" style="margin-top:1rem;" onclick="ouvrirCreerDepuisJour()">＋ Ajouter un post</button>
-  </div>
-</div>
-
-<div class="overlay" id="ov-edit" onclick="fermerEdit(event)">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-hd">
-      <h3 id="edit-titre">Éditer le post</h3>
-      <button class="sheet-close" onclick="fermerEdit()"><span aria-hidden="true">✕</span><span class="sr-only">Fermer</span></button>
-    </div>
-    <div class="sheet-meta" id="edit-meta"></div>
-
-    <!-- Réseau social -->
-    <div style="font-size:.75rem;color:var(--gris-clair);margin-bottom:.4rem;">Réseau social</div>
-    <div class="reseau-sel">
-      <div class="reseau-opt" id="opt-li" onclick="setReseau('LinkedIn')">💼 LinkedIn</div>
-      <div class="reseau-opt" id="opt-ig" onclick="setReseau('Instagram')">📸 Instagram</div>
-    </div>
-
-    <!-- Date -->
-    <div class="date-picker-row">
-      <label>📅 Date de publication</label>
-      <input type="date" id="edit-date"/>
-    </div>
-
-    <!-- Texte principal -->
-    <div id="edit-texte-hd" style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Légende & hashtags</div>
-    <textarea class="edit-zone" id="edit-texte" placeholder="Légende & hashtags…"></textarea>
-    <!-- Zone carrousel (visible uniquement pour les posts carrousel) -->
-    <div id="edit-carrousel-zone" style="display:none;">
-      <div style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Aperçu carrousel</div>
-      <div id="edit-carrousel-wrap"></div>
-    </div>
-    <!-- Zone tableau script Réel / Vidéo / Story dans la modale édition -->
-    <div id="edit-script-zone" style="display:none;">
-      <div style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;" id="edit-script-lbl">Script</div>
-      <div id="edit-script-wrap" style="overflow-x:auto;"></div>
-    </div>
-    <div class="regen-row">
-      <button class="btn btn-ghost btn-sm" onclick="regenPost()">🔄 Régénérer le sujet</button>
-      <button class="btn btn-ghost btn-sm" onclick="regenManuel()">✏️ Saisir un sujet</button>
-    </div>
-    <div class="mini-loader" id="loader-regen"><div class="mini-ring"></div><span>Régénération en cours…</span></div>
-
-    <!-- Légende (masquée pour les carrousels — déjà dans le viewer) -->
-    <div id="edit-legende-hd" style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Légende & hashtags</div>
-    <textarea class="legende-zone" id="edit-legende" placeholder="Légende + hashtags…"></textarea>
-    <div class="regen-row">
-      <button class="btn btn-ghost btn-sm" onclick="regenLegende()">🔄 Régénérer la légende</button>
-    </div>
-
-    <!-- Sujet manuel (caché par défaut) -->
-    <div id="sujet-manuel-zone" style="display:none;margin-top:.8rem;">
-      <div style="font-size:.75rem;color:var(--gris-clair);margin-bottom:.4rem;">Saisis ton sujet ou angle</div>
-      <input type="text" id="sujet-manuel" placeholder="Ex : témoignage d'une cliente coach…"/>
-      <button class="btn btn-rose btn-sm btn-full" style="margin-top:.5rem;" onclick="genDepuisSujet()">✨ Générer depuis ce sujet</button>
-    </div>
-
-    <div class="edit-actions">
-      <button class="btn btn-rose" onclick="sauvegarderEdit()">💾 Sauvegarder</button>
-      <button class="btn btn-outline" onclick="copierEdit()">Copier</button>
-      <button class="btn btn-ghost" onclick="dupliquerPost()" title="Dupliquer ce post">📋 Dupliquer</button>
-      <button class="btn" style="background:rgba(255,50,50,.12);color:#ff6b6b;border:1px solid rgba(255,50,50,.25);margin-top:0;" onclick="supprimerPost()" aria-label="Supprimer ce post">🗑️</button>
-    </div>
-
-    <!-- Toggle statut -->
-    <button class="btn btn-full" id="btn-st-toggle" onclick="toggleStModale()" style="margin-top:.6rem;background:rgba(46,204,113,.12);color:var(--succes);border:1px solid rgba(46,204,113,.25) !important;">✓ Marquer publié</button>
-  </div>
-</div>
-
-<!-- ══ MODALE STORY DU JOUR ══ -->
-<div class="overlay" id="ov-story" onclick="fermerStory(event)">
-  <div class="sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-hd">
-      <h3 id="story-modal-titre">Story du jour</h3>
-      <button class="sheet-close" onclick="fermerStory()" aria-label="Fermer">✕</button>
-    </div>
-    <div class="sheet-meta" id="story-modal-meta"></div>
-    <!-- Sujet configuré -->
-    <div style="font-size:.75rem;color:var(--gris-clair);margin-bottom:.4rem;">Sujet configuré</div>
-    <div class="story-modal-sujet" id="story-modal-sujet"></div>
-    <!-- Exemple de script -->
-    <div class="story-modal-exemple">
-      <strong>💡 Exemple de script</strong>
-      <div id="story-modal-exemple-txt"></div>
-    </div>
-    <!-- Actions -->
-    <div class="edit-actions">
-      <button class="btn btn-rose" id="btn-story-publier" onclick="toggleStoryPubliee()">✅ Marquer publiée</button>
-      <button class="btn btn-ghost" onclick="genStoryTexte()">✨ Générer un script</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ MODALE CRÉATION POST (clic sur jour calendrier) ══ -->
-<!-- Réutilise exactement gen-panel — même interface que l'onglet Générer -->
-<div class="overlay" id="ov-creer" style="align-items:stretch;padding:0;">
-  <div class="sheet" id="sheet-creer" style="max-height:100vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;">
-    <div class="sheet-handle"></div>
-    <div class="sheet-hd" style="flex-shrink:0;">
-      <h3 id="creer-titre-hd">✨ Nouveau post</h3>
-      <button class="sheet-close" onclick="fermerCreer()"><span aria-hidden="true">✕</span><span class="sr-only">Fermer</span></button>
-    </div>
-    <!-- Contenu scrollable : gen-panel est déplacé ici dynamiquement via JS -->
-    <div id="creer-panel-zone" style="flex:1;overflow-y:auto;padding:0 1rem 1.5rem;"></div>
-  </div>
-</div>
-
-<!-- ══ MODALE FÉLICITATIONS STREAK ══ -->
-<div class="streak-modal-fond" id="streak-modal-fond" onclick="fermerStreakModal()">
-  <div class="streak-modal" onclick="event.stopPropagation()">
-    <span class="sm-ic" id="sm-ic">🏆</span>
-    <div class="sm-badge" id="sm-badge">1 mois</div>
-    <h2 id="sm-titre">Bravo <em id="sm-prenom"></em> !</h2>
-    <p id="sm-message">Tu publies avec régularité depuis 1 mois. C'est exactement ce qui fait la différence sur les réseaux sociaux.</p>
-    <button class="btn btn-rose" style="width:100%;" onclick="fermerStreakModal()">Continuer sur ma lancée 🚀</button>
-  </div>
-</div>
-
-  <!-- ══ MENTIONS LÉGALES (obligatoires - RGPD France) ══ -->
-<div class="overlay" id="ov-legal" onclick="fermerLegal(event)" style="display:none;align-items:flex-start;padding-top:3rem;">
-  <div class="sheet" style="max-height:85vh;overflow-y:auto;">
-    <div class="sheet-handle"></div>
-    <div class="sheet-hd">
-      <h3>Mentions légales & Confidentialité</h3>
-      <button class="sheet-close" onclick="fermerLegal()" aria-label="Fermer">✕</button>
-    </div>
-<div id="p-legal" style="padding:.4rem 0 1rem;">
-  <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;display:none;">Mentions légales & Confidentialité</h2>
-  <div style="font-size:.82rem;line-height:1.75;color:var(--gris-clair);">
-    <p><strong style="color:var(--blanc-doux);">Éditeur</strong><br/>Roze Communications — Rozenn Cazoulat<br/>Trégor, Côtes-d'Armor, France<br/>contact@roze-communications.com</p>
-    <p style="margin-top:.8rem;"><strong style="color:var(--blanc-doux);">Données personnelles</strong><br/>
-    Vos données (profil, contenus générés) sont stockées dans votre propre Google Sheets personnel. Roze Assistant n'héberge pas vos données et n'y accède pas. Vous en êtes le seul propriétaire.<br/>
-    Conformément au RGPD et à la loi Informatique et Libertés, vous disposez d'un droit d'accès, de rectification et de suppression de vos données.</p>
-    <p style="margin-top:.8rem;"><strong style="color:var(--blanc-doux);">Intelligence artificielle</strong><br/>
-    Les contenus générés sont produits par l'API Claude d'Anthropic via votre propre clé API. Roze Assistant n'a pas accès à votre clé API qui est stockée localement sur votre appareil.</p>
-    <p style="margin-top:.8rem;"><strong style="color:var(--blanc-doux);">Cookies</strong><br/>
-    Cette application n'utilise pas de cookies tiers. Les données de configuration sont stockées en localStorage sur votre appareil uniquement.</p>
-    <p style="margin-top:.8rem;"><strong style="color:var(--blanc-doux);">Contact & exercice des droits</strong><br/>
-    contact@roze-communications.com</p>
-  </div>
-</div>
-  </div>
-</div>
-
-  <!-- ══ SE REPÉRER ══ (page aide, non indexée dans la nav) -->
-
-<!-- ══ MODALE ÉDITION SLIDE CARROUSEL ══ -->
-<div class="cv-edit-overlay" id="cv-edit-overlay" onclick="fermerEditSlide(event)">
-  <div class="cv-edit-panel" id="cv-edit-panel">
-    <div class="cv-edit-handle"></div>
-    <div class="cv-edit-hd">
-      <h4 id="cv-edit-slide-titre-hd">Slide 1</h4>
-      <button class="cv-edit-close" onclick="fermerEditSlide()" aria-label="Fermer">✕</button>
-    </div>
-
-    <!-- Texte -->
-    <div class="ed-section">
-      <span class="ed-label">✏️ Titre</span>
-      <textarea class="cv-edit-textarea" id="cv-edit-titre" rows="2" oninput="appliquerEditSlide()"></textarea>
-    </div>
-    <div class="ed-section">
-      <span class="ed-label">📝 Corps</span>
-      <textarea class="cv-edit-textarea" id="cv-edit-corps" rows="3" oninput="appliquerEditSlide()"></textarea>
-    </div>
-
-    <!-- Sous-titre (optionnel, affiché sur slide 1 et sous les titres des slides) -->
-    <div class="ed-section">
-      <span class="ed-label">✨ Sous-titre <span style="font-weight:400;color:var(--gris-clair);font-size:.7rem;">(petite ligne sous le titre, optionnelle)</span></span>
-      <input type="text" class="cv-edit-textarea" id="cv-edit-sstitre" placeholder="Ex : Moins de volume, plus d'impact" style="font-size:.88rem;" oninput="appliquerEditSlide()"/>
-    </div>
-
-    <!-- Interligne titre + corps -->
-    <div class="ed-section">
-      <span class="ed-label">📏 Espacement des lignes</span>
-      <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:.4rem;">
-        <div style="flex:1;min-width:130px;">
-          <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.25rem;display:flex;justify-content:space-between;">
-            <span>Titre</span><span id="ed-lh-titre-val">1.15</span>
-          </div>
-          <input type="range" id="ed-lh-titre" min="1.0" max="1.8" step="0.05" value="1.15" oninput="majInterligne('titre',this.value)" style="width:100%;"/>
-        </div>
-        <div style="flex:1;min-width:130px;">
-          <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.25rem;display:flex;justify-content:space-between;">
-            <span>Corps</span><span id="ed-lh-corps-val">1.20</span>
-          </div>
-          <input type="range" id="ed-lh-corps" min="1.1" max="2.0" step="0.05" value="1.20" oninput="majInterligne('corps',this.value)" style="width:100%;"/>
-        </div>
-      </div>
-    </div>
-
-    <!-- Taille de police titre + corps -->
-    <div class="ed-section">
-      <span class="ed-label">🔤 Taille de la police</span>
-      <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:.4rem;">
-        <div style="flex:1;min-width:130px;">
-          <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.25rem;display:flex;justify-content:space-between;">
-            <span>Titre</span><span id="ed-fs-titre-val">100%</span>
-          </div>
-          <input type="range" id="ed-fs-titre" min="0.7" max="1.4" step="0.05" value="1.0" oninput="majTaillePolice('titre',this.value)" style="width:100%;"/>
-        </div>
-        <div style="flex:1;min-width:130px;">
-          <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.25rem;display:flex;justify-content:space-between;">
-            <span>Corps</span><span id="ed-fs-corps-val">100%</span>
-          </div>
-          <input type="range" id="ed-fs-corps" min="0.7" max="1.4" step="0.05" value="1.0" oninput="majTaillePolice('corps',this.value)" style="width:100%;"/>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bouton : appliquer les espacements + tailles à toutes les slides -->
-    <div class="ed-section">
-      <button class="btn btn-ghost" id="ed-btn-propager" onclick="propagerMiseEnPage()" style="width:100%;font-size:.82rem;">
-        📐 Appliquer ces espacements & tailles à toutes les slides
-      </button>
-      <div class="opt" style="margin-top:.4rem;font-size:.68rem;line-height:1.4;">
-        Copie l'interligne titre/corps et les tailles de police de cette slide vers toutes les autres.
-      </div>
-    </div>
-
-    <!-- Stabilo toggle + config -->
-    <div class="ed-section">
-      <label class="ed-toggle" onclick="edToggleStabilo()">
-        <div class="ed-toggle-track on" id="ed-stabilo-track"><div class="ed-toggle-thumb"></div></div>
-        <span class="ed-toggle-lbl">Effet surligné (stabilo)</span>
-      </label>
-      <div id="ed-stabilo-cfg" style="margin-top:.6rem;">
-        <div class="ed-row">
-          <input type="text" id="cv-edit-stabilo-mot" placeholder="Mot à surligner (vide = dernier mot)" style="flex:1;font-size:.82rem;" oninput="appliquerEditSlide()"/>
-          <label class="ed-color-swatch" title="Couleur du stabilo">
-            <input type="color" id="cv-edit-stabilo-couleur" oninput="appliquerEditSlide()"/>
-          </label>
-        </div>
-        <div style="margin-top:.5rem;"><span class="cv-stabilo-preview" id="cv-stabilo-preview">Aperçu</span></div>
-      </div>
-    </div>
-
-    <!-- Fond -->
-    <div class="ed-section">
-      <span class="ed-label">🎨 Fond de cette slide</span>
-      <!-- Type de fond -->
-      <div class="ed-row" style="margin-bottom:.6rem;">
-        <button class="ed-chip on" id="ed-fond-uni"     onclick="edFondType('uni',this)">Uni 1</button>
-        <button class="ed-chip"    id="ed-fond-custom"  onclick="edFondType('custom',this)">Autre couleur</button>
-        <button class="ed-chip"    id="ed-fond-degrade" onclick="edFondType('degrade',this)">Dégradé</button>
-        <button class="ed-chip"    id="ed-fond-beton"   onclick="edFondType('beton',this)">Matière</button>
-
-        <label class="ed-chip" id="ed-fond-photo" style="cursor:pointer;margin:0;">
-          📷 Importer une photo
-          <input type="file" accept="image/*" id="ed-photo-file-input" style="display:none;" onchange="edImporterPhoto(this)"/>
-        </label>
-      </div>
-
-      <!-- Uni custom : 1 couleur libre -->
-      <div id="ed-cfg-custom" style="display:none;">
-        <div class="ed-row">
-          <span style="font-size:.8rem;color:var(--gris-clair);">Couleur</span>
-          <label class="ed-color-swatch"><input type="color" id="ed-col-custom" oninput="edApplyFond()"/></label>
-        </div>
-      </div>
-
-      <!-- Dégradé -->
-      <div id="ed-cfg-degrade" style="display:none;">
-        <div class="ed-row" style="margin-bottom:.5rem;">
-          <span style="font-size:.8rem;color:var(--gris-clair);">Couleur 1</span>
-          <label class="ed-color-swatch"><input type="color" id="ed-grad-c1" oninput="edApplyFond()"/></label>
-          <span style="font-size:.8rem;color:var(--gris-clair);">Couleur 2</span>
-          <label class="ed-color-swatch"><input type="color" id="ed-grad-c2" oninput="edApplyFond()"/></label>
-        </div>
-        <div class="ed-gradient-type">
-          <button class="ed-chip on" id="ed-grad-lin" onclick="edGradType('linear',this)">Linéaire →</button>
-          <button class="ed-chip"    id="ed-grad-rad" onclick="edGradType('radial',this)">Radial ◉</button>
-          <button class="ed-chip"    id="ed-grad-cir" onclick="edGradType('circle',this)">Circulaire ○</button>
-          <button class="ed-chip"    id="ed-grad-diag" onclick="edGradType('diagonal',this)">Diagonal ↗</button>
-        </div>
-      </div>
-
-      <!-- Matière (radial avec couleurs libres) -->
-      <div id="ed-cfg-beton" style="display:none;">
-        <div class="ed-row">
-          <span style="font-size:.8rem;color:var(--gris-clair);">Couleur principale</span>
-          <label class="ed-color-swatch"><input type="color" id="ed-beton-c1" oninput="edApplyFond()"/></label>
-          <span style="font-size:.8rem;color:var(--gris-clair);">Couleur sombre</span>
-          <label class="ed-color-swatch"><input type="color" id="ed-beton-c2" oninput="edApplyFond()"/></label>
-        </div>
-      </div>
-
-      <!-- Photo de fond — aperçu inline quand importée -->
-      <div id="ed-cfg-photo" style="display:none;margin-top:.6rem;">
-        <div id="ed-photo-preview-wrap" style="display:none;">
-          <div style="display:flex;gap:.8rem;align-items:stretch;">
-            <!-- Aperçu à gauche -->
-            <div id="ed-photo-preview" style="border-radius:10px;overflow:hidden;aspect-ratio:3/4;width:90px;flex-shrink:0;position:relative;background:#222;">
-              <img id="ed-photo-preview-img" style="width:100%;height:100%;object-fit:cover;display:block;"/>
-              <div style="position:absolute;inset:0;background:rgba(0,0,0,.38);"></div>
-            </div>
-            <!-- Infos + bouton changer à droite -->
-            <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0;">
-              <div>
-                <div style="font-size:.78rem;color:#4caf50;font-weight:600;margin-bottom:.25rem;">✅ Photo chargée</div>
-                <div style="font-size:.7rem;color:var(--gris-clair);line-height:1.4;">Un filtre semi-transparent est appliqué pour la lisibilité du texte.</div>
-              </div>
-              <label class="ed-chip" style="cursor:pointer;margin-top:.5rem;align-self:flex-start;font-size:.72rem;padding:4px 10px;">
-                🔄 Changer la photo
-                <input type="file" accept="image/*" style="display:none;" onchange="edImporterPhoto(this)"/>
-              </label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Prévisualisation -->
-      <div class="ed-preview" id="ed-fond-preview"></div>
-    </div>
-  </div>
-</div>
-
-<div id="toast"></div>
-
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-function escapeHtml(str){ if(!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-
-// ══════════════════════════════════════════
-// CONFIG
-// ══════════════════════════════════════════
-let CFG = {
-  prenom:       ls('roze_prenom')        || '',
-  as:           ls('roze_as')            || '',
-  api:          ls('roze_api')           || '',
-  apiGemini:    ls('roze_api_gemini')    || '',
-  ia:           ls('roze_ia')            || 'claude',
-  drivePhotos:  ls('roze_drive_photos')  || '',
-  couleur1:     ls('roze_couleur1')      || '#E8186D',
-  couleur2:     ls('roze_couleur2')      || '#111111',
-  couleur3:     ls('roze_couleur3')      || '',
-  couleur4:     ls('roze_couleur4')      || '',
-  couleurTexte: ls('roze_couleur_texte') || '#111111',
-  policeTitre:  ls('roze_police_titre')  || 'Playfair Display',
-  policeCorps:  ls('roze_police_corps')  || 'DM Sans',
-  logoUrl:      ls('roze_logo_url')      || '',
-  nom:          ls('roze_nom')           || '',
-  entreprise:   ls('roze_entreprise')    || '',
-  metier:       ls('roze_metier')        || '',
-  catMetier:    ls('roze_cat_metier')    || '',
-  tronc:        ls('roze_tronc')         || '',
-  registre:     ls('roze_registre')      || 'tutoiement',
-  tonalite:     ls('roze_tonalite')      || 'direct',
-  partage:      ls('roze_partage')       || 'equilibre',
-  cible:        ls('roze_cible')         || '',
-  exprMarque:   ls('roze_expr_marque')   || '',
-  references:   ls('roze_references')    || '',
-  motsInterdits: ls('roze_mots_interdits') || '',
-  emojisMarque:  ls('roze_emojis_marque')  || '',
-  instaUser:    ls('roze_insta_user')    || '',
-  linkedinUrl:  ls('roze_linkedin_url')  || ''
-};
-
-// Rythme par défaut
-let RYTHME = lsJ('roze_rythme') || {
-  li: { actif:true, formats:{'Post texte':1,'Carrousel':1,'Vidéo':0,'Photo':0},
-        jours:[2,4] },   // 2=mardi, 4=jeudi (0=lundi…6=dimanche)
-  ig: { actif:true, formats:{'Photo':2,'Carrousel':1,'Réel':0},
-        jours:[4] }      // 4=vendredi
-};
-// Assurer la rétro-compatibilité
-if(!RYTHME.li.jours) RYTHME.li.jours = [2,4];
-if(!RYTHME.ig.jours) RYTHME.ig.jours = [4];
-
-// Stories config (7 jours)
-const STORIES_DEF = [
-  {jour:'Lundi',   typo:'storytelling-lifestyle', sujet:'Scène du quotidien pro (bureau, atelier, déplacement) qui révèle un bout de ta personnalité ou de ta façon de travailler'},
-  {jour:'Mardi',   typo:'valeur',                 sujet:'1 astuce utile pour ta cible sur un sujet qui la touche (1 slide = 1 idée)'},
-  {jour:'Mercredi',typo:'vente',                  sujet:'Recontextualisation de ta journée → problème que ta cible rencontre → invitation à un échange en DM ou lien en story'},
-  {jour:'Jeudi',   typo:'storytelling-lifestyle', sujet:'Ton avis tranché sur un sujet de ton secteur qui concerne ta cible (ose prendre position)'},
-  {jour:'Vendredi',typo:'valeur',                 sujet:'1 actualité récente de ton secteur commentée, OU 1 astuce en face caméra pour ta cible'},
-  {jour:'Samedi',  typo:'storytelling-lifestyle', sujet:'Une de tes valeurs incarnée dans un moment concret (ex : la liberté via une habitude de la semaine)'},
-  {jour:'Dimanche',typo:'vente',                  sujet:'Bilan de la semaine ou réflexion pro → lien avec une douleur de ta cible → invitation douce à échanger'},
-];
-let STORIES_CFG = (function(){
-  const stored = lsJ('roze_stories');
-  if(!stored || !Array.isArray(stored) || stored.length !== 7) {
-    return JSON.parse(JSON.stringify(STORIES_DEF));
-  }
-  // Migration : si un jour a un libellé sujet ancien (formulation obsolète),
-  // on restaure le libellé par défaut correspondant — l'utilisateur peut toujours le modifier ensuite
-  const obsolete = [
-    'révèle qui tu es',
-    'plusieurs slides pour aérer',
-    'Contexte du jour / Ta pensée sur une situation',
-    'Opinion assumée sur un sujet qui te touche',
-    'en face caméra idéalement',
-    'la liberté à travers une habitude',
-  ];
-  stored.forEach((s, i) => {
-    if(!s.sujet) return;
-    if(obsolete.some(o => s.sujet.includes(o))) {
-      s.sujet = STORIES_DEF[i].sujet;
-    }
-    // Assurer que la typo est valide (pas d'UNDEFINED)
-    if(!['storytelling-lifestyle', 'valeur', 'vente'].includes(s.typo)) {
-      s.typo = STORIES_DEF[i].typo;
-    }
-  });
-  return stored;
-})();
-
-let editId = null;  // id du post en cours d'édition
-let CAL = { vue:'mois', annee:new Date().getFullYear(), mois:new Date().getMonth(), semDebut:lundiSem(new Date()) };
-
-// ══════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════
-document.addEventListener('DOMContentLoaded',()=>{
-  initTheme(); initUI(); chargerCompte(); affDate(); construireStoriesUI(); majGenFormats(getGenReseau()); majRythme(); etatBoutonSemaine();
-  syncConfigDepuisSheets(); // Sync multi-appareils au démarrage
-  majCompteurBrouillons(); // Init compteur idées
-  initAuth(); // Contrôle d'accès Google Sign-In
-  majSemMini(); majKPIs();
-  // Afficher le badge sync si posts en attente
-  const qInit = getQueueSync();
-  if(qInit.length > 0) majBadgeSync(qInit.length);
-  // Tenter de vider la file après 3s si on est en ligne
-  setTimeout(viderQueueSync, 3000);
-  if('serviceWorker'in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
-});
-
-function initUI(){
-  const nomAffiche = [CFG.prenom, CFG.nom].filter(Boolean).join(' '); const el_nc = document.getElementById('nom-client'); if(el_nc && !el_nc.onclick) el_nc.textContent = nomAffiche || 'Se repérer ›';
-  afficherStreak();
-  majPreviewCouleurs();
-  majQuotaResume();
-  majFormats();
-  majAccueil();
-}
-
-// ══════════════════════════════════════════
-// STORY DU JOUR — COMPTEUR ACCUEIL
-// ══════════════════════════════════════════
-let sqpIdx = null;   // index story du jour dans STORIES_CFG
-let sqpDate = null;  // date ISO de la story du jour
-
-function majStoryDuJour(){
-  const aujStr  = dateAujourdhui();
-  const lundi   = lundiSem(new Date());
-  const joursNoms = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
-
-  // Calculer l'index du jour courant dans la semaine (0=lun … 6=dim)
-  const auj  = new Date();
-  const jourJS = auj.getDay(); // 0=dim … 6=sam
-  const idx  = jourJS === 0 ? 6 : jourJS - 1; // convertir en 0=lun
-  sqpIdx  = idx;
-  sqpDate = aujStr;
-
-  const s = STORIES_CFG[idx];
-  if(!s) return;
-
-  const typoNom = {'storytelling-lifestyle':'Storytelling / Lifestyle', valeur:'Valeur', vente:'Vente'};
-  const publiee = localStorage.getItem('roze_story_pub_' + aujStr) === '1';
-
-  // Mettre à jour l'affichage
-  const elSujet = document.getElementById('pc-story-sujet');
-  const elBadge = document.getElementById('pc-story-badge');
-
-  // Badge thème coloré
-  const elTypoBadge = document.getElementById('pc-story-typo-badge');
-  const elBtnTxt    = document.getElementById('pc-story-btn-txt');
-  const elBtnIcon   = document.getElementById('pc-story-btn-icon');
-  const typoClasse  = {'vente':'typo-vente','valeur':'typo-valeur','storytelling-lifestyle':'typo-lifestyle'};
-  if(elTypoBadge){
-    elTypoBadge.textContent = typoNom[s.typo] || s.typo;
-    elTypoBadge.className   = 'pc-story-typo-badge ' + (typoClasse[s.typo]||'');
-  }
-  if(elSujet) elSujet.textContent = s.sujet;
-  if(elBadge){
-    if(publiee){
-      if(elBtnTxt)  elBtnTxt.textContent  = 'Story publiée ✓';
-      if(elBtnIcon) elBtnIcon.textContent  = '✅';
-      elBadge.className   = 'pc-story-btn-publier publiee';
-    } else {
-      if(elBtnTxt)  elBtnTxt.textContent  = 'À publier';
-      if(elBtnIcon) elBtnIcon.textContent  = '⚠️';
-      elBadge.className   = 'pc-story-btn-publier';
-    }
-  }
-
-  // Pré-remplir le textarea avec le script sauvegardé s'il existe
-  const scriptSave = localStorage.getItem('roze_story_script_' + aujStr) || '';
-  const sqpTx = document.getElementById('sqp-texte');
-  if(sqpTx && scriptSave) sqpTx.value = scriptSave;
-
-  // Titre du panneau
-  const sqpTitre = document.getElementById('sqp-titre');
-  if(sqpTitre) sqpTitre.textContent = 'Story ' + joursNoms[idx] + ' — ' + s.sujet;
-}
-
-function toggleStoryQuick(){
-  const panel   = document.getElementById('story-quick-panel');
-  const publiee = localStorage.getItem('roze_story_pub_' + sqpDate) === '1';
-
-  if(publiee){
-    // Si déjà publiée : toggle le statut directement
-    localStorage.removeItem('roze_story_pub_' + sqpDate);
-    majStoryDuJour();
-    majTrackerStories();
-    toast('↩️ Story remise en attente','ok');
-    return;
-  }
-
-  // Sinon ouvrir/fermer le panneau de saisie/génération
-  panel.classList.toggle('on');
-  if(panel.classList.contains('on')){
-    document.querySelector('.scroll').scrollTop = 0;
-    // Pré-remplir avec le script existant
-    const script = localStorage.getItem('roze_story_script_' + sqpDate) || '';
-    const tx = document.getElementById('sqp-texte');
-    if(tx) tx.value = script;
-  }
-}
-
-async function sqpGenerer(){
-  if(!verifierCleIA()) return;
-  if(sqpIdx === null) return;
-
-  const s       = STORIES_CFG[sqpIdx];
-  const loader  = document.getElementById('sqp-loader');
-  const result  = document.getElementById('sqp-result');
-  const saisie  = document.getElementById('sqp-texte').value.trim();
-
-  loader.classList.add('on');
-  result.classList.remove('on');
-
-  const matiere  = (await matiereSemaineEnrichie()).matiere;
-  const angleBloc = saisie ? '\nANGLE / CONTEXTE SAISI : ' + saisie + '\n' : '';
-
-  const body = {
-    action:  'generer_post',
-    ia:      CFG.ia || 'claude',
-    cle_ia:  CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
-    reseau:  'Instagram',
-    format:  'Stories',
-    pilier:  s.typo === 'vente' ? 'autorite' : s.typo === 'valeur' ? 'expertise' : 'visibilite',
-    sujet:   '[STORY ' + s.typo.toUpperCase() + '] ' + s.sujet + (saisie ? ' — ' + saisie : ''),
-    matiere: matiere,
-    story_type: s.typo,
-    anti_redondance: contexteAntiRedondance(),
-  };
-
-  try{
-    if(!CFG.as){ throw new Error('URL Apps Script manquante'); }
-    loader.querySelector('span').textContent = '✨ Génération…';
-    const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
-    const j = await r.json();
-    if(j.erreur) throw new Error(j.erreur);
-    const texte = nettoyerIntroIA(j.texte || '');
-    loader.classList.remove('on');
-    result.textContent = texte;
-    result.classList.add('on');
-    document.getElementById('sqp-texte').value = texte;
-    localStorage.setItem('roze_story_script_' + sqpDate, texte);
-    toast('✅ Script généré !','ok');
-  }catch(e){
-    loader.classList.remove('on');
-    toast('❌ ' + e.message,'err');
-  }
-}
-
-function sqpSauvegarder(){
-  const texte = document.getElementById('sqp-texte').value.trim();
-  if(!texte){ toast('⚠️ Rien à sauvegarder','err'); return; }
-  localStorage.setItem('roze_story_script_' + sqpDate, texte);
-  // Marquer publiée
-  localStorage.setItem('roze_story_pub_' + sqpDate, '1');
-  majStoryDuJour();
-  majTrackerStories();
-  // Fermer le panneau
-  document.getElementById('story-quick-panel').classList.remove('on');
-  document.getElementById('sqp-result').classList.remove('on');
-  toast('✅ Story sauvegardée et marquée publiée !','ok');
-}
-
-function sqpCopier(){
-  const texte = document.getElementById('sqp-texte').value
-    || document.getElementById('sqp-result').textContent;
-  if(!texte){ toast('⚠️ Rien à copier','err'); return; }
-  navigator.clipboard.writeText(texte).then(()=>toast('✅ Copié !','ok'));
-}
-
-function majAccueil(){
-  // ─ Compteur posts semaine en cours ─
-  const lundi   = lundiSem(new Date());
-  const dimanche = new Date(lundi.getTime() + 6*86400000);
-  const lundStr  = lundi.toISOString().split('T')[0];
-  const dimStr   = dimanche.toISOString().split('T')[0];
-
-  const biblio   = getBiblio();
-  const cetteSem = biblio.filter(p => p.date >= lundStr && p.date <= dimStr);
-  // 3 compteurs distincts
-  const publies  = cetteSem.filter(p => p.statut === 'Publié').length;
-  const enCours  = cetteSem.filter(p => p.statut !== 'Publié').length;
-  // Nombre prévu = somme des quotas configurés
-  const posts    = lireRythme();
-  const prevus   = posts.length;
-
-  document.getElementById('pc-prevus').textContent  = prevus;
-  document.getElementById('pc-en-cours').textContent = enCours;
-  document.getElementById('pc-prets').textContent   = publies;
-  const pct = prevus > 0 ? Math.min(100, Math.round(publies / prevus * 100)) : 0;
-  document.getElementById('pc-barre').style.width   = pct + '%';
-
-  majTrackerStories();
-  majStoryDuJour();
-  // Mettre à jour le compteur stories dans la mini-carte accueil
-  const lundiStat = lundiSem(new Date());
-  let nbPubS = 0;
-  for(let ii=0;ii<7;ii++){
-    const dsStat=new Date(lundiStat.getTime()+ii*86400000).toISOString().split('T')[0];
-    if(localStorage.getItem('roze_story_pub_'+dsStat)==='1') nbPubS++;
-  }
-  const elStat = document.getElementById('mini-stories-stat');
-  if(elStat) elStat.textContent = nbPubS > 0 ? nbPubS+'/7 publiées cette semaine' : '7 stories / semaine';
-  // ─ Statut questions de la semaine ─
-  // On considère les questions remplies si au moins q1 + q2 ont du contenu cette semaine
-  const semKey = 'roze_sem_' + lundStr;
-  const semDone = localStorage.getItem(semKey) === '1';
-  const badge   = document.getElementById('sq-badge');
-  if(badge){
-    if(semDone){
-      badge.innerHTML    = '<span class="sq-badge-txt">✅ Réponses ajoutées</span>';
-      badge.className    = 'sq-badge sq-ok';
-    } else {
-      badge.innerHTML    = '<span class="sq-badge-txt">⚠️ Questions en attente</span><span class="sq-badge-arrow">→</span>';
-      badge.className    = 'sq-badge sq-nok';
-    }
-  }
-}
-
-function affDate(){
-  const now  = new Date();
-  // Ex : "Dimanche 29 mars" → on découpe pour mettre le mois en italique
-  const jour  = now.toLocaleDateString('fr-FR',{weekday:'long'});
-  const num   = now.toLocaleDateString('fr-FR',{day:'numeric'});
-  const mois  = now.toLocaleDateString('fr-FR',{month:'long'});
-  const txt   = jour[0].toUpperCase() + jour.slice(1) + ' ' + num;
-  const html  = txt + ' <em>' + mois + '</em>';
-  ['date-acc','date-sem'].forEach(id=>{
-    const e = document.getElementById(id);
-    if(e) e.innerHTML = html;
-  });
-}
-
-// ══════════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════════
-// ══════════════════════════════════════════════════════
-// TOGGLE THÈME LIGHT / DARK
-// ══════════════════════════════════════════════════════
-function toggleTheme(){
-  const root = document.documentElement;
-  const isLight = root.getAttribute('data-theme') === 'light';
-  root.setAttribute('data-theme', isLight ? '' : 'light');
-  majIconeSwitch(!isLight);
-  localStorage.setItem('roze_theme', isLight ? 'dark' : 'light');
-}
-
-function majIconeSwitch(light){
-  const moon = document.getElementById('ts-moon');
-  const sun  = document.getElementById('ts-sun');
-  if(moon) moon.style.display = light ? 'none'  : 'block';
-  if(sun)  sun.style.display  = light ? 'block' : 'none';
-}
-
-function initTheme(){
-  const saved = localStorage.getItem('roze_theme') || 'dark';
-  if(saved === 'light'){
-    document.documentElement.setAttribute('data-theme','light');
-    majIconeSwitch(true);
-  }
-}
-
-function go(id, btn){
-  // Effacer le toast immédiatement et définitivement lors d'une navigation
-  if(_toastTimer){ clearTimeout(_toastTimer); _toastTimer=null; }
-  const _t = document.getElementById('toast');
-  _t.className=''; _t.textContent='';
-  // Toujours fermer les modales et restaurer le scroll avant de naviguer
-  document.getElementById('ov-edit').classList.remove('on');
-  document.getElementById('ov-story').classList.remove('on');
-  const _ovC = document.getElementById('ov-creer'); if(_ovC) _ovC.classList.remove('on');
-  document.getElementById('ov-jour').classList.remove('on');
-  const cvFs = document.getElementById('cv-fullscreen'); if(cvFs) cvFs.classList.remove('on');
-  const smFs = document.getElementById('streak-modal-fond'); if(smFs) smFs.classList.remove('on');
-  document.querySelector('.scroll').style.overflow = '';
-  editId = null; storyModalIndex = null;
-  if(id==='p-semaine'){ restaurerDraft(); etatBoutonSemaine(); chargerVeilleReddit(); }
-  // Quand on quitte la page Semaine, synchro silencieuse du draft
-  else if(document.getElementById('p-semaine') && document.getElementById('p-semaine').classList.contains('on')){
-    syncConfigVersSheets();
-  }
-  if(id==='p-accueil'){ majSemMini(); majKPIs(); }
-
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
-  document.getElementById(id).classList.add('on');
-  document.querySelector('.scroll').scrollTop=0;
-  if(btn){ btn.classList.add('on'); }
-  else{ const ordre=['p-accueil','p-semaine','p-generer','p-calendrier','p-compte']; const i=ordre.indexOf(id); const tabs=document.querySelectorAll('.tab'); if(i>-1&&tabs[i]) tabs[i].classList.add('on'); }
-  if(id==='p-calendrier'){
-    if(document.getElementById('stories-panel').classList.contains('on')) majStoriesPanel();
-    rendreCal();
-  }
-  if(id==='p-accueil') majAccueil();
-  if(id==='p-generer') majGenFormats(getGenReseau());
-}
-
-function scrollGuide(){ go('p-compte'); setTimeout(()=>document.getElementById('guide-pwa').scrollIntoView({behavior:'smooth'}),300); }
-
-function toggleDuoTab(id){
-  const clicked = document.getElementById(id);
-  if(!clicked) return;
-  clicked.classList.toggle('open');
-}
-
-function toggleAcc(id){
-  const el = document.getElementById(id);
-  if(el) el.classList.toggle('open');
-}
-
-function osTab(btn,os){ document.querySelectorAll('.os-tab').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); document.getElementById('g-ios').style.display=os==='ios'?'block':'none'; document.getElementById('g-and').style.display=os==='android'?'block':'none'; }
-
-// ══════════════════════════════════════════
-// ENREGISTRER SEMAINE
-// ══════════════════════════════════════════
-
-// ══════════════════════════════════════════
-// GAMIFICATION STREAK — logique réelle
-// ══════════════════════════════════════════
-
-// Messages de félicitations par palier mensuel
-const STREAK_MESSAGES = {
-  4:  { ic:'🌱', badge:'1 mois',   titre:'Premier mois bouclé !',
-        msg:'4 semaines de régularité. Tu as posé les bases. L’algorithme commence à te reconnaître.' },
-  8:  { ic:'🔥', badge:'2 mois',   titre:'2 mois sans faillir !',
-        msg:'Tu as publié chaque semaine pendant 2 mois. C’est dans la durée que la confiance de ton audience se construit.' },
-  12: { ic:'🏆', badge:'3 mois',   titre:'3 mois — tu es dans le top 5% !',
-        msg:'Moins de 5% des professionnels tiennent 3 mois sur les réseaux. Tu fais partie de ceux qui durent.' },
-  16: { ic:'💎', badge:'4 mois',   titre:'4 mois de présence régulière',
-        msg:'Ton audience te reconnaît maintenant comme une voix de référence dans ton secteur. Continue.' },
-  20: { ic:'🚀', badge:'5 mois',   titre:'5 mois — tu es inarrêtable !',
-        msg:'5 mois de publications régulières. Les opportunités que ça génère sont souvent invisibles mais bien réelles.' },
-  24: { ic:'⭐', badge:'6 mois',   titre:'6 mois — mi-parcours !',
-        msg:'Une demi-année de régularité. Tu n’es plus en train d’essayer — tu es quelqu’un qui publie, point.' },
-  36: { ic:'👑', badge:'9 mois',   titre:'9 mois — Top of Mind !',
-        msg:'Presque un an. Les gens dans ton secteur savent qui tu es. C’est ça, le vrai résultat d’une présence régulière.' },
-  48: { ic:'🌟', badge:'1 an !!!', titre:'1 AN de régularité !',
-        msg:'365 jours à tenir ta promesse éditoriale. Peu de professionnels peuvent en dire autant. Félicitations.' },
-};
-
-// ══════════════════════════════════════════
-// Corriger rétroactivement le streak
-// Scanne le localStorage pour compter les semaines consécutives
-// en partant de la plus récente enregistrée (ou de cette semaine si vide)
-// ══════════════════════════════════════════
-function recalculerStreakReel(){
-  const lundiCourant = lundiSem(new Date());
-  const lundiCourantStr = lundiCourant.toISOString().split('T')[0];
-
-  // Déterminer le point de départ :
-  // - Si la semaine courante est enregistrée → on part d'elle
-  // - Sinon → on part de la semaine précédente (dernière potentielle)
-  let pointDepart;
-  if(ls('roze_sem_' + lundiCourantStr) === '1'){
-    pointDepart = lundiCourant;
-  } else {
-    // La semaine courante n'est pas encore enregistrée → on part de la précédente
-    pointDepart = new Date(lundiCourant.getTime() - 7*86400000);
-  }
-
-  // Compter en remontant : tant qu'on trouve des semaines consécutives enregistrées
-  let streak = 0;
-  let cursor = new Date(pointDepart.getTime());
-  while(ls('roze_sem_' + cursor.toISOString().split('T')[0]) === '1'){
-    streak++;
-    cursor = new Date(cursor.getTime() - 7*86400000);
-    // Garde-fou : ne pas remonter plus de 500 semaines (10 ans) par sécurité
-    if(streak > 500) break;
-  }
-
-  const ancien = parseInt(ls('roze_streak') || '0');
-  localStorage.setItem('roze_streak', streak);
-  afficherStreak();
-
-  return { ancien, nouveau: streak };
-}
-
-function calculerEtMajStreak(){
-  const lundi     = lundiSem(new Date());
-  const lundiStr  = lundi.toISOString().split('T')[0];
-  const lundiPrecStr = new Date(lundi.getTime() - 7*86400000).toISOString().split('T')[0];
-
-  // SÉCURITÉ : si la semaine courante est déjà marquée enregistrée,
-  // ne pas ré-incrémenter le streak (empêche le bug des clics multiples)
-  // NB : enrSemaine() n'appelle cette fonction que si !estMAJ, donc normalement
-  // on n'arrive ici que pour une première fois dans la semaine. Mais double-sécurité.
-  if(ls('roze_sem_' + lundiStr) === '1'){
-    afficherStreak();
-    return;
-  }
-
-  // La semaine précédente était-elle enregistrée ?
-  const semPrec = ls('roze_sem_' + lundiPrecStr) === '1';
-  const streakActuel = parseInt(ls('roze_streak') || '0');
-
-  let nouveauStreak;
-  if(streakActuel === 0){
-    // Première fois
-    nouveauStreak = 1;
-  } else if(semPrec){
-    // Semaine précédente ok → on continue la streak
-    nouveauStreak = streakActuel + 1;
-  } else {
-    // Semaine précédente manquée → remise à zéro + recommence à 1
-    nouveauStreak = 1;
-  }
-
-  localStorage.setItem('roze_streak', nouveauStreak);
-  afficherStreak();
-
-  // Vérifier si on atteint un palier mensuel
-  const paliers = Object.keys(STREAK_MESSAGES).map(Number).sort((a,b)=>a-b);
-  if(paliers.includes(nouveauStreak)){
-    // Petit délai pour laisser le toast apparaître d'abord
-    setTimeout(()=>afficherFelicitations(nouveauStreak), 800);
-  }
-}
-
-function afficherStreak(){
-  const s = parseInt(ls('roze_streak') || '0');
-
-  // Mettre à jour les chiffres
-  const elAcc = document.getElementById('streak-acc');
-  const elSem = document.getElementById('streak-sem');
-  if(elAcc) elAcc.textContent = s;
-  if(elSem) elSem.textContent = s;
-  // Singulier / pluriel
-  const lblAcc = document.getElementById('streak-acc-lbl');
-  const lblSem = document.getElementById('streak-sem-lbl');
-  const mot = s <= 1 ? 'sem. consécutive' : 'sem. consécutives';
-  if(lblAcc) lblAcc.textContent = mot;
-  if(lblSem) lblSem.textContent = '🔥 ' + s + ' ' + (s <= 1 ? 'semaine' : 'semaines');
-
-  // Barre de progression vers le prochain palier mensuel
-  const paliers = [4,8,12,16,20,24,36,48];
-  const prochain = paliers.find(p => p > s);
-  const precedent = paliers.filter(p => p <= s).pop() || 0;
-
-  const fill = document.getElementById('streak-fill');
-  const next = document.getElementById('streak-next');
-
-  if(fill && prochain){
-    const pct = Math.round((s - precedent) / (prochain - precedent) * 100);
-    fill.style.width = pct + '%';
-  }
-  if(next && prochain){
-    const restant = prochain - s;
-    if(next) next.textContent = restant === 1
-      ? 'encore 1 semaine pour le prochain palier 🎯'
-      : restant + ' semaines avant ' + (STREAK_MESSAGES[prochain]?.badge || 'le prochain palier');
-  }
-  if(next && !prochain){
-    next.textContent = '🌟 Tu as atteint tous les paliers !';
-  }
-}
-
-function afficherFelicitations(semaines){
-  const data = STREAK_MESSAGES[semaines];
-  if(!data) return;
-  const prenom = CFG.prenom || '';
-  document.getElementById('sm-ic').textContent     = data.ic;
-  document.getElementById('sm-badge').textContent  = data.badge;
-  document.getElementById('sm-titre').innerHTML    = 'Bravo' + (prenom ? ' <em>' + prenom + '</em>' : '') + ' !';
-  document.getElementById('sm-message').textContent = data.msg;
-  document.getElementById('streak-modal-fond').classList.add('on');
-}
-
-function fermerStreakModal(){
-  document.getElementById('streak-modal-fond').classList.remove('on');
-}
-
-// ══════════════════════════════════════════
-// ÉTATS DU BOUTON "Enregistrer ma semaine"
-// 3 états possibles :
-//   - normal    : première fois de la semaine
-//   - saved     : semaine déjà enregistrée (mise à jour possible)
-//   - loading   : requête en cours (bouton désactivé + spinner)
-// Rafraîchit automatiquement chaque lundi (basé sur la date).
-// ══════════════════════════════════════════
-
-// ══════════════════════════════════════════
-// FIGURES NARRATIVES — Gestion côté PWA
-// ══════════════════════════════════════════
-
-// Pool de figures par pilier (miroir du côté AS pour navigation "Autre figure")
-const FIGURES_PWA = {
-  expertise:  ['E1','E2','E3','E4'],
-  autorite:   ['A1','A2','A3','A4'],
-  visibilite: ['V1','V2','V3','V4'],
-  activite:   ['Ac1','Ac2','Ac3']
-};
-
-const FIGURES_NOMS_PWA = {
-  E1: 'La preuve par le chiffre',   E2: 'Le mythe déconstruit',
-  E3: 'Le tutoriel incarné',         E4: 'Le cas client raconté',
-  A1: "L'opinion tranchée",          A2: 'La coulisse révélatrice',
-  A3: 'La lettre ouverte',           A4: 'Le bilan de secteur',
-  V1: 'La liste actionnable',        V2: 'La question miroir',
-  V3: 'Le before/after narratif',    V4: 'La tendance réagée',
-  Ac1: "La coulisse d'activité",    Ac2: "L'offre incarnée",
-  Ac3: 'La promo narrative'
-};
-
-function afficherBadgeFigure(figure){
-  const zone = document.getElementById('gen-figure-zone');
-  const nomEl = document.getElementById('gen-figure-nom');
-  const levierEl = document.getElementById('gen-figure-levier');
-  if(!zone || !nomEl) return;
-  if(nomEl) nomEl.textContent = figure.nom;
-  if(levierEl) levierEl.textContent = figure.levier ? '— ' + figure.levier : '';
-  zone.style.display = 'flex';
-}
-
-function cacherBadgeFigure(){
-  const zone = document.getElementById('gen-figure-zone');
-  if(zone) zone.style.display = 'none';
-  genFigureCourante = null;
-}
-
-// Bouton "Autre figure" : sélectionne la figure suivante dans le pool du pilier courant
-// et relance la génération avec cette figure forcée
-async function autreFigure(){
-  const pilier = genPilier || 'autorite';
-  const pool = FIGURES_PWA[pilier] || FIGURES_PWA['autorite'];
-  const codeCourant = genFigureCourante ? genFigureCourante.code : null;
-  let idx = codeCourant ? pool.indexOf(codeCourant) : -1;
-  // Passer à la figure suivante (rotation)
-  const prochainIdx = (idx + 1) % pool.length;
-  const prochainCode = pool[prochainIdx];
-  // Forcer cette figure pour la prochaine génération
-  genFigureForce = prochainCode;
-  // Informer l'utilisateur
-  const nomProchain = FIGURES_NOMS_PWA[prochainCode] || prochainCode;
-  toast('🔄 Génération avec : ' + nomProchain, 'ok');
-  // Relancer la génération
-  await genererContenu();
-}
-
-// ══════════════════════════════════════════
-// VEILLE REDDIT — affichage dans la page Semaine
-// ══════════════════════════════════════════
-async function chargerVeilleReddit(){
-  const zone = document.getElementById('veille-reddit-zone');
-  if(!zone || !CFG.as) return;
-  try{
-    const r = await fetch(CFG.as, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'lire_veille_auto' })
-    });
-    const j = await r.json();
-    const veille = (j.veille || []).slice(-9); // 9 dernières entrées max
-    if(veille.length === 0){ zone.style.display='none'; return; }
-
-    const html = [
-      '<div class="veille-reddit-bloc">',
-      '  <div class="veille-reddit-titre">🔎 Veille Reddit — cette semaine</div>'
-    ];
-    veille.reverse().forEach(v => {
-      html.push(
-        '<div class="veille-reddit-item">' +
-        '<span class="veille-reddit-kw">[' + escapeHtml(v.requete||'') + ']</span>' +
-        escapeHtml(v.resultat||'') +
-        '</div>'
-      );
-    });
-    html.push('</div>');
-
-    zone.innerHTML = html.join('');
-    zone.style.display = 'block';
-  }catch(e){
-    zone.style.display = 'none';
-  }
-}
-
-function etatBoutonSemaine(){
-  const btn = document.getElementById('btn-enr-semaine');
-  if(!btn) return;
-  // Retirer les classes d'état
-  btn.classList.remove('btn-enreg-saved','btn-enreg-loading');
-  btn.disabled = false;
-
-  // Vérifier si la semaine courante est déjà enregistrée
-  const lundi    = lundiSem(new Date());
-  const lundiStr = lundi.toISOString().split('T')[0];
-  const dejaEnr  = ls('roze_sem_' + lundiStr) === '1';
-
-  // Retirer toute note précédente
-  const oldNote = document.getElementById('enreg-note');
-  if(oldNote) oldNote.remove();
-
-  if(dejaEnr){
-    btn.classList.add('btn-enreg-saved');
-    btn.innerHTML = '✅ Semaine enregistrée — Mettre à jour';
-    // Note explicative sous le bouton
-    const note = document.createElement('div');
-    note.id = 'enreg-note';
-    note.className = 'enreg-note';
-    note.textContent = 'Tu peux modifier tes réponses et mettre à jour jusqu\'à dimanche 23h59.';
-    btn.parentNode.insertBefore(note, btn.nextSibling);
-  } else {
-    btn.innerHTML = '💾 Enregistrer ma semaine';
-  }
-}
-
-async function enrSemaine(){
-  const btn = document.getElementById('btn-enr-semaine');
-  // Sécurité : bloquer double-clic même si le CSS loading ne s'est pas appliqué
-  if(btn && btn.disabled) return;
-
-  if(!CFG.as){ toast('⚙️ Configure d\'abord l\'URL Google Sheets dans Mon Compte → Connexions','err'); return; }
-
-  // Détecter si c'est une mise à jour ou première fois
-  const lundi    = lundiSem(new Date());
-  const lundiStr = lundi.toISOString().split('T')[0];
-  const estMAJ   = ls('roze_sem_' + lundiStr) === '1';
-
-  // ── ÉTAT LOADING : désactiver + spinner ──
-  if(btn){
-    btn.disabled = true;
-    btn.classList.add('btn-enreg-loading');
-    btn.innerHTML = '<span class="btn-enreg-spinner"></span>' + (estMAJ ? 'Mise à jour…' : 'Enregistrement…');
-  }
-
-  const d={
-    action:     'enregistrer_semaine',
-    semaine:    getSemaineCourante(),
-    ia:         CFG.ia || 'claude',
-    cle_ia:     CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
-    // Profil pour la veille Reddit (génération des requêtes depuis le profil)
-    cat_metier: CFG.catMetier || '',
-    cible:      CFG.cible     || '',
-    questions: {
-      q1:v('q1'), q2:v('q2'), q3:v('q3'), q4:v('q4'),
-      q5:v('q5'), q6:v('q6'), q7:v('q7'), q8:v('q8')
-    }
-  };
-  try{
-    const r=await fetch(CFG.as,{method:'POST',body:JSON.stringify(d)});
-    const j=await r.json();
-    if(j.succes){
-      // Marquer la semaine comme enregistrée (pour les futurs clics)
-      localStorage.setItem('roze_sem_'+lundiStr,'1');
-
-      // Ne calculer le streak que si c'est la PREMIÈRE fois de la semaine
-      // (sinon on re-incrémenterait à chaque mise à jour — c'était le bug)
-      if(!estMAJ){
-        calculerEtMajStreak();
-      }
-
-      majAccueil();
-      // Garder les réponses en draft si on peut re-modifier — sinon vider
-      // Choix : on garde la matière en draft pour permettre mise à jour facile
-      // viderDraft(); // désactivé pour permettre mise à jour
-      syncConfigVersSheets();
-      // Recharger la veille si de nouveaux résultats Reddit
-      if((j.veille_reddit || 0) > 0) setTimeout(chargerVeilleReddit, 1500);
-
-      // Toast adapté : "enregistrée" vs "mise à jour"
-      const prefixe = estMAJ ? '✏️ Matière mise à jour' : '✅ Semaine enregistrée';
-      if (j.memoire_succes === false) {
-        toast('⚠️ ' + prefixe + ' — mais mise à jour mémoire IA échouée : ' + (j.memoire_message || 'erreur inconnue'), 'err');
-      } else {
-        const nbReddit = j.veille_reddit || 0;
-        const suffixeR = (!estMAJ && nbReddit > 0) ? (' + ' + nbReddit + ' actu(s) Reddit 🔎') : '';
-        toast(prefixe + (estMAJ ? ' !' : ' — mémoire IA mise à jour !' + suffixeR),'ok');
-      }
-    } else {
-      toast('❌ '+(j.erreur||'Erreur'),'err');
-    }
-  }catch{
-    toast('❌ Impossible de joindre Google Sheets','err');
-  } finally {
-    // ── SORTIE LOADING : rafraîchir l'état visuel ──
-    if(btn){
-      btn.classList.remove('btn-enreg-loading');
-      btn.disabled = false;
-    }
-    etatBoutonSemaine(); // Passe en mode "saved" si succès, ou retour normal si échec
-  }
-}
-
-// ══════════════════════════════════════════
-// RYTHME & COMPTEURS
-// ══════════════════════════════════════════
-function cpt(btn, delta){
-  const val = btn.parentElement.querySelector('.cpt-val');
-  let n = parseInt(val.textContent)+delta;
-  if(n<0) n=0; if(n>7) n=7;
-  val.textContent = n;
-  majRythme();
-}
-
-function majRythme(){
-  // Lire l'état des toggles et compteurs
-  RYTHME.li.actif = document.getElementById('li-actif').checked;
-  RYTHME.ig.actif = document.getElementById('ig-actif').checked;
-  document.querySelectorAll('#li-formats .format-ligne').forEach(row=>{
-    RYTHME.li.formats[row.dataset.fmt] = parseInt(row.querySelector('.cpt-val').textContent);
-  });
-  document.querySelectorAll('#ig-formats .format-ligne').forEach(row=>{
-    RYTHME.ig.formats[row.dataset.fmt] = parseInt(row.querySelector('.cpt-val').textContent);
-  });
-  majQuotaResume();
-  majFormats();
-}
-
-function majQuotaResume(){
-  const liTotal = RYTHME.li.actif ? Object.values(RYTHME.li.formats).reduce((a,b)=>a+b,0) : 0;
-  const igTotal = RYTHME.ig.actif ? Object.values(RYTHME.ig.formats).reduce((a,b)=>a+b,0) : 0;
-  const parts = [];
-  if(liTotal > 0) parts.push(`💼 ${liTotal} post${liTotal>1?'s':''} LinkedIn`);
-  if(igTotal > 0) parts.push(`📸 ${igTotal} post${igTotal>1?'s':''} Instagram`);
-  if(RYTHME.ig.actif) parts.push('📱 7 stories');
-  const total = liTotal + igTotal;
-  const el = document.getElementById('quota-txt');
-  if(el) el.textContent = total > 0
-    ? parts.join(' · ')
-    : 'Aucun réseau configuré — clique pour modifier';
-}
-
-function majFormats(){
-  // Conservé pour compatibilité (appelé par chargerCompte)
-  majGenFormats('LinkedIn');
-}
-
-function majGenFormats(reseau){
-  const zone = document.getElementById('gen-formats'); if(!zone) return;
-  const liFormats = [
-    {fmt:'Post texte',ic:'📝'},{fmt:'Carrousel',ic:'🎠'},{fmt:'Vidéo',ic:'🎬'},{fmt:'Photo',ic:'🖼️'}
-  ];
-  const igFormats = [
-    // Instagram : pas de "Post texte" — format inexistant sur ce réseau
-    {fmt:'Photo',ic:'🖼️'},{fmt:'Carrousel',ic:'🎠'},{fmt:'Réel',ic:'🎬'}
-  ];
-  const fmts = reseau === 'LinkedIn' ? liFormats : igFormats;
-  zone.innerHTML = fmts.map((f,i)=>
-    `<div class="chip${i===0?' on':''}" data-fmt="${f.fmt}"
-      onclick="this.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));this.classList.add('on');">
-      ${f.ic} ${f.fmt}
-    </div>`
-  ).join('');
-}
-
-// ══════════════════════════════════════════
-// PILIERS DE CONTENU
-// ══════════════════════════════════════════
-
-const PILIER_CLASSES = {
-  visibilite: 'on-vis',
-  autorite:   'on-aut',
-  expertise:  'on-exp',
-  activite:   'on-act'
-};
-
-// État courant
-let genPilier   = null;
-let creerPilier = null;
-
-function setGenPilier(chip, pilier){
-  document.querySelectorAll('#gen-piliers .pilier-chip').forEach(c=>{
-    c.className = 'pilier-chip';
-  });
-  chip.classList.add(PILIER_CLASSES[pilier]||'on-aut2');
-  genPilier = pilier;
-
-}
-
-// Reset piliers à l'ouverture des panneaux
-function resetGenPiliers(){
-  genPilier = null;
-  document.querySelectorAll('#gen-piliers .pilier-chip').forEach(c=>c.className='pilier-chip');
-}
-
-function setGenReseau(chip, reseau){
-  document.querySelectorAll('#gen-reseaux .chip').forEach(c=>c.classList.remove('on'));
-  chip.classList.add('on');
-  majGenFormats(reseau);
-}
-
-// Sélection format — panneau Générer
-function setGenFormat(chip){
-  document.querySelectorAll('#gen-formats .chip').forEach(c=>c.classList.remove('on'));
-  chip.classList.add('on');
-  // Afficher/masquer la zone photo si format = Photo ou Carrousel
-  const fmt = chip.dataset.fmt;
-  const photoZone = document.getElementById('gen-photo-hint');
-  if(photoZone) photoZone.style.display = (fmt==='Photo'||fmt==='Carrousel') ? 'block' : 'none';
-}
-
-function getGenReseau(){
-  const el = document.querySelector('#gen-reseaux .chip.on');
-  return el ? (el.textContent.trim().includes('LinkedIn') ? 'LinkedIn' : 'Instagram') : 'LinkedIn';
-}
-
-function getGenFormat(){
-  const el = document.querySelector('#gen-formats .chip.on');
-  return el ? el.dataset.fmt : 'Post texte';
-}
-
-function togglePanel(){
-  const p      = document.getElementById('gen-panel');
-  const pStory = document.getElementById('gen-story-panel');
-  const ouvert = p.classList.contains('on');
-
-  // Fermer story panel si ouvert
-  pStory.classList.remove('on');
-
-  if(ouvert){
-    p.classList.remove('on');
-    return;
-  }
-
-  // Ouvrir 1 post
-  p.classList.add('on');
-  document.getElementById('gen-date').value = dateAujourdhui();
-  majGenFormats('LinkedIn');
-  document.getElementById('gen-result').textContent='';
-  document.getElementById('gen-result').classList.remove('on');
-  document.getElementById('gen-legende-zone').classList.remove('on');
-  document.getElementById('gen-post-actions').style.display='none';
-  document.getElementById('lbl-gen-texte').style.display='none';
-
-  // Ancre — scroll immédiat vers le panel
-  setTimeout(() => p.scrollIntoView({ behavior:'smooth', block:'start' }), 50);
-}
-
-// ─── ACTU WEB ───
-let actuTexte = '';
-
-function toggleActu(){
-  const cb = document.getElementById('cb-actu');
-  if(event && event.target !== cb) cb.checked = !cb.checked;
-  if(!cb.checked){
-    document.getElementById('actu-result').classList.remove('on');
-    actuTexte = '';
-  }
-  // Pas de recherche ici — elle se déclenche au clic sur Générer
-}
-
-// ── Rotation des sources de veille — index persistant par utilisateur ──
-// Incrémenté à chaque appel de rechercherActu(), stocké en localStorage.
-// Garantit qu'on utilise chaque source à tour de rôle, indépendamment de l'heure.
-function prochainIndexSource(total){
-  if(total <= 0) return 0;
-  const idx = (parseInt(localStorage.getItem('roze_src_idx') || '0') || 0) % total;
-  localStorage.setItem('roze_src_idx', String((idx + 1) % total));
-  return idx;
-}
-
-// ── Construction intelligente de la requête de recherche ──
-// Basée sur le métier du professionnel + le sujet du post + le pilier actif.
-// Varie les angles : actus, stats, nouveautés, chiffres clés selon le contexte.
-
-// Fallback catégorie depuis le texte libre du métier (si catMetier pas renseigné)
-function categorieDepuisMetier(metier){
-  const m = (metier||'').toLowerCase();
-  if(/artisan|menuisier|plombier|électri|maçon|charpentier|coiffeur|esthéti|tatoueur|soudeur|peintre|carreleur|vitrier|serrurier|couvreur/.test(m)) return 'artisan';
-  if(/commerç|boutique|épiceri|restaurant|café|boulang|pâtissi|fleuriste|librairie|caviste|boucheri|poissonni|chocolat/.test(m)) return 'commercant';
-  if(/coach|thérapeute|sophro|naturo|ostéo|kinési|psycho|hypno|nutritionni|diététi|bien-être/.test(m)) return 'praticien';
-  if(/consultant|conseil|expert|analyste|stratège|auditeur|comptable/.test(m)) return 'consultant';
-  if(/formateur|formatrice|enseignant|pédagogue/.test(m)) return 'formateur';
-  if(/graphiste|photographe|vidéaste|illustrateur|designer|créatif|créatrice|artiste|musicien|rédacteur|copywriter/.test(m)) return 'creatif';
-  return 'independant';
-}
-
-function construireRequeteRecherche(metier, sujetSaisi, pilier){
-  const annee = new Date().getFullYear();
-
-  // Sujet précis saisi → recherche directement liée
-  if(sujetSaisi && sujetSaisi.length > 5){
-    return sujetSaisi + ' statistiques chiffres ' + annee + ' France';
-  }
-
-  // Catégorie : priorité au choix explicite dans Mon Compte
-  const cat = CFG.catMetier || categorieDepuisMetier(metier);
-  const cible = CFG.cible || '';
-  const zone  = ''; // sera ajoutée quand zone géographique sera implémentée
-
-  let angles = [];
-
-  if(isReseaux){
-    // Formatrices RS, community managers, créateurs de contenu, consultants digital
-    angles = [
-      `dernières fonctionnalités Instagram ${annee}`,
-      `statistiques réseaux sociaux France ${annee}`,
-      `nombre d'utilisateurs LinkedIn France ${annee}`,
-      `algorithme Instagram ${annee} nouvelles règles`,
-      `chiffres TikTok Instagram Facebook ${annee} France`,
-      `tendances contenu social media ${annee}`,
-      `stats engagement Instagram LinkedIn ${annee}`,
-      `intelligence artificielle contenu réseaux sociaux ${annee}`,
-    ];
-  } else if(isTherapie){
-    // Hypnothérapeutes, sophrologues, psychothérapeutes, kinésiologues, etc.
-    angles = [
-      `bien-être mental France chiffres ${annee}`,
-      `burn-out stress travail France statistiques ${annee}`,
-      `marché thérapies alternatives France ${annee}`,
-      `santé mentale France enquête ${annee}`,
-      `nombre de personnes en souffrance psychologique France ${annee}`,
-      `thérapies brèves sophologie hypnose tendances ${annee}`,
-      `prise en charge bien-être émotionnel France ${annee}`,
-    ];
-  } else if(isNutriSante){
-    // Naturopathes, nutritionnistes, diététiciens
-    angles = [
-      `santé alimentation France statistiques ${annee}`,
-      `naturopathie tendances France ${annee}`,
-      `micronutrition alimentation santé chiffres ${annee}`,
-      `obésité alimentation France données ${annee}`,
-      `marché compléments alimentaires France ${annee}`,
-      `tendances alimentation saine bio France ${annee}`,
-    ];
-  } else if(isSportFitness){
-    // Coachs sportifs, profs de yoga, pilates, fitness
-    angles = [
-      `sport pratique physique France statistiques ${annee}`,
-      `marché fitness salle de sport France ${annee}`,
-      `tendances sport bien-être France ${annee}`,
-      `yoga pilates France pratiquants ${annee}`,
-      `sport santé France chiffres clés ${annee}`,
-    ];
-  } else if(isBienEtre){
-    // Coachs de vie, méditants, mindfulness
-    angles = [
-      `développement personnel France marché ${annee}`,
-      `méditation mindfulness France statistiques ${annee}`,
-      `coaching de vie tendances France ${annee}`,
-      `burn-out quête de sens travail France ${annee}`,
-      `bien-être au travail France chiffres ${annee}`,
-    ];
-  } else if(isCommerce){
-    // Artisans, commerçants, restaurateurs, hôteliers
-    angles = [
-      `chiffres commerce de proximité France ${annee}`,
-      `consommateurs locaux habitudes achat ${annee}`,
-      `réseaux sociaux artisans commerçants statistiques ${annee}`,
-      `tendances commerce local France ${annee}`,
-      `tourisme restauration France chiffres ${annee}`,
-    ];
-  } else if(isImmobilier){
-    angles = [
-      `marché immobilier France ${annee} chiffres`,
-      `taux crédit immobilier tendances ${annee}`,
-      `statistiques achat vente immobilier France ${annee}`,
-      `prix immobilier villes France ${annee}`,
-    ];
-  } else if(isFinance){
-    angles = [
-      `épargne investissement France chiffres ${annee}`,
-      `finances personnelles tendances France ${annee}`,
-      `statistiques patrimoine France ${annee}`,
-      `ETF assurance-vie France ${annee}`,
-      `inflation pouvoir d'achat France ${annee}`,
-    ];
-  } else if(isJuridique){
-    angles = [
-      `droit entreprise France tendances ${annee}`,
-      `création entreprise France statistiques ${annee}`,
-      `litiges contrats France chiffres ${annee}`,
-    ];
-  } else if(isSante){
-    angles = [
-      `santé France statistiques ${annee}`,
-      `désert médical France chiffres ${annee}`,
-      `patients téléconsultation France ${annee}`,
-      `santé numérique France tendances ${annee}`,
-    ];
-  } else {
-    // Métier non reconnu → requête construite à partir du métier exact saisi
-    angles = [
-      `${metier} France statistiques ${annee}`,
-      `tendances ${metier} France ${annee}`,
-      `marché ${metier} chiffres ${annee}`,
-    ];
-  }
-
-  // Choisir un angle selon l'index actuel pour varier les requêtes
-  const angleIdx = (parseInt(localStorage.getItem('roze_src_idx') || '0') || 0) % angles.length;
-  return angles[angleIdx];
-}
-
-async function rechercherActu(){
-  // Délègue à l'Apps Script — qui gère le choix du modèle via fallback automatique
-  // Silencieuse en cas d'échec : ne bloque jamais la génération
-  const sujetSaisi = (document.getElementById('gen-sujet')||{}).value?.trim() || '';
-  const metier     = CFG.metier || '';
-  const pilier     = genPilier || 'autorite';
-  const urlSources = lireURLsSources();
-  const urlActive  = urlSources.length ? urlSources[prochainIndexSource(urlSources.length)] : '';
-
-  const cleRecherche = CFG.api;
-  if(!cleRecherche){ actuTexte = ''; return; }
-  if(!CFG.as){ actuTexte = ''; return; }
-
-  const wl = document.getElementById('web-loader');
-  wl.classList.add('on');
-  document.getElementById('actu-result').classList.remove('on');
-
-  try{
-    // Timeout de 20 secondes — iOS Safari tue les requêtes trop longues
-    const controller = new AbortController();
-    const timeoutId  = setTimeout(() => controller.abort(), 20000);
-
-    const r = await fetch(CFG.as, {
-      method: 'POST',
-      signal: controller.signal,
-      body: JSON.stringify({
-        action:     'recherche_actu',
-        cle_ia:     cleRecherche,
-        metier:     metier,
-        pilier:     pilier,
-        sujet:      sujetSaisi,
-        url_source: urlActive
-      })
-    });
-    clearTimeout(timeoutId);
-
-    const j = await r.json();
-    // Pas de throw si erreur — silencieux, on génère sans actu
-    actuTexte = (j && !j.erreur && j.actu) ? j.actu : '';
-    if(actuTexte){
-      document.getElementById('actu-txt').textContent = actuTexte;
-      document.getElementById('actu-result').classList.add('on');
-    }
-  }catch(e){
-    // Timeout, réseau instable, ou erreur AS → silencieux
-    // La génération se fera sans actu — pas de toast d'erreur
-    actuTexte = '';
-  }
-  wl.classList.remove('on');
-}
-
-function toggleSourceDetail(){
-  const d = document.getElementById('gen-source-detail');
-  if(d) d.style.display = d.style.display === 'none' ? 'block' : 'none';
-}
-
-function regenStylePhoto(){
-  if(genPhotoStyle === 'fond') renderPreviewFondColore();
-  else if(genPhotoStyle){
-    const activeBtn = document.getElementById('gps-' + genPhotoStyle);
-    setPhotoStyle(genPhotoStyle, activeBtn);
-  }
-}
-
-function afficherChipSource(){
-  const chip = document.getElementById('gen-source-chip');
-  const detail = document.getElementById('gen-source-detail');
-  if(!chip || !detail) return;
-  if(actuTexte){
-    chip.style.display = 'block';
-    detail.textContent = actuTexte;
-    detail.style.display = 'none'; // fermé par défaut
-  } else {
-    chip.style.display = 'none';
-  }
-}
-
-// ── Gestion des stats mensuelles — éviter répétition dans le même mois ──
-function getStatsMois(){
-  const moisCle = new Date().toISOString().substring(0,7); // YYYY-MM
-  try{
-    const data = JSON.parse(localStorage.getItem('roze_stats_mois')||'{}');
-    // Nettoyer les mois anciens (garder seulement le mois courant)
-    return (data[moisCle] || []);
-  }catch(e){ return []; }
-}
-
-function ajouterStatMois(stat){
-  if(!stat || stat.length < 10) return;
-  const moisCle = new Date().toISOString().substring(0,7);
-  try{
-    const data = JSON.parse(localStorage.getItem('roze_stats_mois')||'{}');
-    // Garder seulement le mois courant
-    const fresh = { [moisCle]: (data[moisCle]||[]).concat(stat).slice(-8) };
-    localStorage.setItem('roze_stats_mois', JSON.stringify(fresh));
-  }catch(e){}
-}
-
-function buildStatsEviterBloc(){
-  const stats = getStatsMois();
-  if(!stats.length) return '';
-  return '\n=== DONNÉES DÉJÀ UTILISÉES CE MOIS — NE PAS RÉUTILISER ===\n'
-    + stats.map((s,i) => (i+1)+'. '+s).join('\n')
-    + '\nSi l\'actualité contient l\'une de ces données, utilises-en une différente du même article ou cherche une autre source.\n';
-}
-
-// ══════════════════════════════════════════
-// STORIES CONFIG UI
-// ══════════════════════════════════════════
-function construireStoriesUI(){
-  const zone = document.getElementById('stories-config');
-  if(!zone) return;
-  const typoMap = {'storytelling-lifestyle':'typo-lifestyle',valeur:'typo-valeur',vente:'typo-vente'};
-  const typoNom = {'storytelling-lifestyle':'Storytelling / Lifestyle', valeur:'Valeur', vente:'Vente'};
-  zone.innerHTML = STORIES_CFG.map((s,i)=>`
-    <div class="story-jour">
-      <div class="story-jour-hd">
-        <span class="jour-nom">${s.jour}</span>
-        <span class="typo-badge ${typoMap[s.typo]}">${typoNom[s.typo]}</span>
-      </div>
-      <select style="margin-bottom:.5rem;font-size:14px;" onchange="STORIES_CFG[${i}].typo=this.value;">
-        <option value="storytelling-lifestyle" ${s.typo==='storytelling-lifestyle'?'selected':''}>🎭 Storytelling / Lifestyle</option>
-        <option value="valeur"                  ${s.typo==='valeur'?'selected':''}>💡 Valeur / Astuce</option>
-        <option value="vente"                   ${s.typo==='vente'?'selected':''}>🎯 Vente</option>
-      </select>
-      <div class="story-sujet">
-        <input type="text" value="${s.sujet}" placeholder="Sujet de la story…"
-          onchange="STORIES_CFG[${i}].sujet=this.value;"/>
-      </div>
-    </div>`).join('');
-}
-
-function syncStories(){
-  // Appelé uniquement depuis sauvegarderCompte()
-  localStorage.setItem('roze_stories', JSON.stringify(STORIES_CFG));
-  majTrackerStories();
-  const panel = document.getElementById('stories-panel');
-  if(panel && panel.classList.contains('on')) majStoriesPanel();
-}
-
-// ══════════════════════════════════════════
-// ANTI-REDONDANCE
-// ══════════════════════════════════════════
-function resumePost(texte){
-  // Extrait les 30 premiers mots comme "empreinte" du sujet
-  return texte.split(/\s+/).slice(0,30).join(' ').toLowerCase();
-}
-
-function contexteAntiRedondance(){
-  const biblio = getBiblio();
-  const derniers20 = biblio.slice(0,20);
-  if(!derniers20.length) return '';
-  return `\n\nRÈGLE ANTI-REDONDANCE ABSOLUE :\nVoici les sujets et formulations des 20 derniers posts publiés. Tu dois éviter toute similitude de sujet ET de formulation avec ces posts :\n${derniers20.map((p,i)=>`${i+1}. [${p.reseau} - ${p.typeContenu}] ${resumePost(p.texte)}`).join('\n')}\n`;
-}
-
-// ══════════════════════════════════════════
-// GÉNÉRATION
-// ══════════════════════════════════════════
-
-// ══════════════════════════════════════════
-// CHARTE VISUELLE — PRÉVISUALISATIONS
-// ══════════════════════════════════════════
-function majPreviewCouleurs(){
-  const ids = ['couleur1','couleur2','couleur3','couleur4','couleur-texte'];
-  ids.forEach(id => {
-    const input = document.getElementById('cfg-'+id);
-    const preview = document.getElementById('preview-'+id);
-    if(input && preview){
-      const val = input.value.trim();
-      if(/^#[0-9a-fA-F]{3,6}$/.test(val)) preview.style.background = val;
-      input.addEventListener('input', function(){
-        if(/^#[0-9a-fA-F]{3,6}$/.test(this.value)) preview.style.background = this.value;
-      });
-    }
-  });
-}
-
-// ══════════════════════════════════════════
-// FONCTIONS DE COULEUR
-// ══════════════════════════════════════════
-function estCouleurClaire(hex){
-  const r = parseInt(hex.slice(1,3),16);
-  const g = parseInt(hex.slice(3,5),16);
-  const b = parseInt(hex.slice(5,7),16);
-  return (0.299*r + 0.587*g + 0.114*b) > 186;
-}
-
-function fondSlide(numSlide, totalSlides, couleur1, couleur2){
-  const c3 = CFG.couleur3 || null;
-  const c4 = CFG.couleur4 || null;
-  if(numSlide === 1) return couleur1;
-  if(numSlide === totalSlides) return couleur2 || '#222222';
-  if(c3 && c4) return numSlide % 2 === 0 ? c3 : c4;
-  if(c3) return c3;
-  if(c4) return c4;
-  const clair = estCouleurClaire(couleur1);
-  if(clair) return '#FFFFFF';
-  return '#F8F8F6';
-}
-
-// Taille de police adaptative pour le titre slide 1 selon le nombre de mots
-function fontSizeTitre(titre, baseRem, basePx){
-  // baseRem pour miniature, basePx pour export PNG
-  const mots = (titre||'').trim().split(/\s+/).length;
-  if(mots <= 6)  return { rem: baseRem,       px: basePx };
-  if(mots <= 9)  return { rem: baseRem * 0.85, px: Math.round(basePx * 0.85) };
-  if(mots <= 12) return { rem: baseRem * 0.72, px: Math.round(basePx * 0.72) };
-  return           { rem: baseRem * 0.62, px: Math.round(basePx * 0.62) }; // >12 mots (sécurité)
-}
-
-// Retourne le style CSS complet d'une slide selon le style de fond actif
-function styleFondSlide(numSlide, totalSlides, c1, c2){
-  const fond = fondSlide(numSlide, totalSlides, c1, c2);
-  // Override par slide prioritaire sur le style global
-  const style = overridesSlide[numSlide-1] || styleFondActif || 'uni';
-  // CSS custom (défini par edApplyFond)
-  if(style === '__custom__'){
-    const css = (overridesSlide['__css__'] || {})[numSlide-1];
-    if(css) return css;
-  }
-
-  if(style === 'uni2'){
-    // Fond uni couleur secondaire
-    return `background:${c2 || '#222222'};`;
-  }
-  if(style === 'photo'){
-    // Photo de fond (par slide ou globale)
-    const photoSrc = cvFondPhotoParSlide[numSlide-1] || cvFondPhotoSrc || null;
-    if(photoSrc){
-      // Retourner un style avec background-image + overlay semi-transparent pour lisibilité
-      return `position:relative;background:${fond};`;
-      // Note : l'image est injectée via un pseudo-element dans le HTML du slide
-    }
-    // Pas de photo → fallback uni
-    return `background:${fond};`;
-  }
-  if(style === 'beton'){
-    // Béton/matière — dégradé radial foncé
-    const foncé = ajusterLum(fond, -20);
-    return `background:radial-gradient(ellipse at 30% 20%, ${fond} 0%, ${foncé} 60%, ${ajusterLum(fond,-35)} 100%);`;
-  }
-  if(style === 'degrade'){
-    // Dégradé diagonal entre fond et version plus sombre
-    const foncé = ajusterLum(fond, -25);
-    return `background:linear-gradient(135deg, ${fond} 0%, ${foncé} 100%);`;
-  }
-  // uni (défaut)
-  return `background:${fond};`;
-}
-
-// Assombrir/éclaircir une couleur hex
-function ajusterLum(hex, pct){
-  if(!hex || !hex.startsWith('#')) return hex;
-  const h = hex.replace('#','');
-  const num = parseInt(h.length===3 ? h.split('').map(c=>c+c).join('') : h, 16);
-  const r = Math.min(255, Math.max(0, (num>>16) + Math.round(255*pct/100)));
-  const g = Math.min(255, Math.max(0, ((num>>8)&0xff) + Math.round(255*pct/100)));
-  const b = Math.min(255, Math.max(0, (num&0xff) + Math.round(255*pct/100)));
-  return '#' + [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
-}
-
-function texteSlide(fond){
-  // Contraste WCAG simplifié : choisir noir ou blanc selon le fond réel
-  if(!fond || !fond.startsWith('#')) return '#FFFFFF';
-  const rgb = hexToRgbPhoto(fond);
-  if(!rgb) return '#FFFFFF';
-  // Luminance relative
-  const lum = (c) => { c = c/255; return c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
-  const L = 0.2126*lum(rgb.r) + 0.7152*lum(rgb.g) + 0.0722*lum(rgb.b);
-  // Ratio contre blanc et noir
-  const ratioNoir  = (L + 0.05) / 0.05;
-  const ratioBlanc = 1.05 / (L + 0.05);
-  return ratioBlanc > ratioNoir ? '#FFFFFF' : '#111111';
-}
-
-// Couleur accent contrastée par rapport au fond réel de la slide
-function accentSlide(c1, fondSlide){
-  if(!fondSlide || !fondSlide.startsWith('#')) return c1;
-  const rgb1 = hexToRgbPhoto(c1);
-  const rgbF = hexToRgbPhoto(fondSlide);
-  if(!rgb1 || !rgbF) return c1;
-  const lum = (c) => { c = c/255; return c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); };
-  const L1 = 0.2126*lum(rgb1.r) + 0.7152*lum(rgb1.g) + 0.0722*lum(rgb1.b);
-  const LF = 0.2126*lum(rgbF.r) + 0.7152*lum(rgbF.g) + 0.0722*lum(rgbF.b);
-  const ratio = (Math.max(L1, LF) + 0.05) / (Math.min(L1, LF) + 0.05);
-  // Si contraste insuffisant (<3) → utiliser une variante plus contrastée
-  if(ratio < 3){
-    // Tenter une version plus lumineuse ou plus sombre de c1
-    const clair  = ajusterLum(c1, +40);
-    const sombre = ajusterLum(c1, -40);
-    const rC = hexToRgbPhoto(clair);
-    const rS = hexToRgbPhoto(sombre);
-    const lC = 0.2126*lum(rC.r)+0.7152*lum(rC.g)+0.0722*lum(rC.b);
-    const lS = 0.2126*lum(rS.r)+0.7152*lum(rS.g)+0.0722*lum(rS.b);
-    const ratioC = (Math.max(lC,LF)+0.05)/(Math.min(lC,LF)+0.05);
-    const ratioS = (Math.max(lS,LF)+0.05)/(Math.min(lS,LF)+0.05);
-    if(ratioC > ratioS && ratioC >= 3) return clair;
-    if(ratioS >= 3) return sombre;
-    // Dernier recours : blanc ou noir pur
-    return texteSlide(fondSlide) === '#FFFFFF' ? '#FFD700' : '#333333';
-  }
-  return c1;
-}
-
-// ══════════════════════════════════════════
-// RENDU CARROUSEL
-// ══════════════════════════════════════════
-let carrouselCourant = null;
-let styleFondActif = 'uni'; // 'uni' | 'uni2' | 'degrade' | 'grain' | 'beton'
-let carFormatRatio = '3:4'; // Format carrousel : '3:4' | '4:5' | '1:1'
-// Dimensions en px pour l'export (base 1080px)
-const CAR_FORMATS = {
-  '3:4': { w: 1080, h: 1440, label: '3:4 (défaut)' },
-  '4:5': { w: 1080, h: 1350, label: '4:5' },
-  '1:1': { w: 1080, h: 1080, label: '1:1 (carré)' },
-};
-let overridesSlide = {};  // { slideIndex: style } — surcharge par slide
-let cvSlideActive = 0;
-
-// ══════════════════════════════════════════
-// RENDU TABLEAU SCRIPT (Réel / Vidéo LI / Stories)
-// ══════════════════════════════════════════
-function parseMarkdownTable(text) {
-  if (!text) return null;
-  // Ligne qui contient un pipe = ligne de tableau potentielle
-  const lines = text.split('\n').filter(l => l.includes('|'));
-  if (lines.length < 2) return null;
-
-  // Ligne séparatrice : que des |, -, :, espaces → à exclure des données
-  const isSeparateur = l => /^[\s|:\-]+$/.test(l);
-
-  // Extraire les lignes de données (pas les séparateurs)
-  const rows = lines.filter(l => !isSeparateur(l));
-  if (rows.length < 2) return null;
-
-  // Parser une ligne : split sur |, trim, exclure les cellules vides aux extrémités
-  function parseLigne(row) {
-    const parts = row.split('|');
-    // Enlever premier et dernier élément si vides (pipes extérieurs)
-    const start = parts[0].trim() === '' ? 1 : 0;
-    const end   = parts[parts.length-1].trim() === '' ? parts.length-1 : parts.length;
-    return parts.slice(start, end).map(c => c.trim());
-  }
-
-  const headers = parseLigne(rows[0]);
-  // Données : toutes les lignes sauf la première (headers)
-  const data = rows.slice(1).map(parseLigne).filter(r => r.length >= 2);
-
-  if (data.length === 0) return null;
-  return { headers, data };
-}
-
-function renderScriptReel(texte) {
-  // Parser SCRIPT: / LÉGENDE: / CONSEIL:
-  const scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
-  const legendeMatch = texte.match(/LÉGENDE:\s*([\s\S]*?)(?=CONSEIL:|$)/i);
-  const conseilMatch = texte.match(/CONSEIL:\s*([\s\S]*?)$/i);
-
-  let html = '';
-
-  if (scriptMatch) {
-    const tableData = parseMarkdownTable(scriptMatch[1]);
-    if (tableData && tableData.data.length > 0) {
-      html += '<div style="overflow-x:auto;"><table class="script-table"><thead><tr>';
-      html += '<th>Temps</th><th>Visuel & texte à l\'écran</th><th>Audio / Voix off</th><th>Émotion</th>';
-      html += '</tr></thead><tbody>';
-      tableData.data.forEach(row => {
-        if (row.length < 3) return;
-        html += `<tr>
-          <td class="script-col-temps">${escapeHtml(row[0]||'')}</td>
-          <td class="script-col-visuel">${escapeHtml(row[1]||'')}</td>
-          <td class="script-col-audio">${escapeHtml(row[2]||'')}</td>
-          <td class="script-col-emotion">${escapeHtml(row[3]||'')}</td>
-        </tr>`;
-      });
-      html += '</tbody></table></div>';
-    } else {
-      html += `<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">${escapeHtml(scriptMatch[1])}</div>`;
-    }
-  }
-
-  const legende = legendeMatch ? legendeMatch[1].trim() : '';
-  // Pas de box légende ici — la légende est injectée dans gen-legende (champ éditable avec bouton Copier)
-
-  const conseil = conseilMatch ? conseilMatch[1].trim() : '';
-  if (conseil) {
-    // Couper avant tout JSON parasite ou markdown bold
-    let cBrut = conseil.split('{')[0].split('**')[0]
-      .replace(/^[\u201c\u201d\u00ab\u00bb"'\s]+|[\u201c\u201d\u00ab\u00bb"'\s]+$/g,'').trim();
-    // Garder max 2 phrases
-    const phrases = cBrut.split(/[.!?]\s+/);
-    const cNet = phrases.slice(0,2).join('. ').replace(/\s+/g,' ').trim();
-    if(cNet.length > 5){
-      html += `<div class="script-conseil"><div class="script-conseil-lbl">🎬 Conseil de tournage</div>${escapeHtml(cNet)}</div>`;
-    }
-  }
-
-  return html;
-}
-
-function renderScriptVideoLI(texte) {
-  // Parser SCRIPT: / LÉGENDE:
-  const scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
-  const legendeMatch = texte.match(/LÉGENDE:\s*([\s\S]*?)$/i);
-
-  let html = '';
-
-  if (scriptMatch) {
-    const tableData = parseMarkdownTable(scriptMatch[1]);
-    if (tableData && tableData.data.length > 0) {
-      html += '<div style="overflow-x:auto;"><table class="script-table"><thead><tr>';
-      html += '<th>Temps</th><th>Visuel & sous-titres écran</th><th>Audio / Voix off</th><th>Émotion</th>';
-      html += '</tr></thead><tbody>';
-      tableData.data.forEach(row => {
-        if (row.length < 2) return;
-        html += `<tr>
-          <td class="script-col-temps">${escapeHtml(row[0]||'')}</td>
-          <td class="script-col-visuel">${escapeHtml(row[1]||'')}</td>
-          <td class="script-col-audio">${escapeHtml(row[2]||'')}</td>
-          <td class="script-col-emotion">${escapeHtml(row[3]||'')}</td>
-        </tr>`;
-      });
-      html += '</tbody></table></div>';
-    } else {
-      html += `<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">${escapeHtml(scriptMatch[1])}</div>`;
-    }
-  }
-
-  const legende = legendeMatch ? legendeMatch[1].trim() : '';
-  // Pas de box légende ici — la légende est injectée dans gen-legende (champ éditable avec bouton Copier)
-
-  return html;
-}
-
-function renderScriptStory(texte) {
-  // Parser SCRIPT:
-  const scriptMatch = texte.match(/SCRIPT:\s*([\s\S]*?)$/i);
-
-  let html = '';
-
-  if (scriptMatch) {
-    const tableData = parseMarkdownTable(scriptMatch[1]);
-    if (tableData && tableData.data.length > 0) {
-      html += '<div style="overflow-x:auto;"><table class="script-table"><thead><tr>';
-      html += '<th style="width:72px;">Durée</th><th>Texte à l\'écran</th><th>Format & décor</th><th style="width:90px;">Ton</th>';
-      html += '</tr></thead><tbody>';
-      tableData.data.forEach((row, idx) => {
-        if (row.length < 2) return;
-        // Détecter si c'est une vidéo ou photo selon la colonne format (col 2)
-        const formatCol = (row[2] || row[1] || '').toLowerCase();
-        const isVideo = formatCol.includes('vidéo') || formatCol.includes('video') || formatCol.includes('face cam') || formatCol.includes('cam');
-        // Durée : vidéo = jusqu'à 60s, photo statique = 10s
-        // Si la colonne 0 contient déjà une durée, on l'affiche telle quelle
-        // Sinon on calcule
-        let duree = row[0] || '';
-        if (!duree || duree.match(/^\d+$/)) {
-          duree = isVideo ? 'jusqu\u2019à 60s' : '10s';
-        }
-        const texteEcran = row[1] || '';
-        const formatDecor = row[2] || '';
-        const ton = row[3] || '';
-        // Couleur de ligne selon type
-        const bgRow = isVideo ? '' : 'background:rgba(126,200,227,.04);';
-        html += `<tr style="${bgRow}">
-          <td class="script-col-temps" style="font-size:.72rem;">${escapeHtml(duree)}</td>
-          <td class="script-col-audio" style="line-height:1.65;">${escapeHtml(texteEcran)}</td>
-          <td class="script-col-visuel" style="line-height:1.55;">${escapeHtml(formatDecor)}</td>
-          <td class="script-col-emotion">${escapeHtml(ton)}</td>
-        </tr>`;
-      });
-      html += '</tbody></table></div>';
-      // Légende de lecture
-      html += '<div style="display:flex;gap:1rem;margin-top:.5rem;font-size:.7rem;color:var(--gris-clair);">'
-           + '<span>🎥 Fond normal = vidéo face cam</span>'
-           + '<span style="color:#7ec8e3;">📷 Fond bleuté = photo statique</span>'
-           + '</div>';
-    } else {
-      html += `<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">${escapeHtml(scriptMatch[1] || texte)}</div>`;
-    }
-  } else {
-    html += `<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">${escapeHtml(texte)}</div>`;
-  }
-
-  return html;
-}
-
-function isScriptTableau(texte, format) {
-  if (!texte) return false;
-  if (format === 'Réel') return texte.includes('SCRIPT:') || texte.includes('| Temps |');
-  if (format === 'Vidéo') return texte.includes('SCRIPT:') || texte.includes('| Temps |');
-  if (format === 'Stories') return texte.includes('SCRIPT:') || texte.includes('| Slide |') || texte.includes('| Partie |') || texte.includes('| Durée |');
-  return false;
-}
-
-function afficherResultatScript(texte, format, containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  let html = '';
-  if (format === 'Réel') html = renderScriptReel(texte);
-  else if (format === 'Vidéo') html = renderScriptVideoLI(texte);
-  else if (format === 'Stories') html = renderScriptStory(texte);
-  else html = `<div style="white-space:pre-wrap;font-size:.82rem;">${escapeHtml(texte)}</div>`;
-  container.innerHTML = html;
-}
-
-function majCompteurMotsInterdits() {
-  // Optionnel : feedback visuel sur le nombre de mots saisis
-  const el = document.getElementById('cfg-mots-interdits');
-  if (!el) return;
-  const lignes = el.value.split('\n').filter(l => l.trim()).length;
-  // Pas de compteur affiché — simple validation silencieuse
-}
-
-// ── Rendu titre avec accent [ACCENT]...[/ACCENT] ──
-// Applique la couleur de charte sur le groupe marqué
-
-// Nettoyer le corps d'une slide : retirer guillemets superflus, FORMAT:X, etc.
-function nettoyerCorpsSlide(corps){
-  if(!corps) return '';
-  return corps
-    .replace(/\[FORMAT:[A-Z]\]/gi, '')                         // codes format expertise
-    .replace(/([❌✅👉✓✗×])\s*['\u2018\u2019\u201c\u201d«»]/g, '$1 ')  // guillemets après emoji
-    .replace(/['\u2018\u2019\u201c\u201d«»]\s*([❌✅👉✓✗×])/g, ' $1')  // guillemets avant emoji
-    .replace(/([.!?])\s*['\u2018\u2019\u201c\u201d«»]\s*/g, '$1 ')    // guillemets en fin de phrase
-    .replace(/^['\u2018\u2019\u201c\u201d«»\s]+|['\u2018\u2019\u201c\u201d«»\s]+$/g, '')
-    .trim();
-}
-
-function rendreTitreAccent(titre, couleurAccent, fondCouleur){
-  if(!titre) return '';
-  // Regex insensible à la casse : [ACCENT] ou [accent] ou [Accent]
-  const hasAccent = /\[accent\]/i.test(titre);
-  if(!hasAccent) return escapeHtml(titre);
-
-  // Couleur du stabilo : contraste suffisant avec le fond
-  let coulStabilo = couleurAccent;
-  if(fondCouleur){
-    const fondClair   = estCouleurClaire(fondCouleur);
-    const accentClair = estCouleurClaire(couleurAccent);
-    if(fondClair && accentClair)   coulStabilo = ajusterLum(couleurAccent, -35);
-    else if(!fondClair && !accentClair) coulStabilo = ajusterLum(couleurAccent, +45);
-  }
-  // Couleur du texte sur le stabilo
-  const coulTexteStabilo = estCouleurClaire(coulStabilo) ? '#111111' : '#ffffff';
-  // Opacité stabilo : 0.72 pour être lisible sans être criard
-  const rgb = hexToRgbPhoto(coulStabilo);
-  const bgStabilo = rgb
-    ? 'rgba(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ',.72)'
-    : 'rgba(232,24,109,.72)';
-
-  return titre.replace(/\[\/?accent\]/gi, function(tag){
-    // Remplacer [accent] par l'ouverture du span stabilo
-    if(tag.toLowerCase() === '[accent]'){
-      return '<span style="background:' + bgStabilo + ';color:' + coulTexteStabilo + ';border-radius:3px;padding:2px 6px 3px;-webkit-box-decoration-break:clone;box-decoration-break:clone;font-weight:700;">';
-    }
-    return '</span>';
-  }).replace(/(<span[^>]*>)<\/span>/g, '$1'); // nettoyer spans vides
-}
-
-// ── Nettoyer le sousTitre des codes FORMAT ──
-// [FORMAT:A] etc. sont des instructions pour le viewer — on les masque dans l'affichage
-function nettoyerSousTitre(st){
-  if(!st) return '';
-  return st.replace(/\[FORMAT:[A-Z]\]/gi, '').trim();
-}
-
-function appliquerOverridesLH(){
-  if(!carrouselCourant) return;
-  const slides = carrouselCourant.slides;
-  slides.forEach((s, i) => {
-    const lh = overridesLH[i];
-    if(!lh) return;
-    // Viewer mini
-    const miniEl = document.getElementById('cv-slide-'+i);
-    if(miniEl){
-      const t = miniEl.querySelector('.cv-slide-titre');
-      const c = miniEl.querySelector('.cv-slide-corps');
-      if(t && lh.titre) t.style.lineHeight = lh.titre;
-      if(c && lh.corps) c.style.lineHeight = lh.corps;
-    }
-    // Fullscreen
-    const fsEl = document.getElementById('cv-fs-slide-'+i);
-    if(fsEl){
-      const t = fsEl.querySelector('.cv-slide-titre');
-      const c = fsEl.querySelector('.cv-slide-corps');
-      if(t && lh.titre) t.style.lineHeight = lh.titre;
-      if(c && lh.corps) c.style.lineHeight = lh.corps;
-    }
-  });
-}
-
-function afficherCarrousel(slides, legende, reseau, containerId){
-  carrouselCourant = { slides, legende, reseau, styleFond: styleFondActif, overrides: {...overridesSlide} };
-  cvSlideActive = 0;
-
-  const c1 = CFG.couleur1 || '#E8186D';
-  const c2 = CFG.couleur2 || '#111111';
-  const ptit = CFG.policeTitre || 'Playfair Display';
-  const pcorp = CFG.policeCorps || 'DM Sans';
-
-  // Charger les polices si nécessaire
-  chargerPolice(ptit);
-  chargerPolice(pcorp);
-
-  const container = document.getElementById(containerId);
-  if(!container) return;
-
-  const formatLabel = reseau === 'LinkedIn'
-    ? '🎠 Carrousel LinkedIn · 3:4 · PDF'
-    : '🎠 Carrousel Instagram · 3:4 · PNG';
-
-  container.innerHTML = `
-    <div class="carrousel-viewer">
-      <div class="cv-header">
-        <h4>${formatLabel}</h4>
-        <div class="cv-actions">
-          <button class="btn btn-sm btn-ghost" style="margin-top:0;" onclick="ouvrirCarrouselFullscreen()">Aperçu</button>
-        </div>
-      </div>
-      <div class="cv-slides-wrap" id="cv-slides-wrap">
-        ${slides.map((s,i) => `
-          <div class="cv-slide${i===0?' active':''}" id="cv-slide-${i}"
-               onclick="cvSelectSlide(${i})"
-               style="${(i===0 && photoSlide1) ? 'position:relative;overflow:hidden;' : styleFondSlide(s.num, slides.length, c1, c2)}">
-            ${(i===0 && photoSlide1) ? '<img src="' + photoSlide1.src + '" alt="photo" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;pointer-events:none;"/><div style=\"position:absolute;inset:0;background:rgba(0,0,0,0.38);\"></div>' : ''}
-            <!-- Mini sélecteur par slide -->
-            <div class="cv-slide-style-picker" onclick="event.stopPropagation()">
-              <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'uni')"     title="Uni 1" style="background:${c1}"></button>
-              <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'uni2')"    title="Uni 2" style="background:${c2}"></button>
-              <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'degrade')" title="Dégradé" style="background:linear-gradient(135deg,${c1},${c2})"></button>
-              <label class="cv-slide-style-btn" title="Photo de fond" style="background:linear-gradient(135deg,#555,#222);cursor:pointer;font-size:8px;display:flex;align-items:center;justify-content:center;color:#fff;">🖼️<input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhotoSlide(this,${i})"/></label>
-              <button class="cv-slide-style-btn" onclick="setStyleSlide(${i},this,'beton')"   title="Matière" style="background:${c2};opacity:.7"></button>
-            </div>
-            <div class="cv-slide-inner" style="position:relative;z-index:1;font-family:'${pcorp}',sans-serif;color:${i===0&&photoSlide1 ? meilleureTexteCouleur('#000000',c1,c2) : texteSlide(fondSlide(s.num, slides.length, c1, c2))};">
-
-              <div class="cv-slide-titre" style="font-family:'${ptit}',serif;font-size:${i===0 ? fontSizeTitre(s.titre, .82, 48).rem+'rem' : ''};${(i===0&&photoSlide1) ? 'color:'+meilleureTexteCouleur('#000000',c1,c2)+';border-bottom:3px solid '+couleurSoulignement(meilleureTexteCouleur('#000000',c1,c2),c1,c2)+';padding-bottom:4px;' : ''}">${rendreTitreAccent(s.titre||'', accentSlide(c1, fondSlide(s.num,slides.length,c1,c2)), fondSlide(s.num,slides.length,c1,c2))}</div>
-              <div class="cv-slide-sstitre" style="font-size:.65rem;opacity:.7;margin-bottom:4px;${s.sousTitre ? '' : 'display:none;'}">${s.sousTitre ? escapeHtml(nettoyerSousTitre(s.sousTitre)) : ''}</div>
-              <div class="cv-slide-corps">${nettoyerCorpsSlide(s.corps||'')}</div>
-              ${(s.type === 'cta' && CFG.logoUrl) ? '<img class="cv-slide-logo" src="' + CFG.logoUrl + '" alt="logo"/>' : ''}
-            </div>
-          </div>`).join('')}
-      </div>
       <div class="cv-export-bar">
-      <div class="cv-fond-selector">
-        <span class="cv-fond-label">Toutes les slides&nbsp;:</span>
-        <button class="cv-fond-opt on" id="cvf-uni"     onclick="setStyleFond(this,'uni')"     title="Uni couleur principale"><span class="cv-fond-dot" style="background:${c1}"></span>Uni 1</button>
-        <button class="cv-fond-opt"    id="cvf-uni2"    onclick="setStyleFond(this,'uni2')"    title="Uni couleur secondaire"><span class="cv-fond-dot" style="background:${c2}"></span>Uni 2</button>
-        <button class="cv-fond-opt"    id="cvf-degrade" onclick="setStyleFond(this,'degrade')" title="Dégradé"><span class="cv-fond-dot" style="background:linear-gradient(135deg,${c1},${c2})"></span>Dégradé</button>
-        <label class="cv-fond-opt" id="cvf-photo-fond" title="Photo de fond" style="cursor:pointer;"><span class="cv-fond-dot" style="background:linear-gradient(135deg,#555,#333);">🖼️</span>Photo<input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhoto(this)"/></label>
-        <button class="cv-fond-opt"    id="cvf-beton"   onclick="setStyleFond(this,'beton')"   title="Matière"><span class="cv-fond-dot" style="background:radial-gradient(ellipse at 30% 20%,${c1},${c2})"></span>Matière</button>
-        <button class="cv-fond-reset"  onclick="resetOverrides()" title="Annuler les overrides par slide">↺ Tout réinitialiser</button>
-        <span style="display:flex;align-items:center;gap:.3rem;margin-left:.4rem;">
+        <span style="display:flex;align-items:center;gap:.3rem;">
           <span style="font-size:.7rem;color:var(--gris-clair);">Format&nbsp;:</span>
           <select id="car-format-sel" onchange="setCarFormat(this.value)"
             style="font-size:.75rem;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:6px;padding:3px 6px;color:var(--blanc-doux);cursor:pointer;">
@@ -4609,13 +2050,11 @@ function afficherCarrousel(slides, legende, reseau, containerId){
             <option value="1:1">1:1 (carré)</option>
           </select>
         </span>
-        ${photoSlide1 ? '<span style="font-size:.72rem;color:var(--succes);padding:.2rem .6rem;background:rgba(46,204,113,.1);border-radius:6px;border:1px solid rgba(46,204,113,.3);">🖼️ Slide 1 : ' + photoSlide1.nom.substring(0,20) + '…</span>' : ''}
-      </div>
+        ${photoSlide1 ? '<span style="font-size:.72rem;color:var(--succes);padding:.2rem .6rem;background:rgba(46,204,113,.1);border-radius:6px;border:1px solid rgba(46,204,113,.3);">🖼️ ' + photoSlide1.nom.substring(0,20) + '…</span>' : ''}
         ${reseau === 'Instagram'
-          ? `<button class="btn btn-ghost" onclick="exporterPNG()">⬇️ PNG 1080×1440</button>`
-          : `<button class="btn btn-ghost" onclick="exporterPDF()">⬇️ PDF LinkedIn</button>`}
-        <button class="btn btn-rose" onclick="ouvrirCanva()" title="Importer dans Canva">🎨 Importer dans Canva</button>
-
+          ? `<button class="btn btn-ghost" onclick="exporterPNG()">⬇️ PNG</button>`
+          : `<button class="btn btn-ghost" onclick="exporterPDF()">⬇️ PDF</button>`}
+        <button class="btn btn-rose" onclick="ouvrirCanva()">🎨 Canva</button>
       </div>
       <div style="padding:.6rem 1rem;border-top:1px solid var(--gris-border);font-size:.78rem;color:#aaa;line-height:1.55;"
            id="cv-legende-txt">${legende.replace(/\n/g,'<br/>')}</div>
@@ -4628,11 +2067,100 @@ function cvSelectSlide(idx){
   document.querySelectorAll('.cv-slide').forEach(s=>s.classList.remove('active'));
   const el = document.getElementById('cv-slide-'+idx);
   if(el){ el.classList.add('active'); el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}); }
+  document.getElementById('cv-slides-wrap')?.classList.add('has-active');
   cvSlideActive = idx;
-  ouvrirEditSlide(idx);
+
+  // Hint contextuel
+  const hint = document.getElementById('cv-active-hint');
+  if(hint){
+    if(carrouselCourant && carrouselCourant.slides[idx]){
+      const s = carrouselCourant.slides[idx];
+      hint.textContent = 'Slide ' + (idx+1) + ' — ' + (s.titre||'').substring(0,28) + (s.titre && s.titre.length > 28 ? '…' : '');
+    } else {
+      hint.textContent = 'Slide ' + (idx+1) + ' sélectionnée';
+    }
+    hint.classList.add('visible');
+  }
+
+  // Toolbar contextuelle
+  const toolbar = document.getElementById('cv-toolbar-ctx');
+  if(toolbar) toolbar.classList.add('visible');
+
+  // Pré-remplir les champs du drawer texte (sans l'ouvrir)
+  preRemplirDrawerTexte(idx);
 }
 
-let overridesStabilo = {};
+function preRemplirDrawerTexte(idx){
+  if(!carrouselCourant) return;
+  const s = carrouselCourant.slides[idx];
+  if(!s) return;
+  const titre = (s.titre||'').replace(/\[\/?accent\]/gi,'');
+  const el_t  = document.getElementById('cv-edit-titre');
+  const el_c  = document.getElementById('cv-edit-corps');
+  const el_st = document.getElementById('cv-edit-sstitre');
+  if(el_t)  el_t.value  = titre;
+  if(el_c)  el_c.value  = s.corps||'';
+  if(el_st) el_st.value = nettoyerSousTitre ? nettoyerSousTitre(s.sousTitre||'') : (s.sousTitre||'');
+  // Synchro sliders avancés
+  const lh = overridesLH[idx] || {};
+  const fs = overridesFS[idx] || {};
+  ['titre','corps'].forEach(type => {
+    const slLH = document.getElementById('ed-lh-'+type);
+    const slFS = document.getElementById('ed-fs-'+type);
+    const valLH = type==='titre' ? (lh.titre||1.15) : (lh.corps||1.20);
+    const valFS = type==='titre' ? (fs.titre||1.0) : (fs.corps||1.0);
+    if(slLH){ slLH.value = valLH; const v=document.getElementById('ed-lh-'+type+'-val'); if(v) v.textContent=valLH.toFixed(2); }
+    if(slFS){ slFS.value = valFS; const v=document.getElementById('ed-fs-'+type+'-val'); if(v) v.textContent=Math.round(valFS*100)+'%'; }
+  });
+
+  // Label drawers
+  const lbl1 = document.getElementById('cv-txt-drawer-lbl');
+  const lbl2 = document.getElementById('cv-adv-drawer-lbl');
+  const titre_court = (s.titre||'').replace(/\[\/?accent\]/gi,'').substring(0,20);
+  if(lbl1) lbl1.textContent = 'Slide ' + (idx+1) + (titre_court ? ' — ' + titre_court : '');
+  if(lbl2) lbl2.textContent = 'Options — Slide ' + (idx+1);
+}
+
+function ouvrirTxtDrawer(){
+  document.getElementById('cv-drawer-overlay').classList.add('on');
+  document.getElementById('cv-txt-drawer').classList.add('open');
+}
+
+function ouvrirAdvDrawer(){
+  document.getElementById('cv-drawer-overlay').classList.add('on');
+  document.getElementById('cv-adv-drawer').classList.add('open');
+}
+
+function fermerTousDrawers(){
+  document.getElementById('cv-drawer-overlay').classList.remove('on');
+  document.getElementById('cv-txt-drawer').classList.remove('open');
+  document.getElementById('cv-adv-drawer').classList.remove('open');
+}
+
+function cvDrawerTab(btn, tab){
+  document.querySelectorAll('.cv-drawer-tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  ['cvdf-titre','cvdf-corps','cvdf-sstitre'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+  const map = {titre:'cvdf-titre', corps:'cvdf-corps', sstitre:'cvdf-sstitre'};
+  const target = document.getElementById(map[tab]);
+  if(target) target.style.display = 'block';
+  // Focus
+  const input = target && target.querySelector('textarea, input');
+  if(input) setTimeout(()=>input.focus(), 50);
+}
+
+function cvFondPill(el, style){
+  document.querySelectorAll('.cv-fpill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  // Appliquer à la slide active
+  if(typeof setStyleSlide === 'function'){
+    setStyleSlide(cvSlideActive, null, style);
+  }
+}
+
 let overridesLH = {};  // Interligne custom par slide : { idx: {titre:1.15, corps:1.20} }
 let overridesFS = {};  // Taille de police custom par slide (facteur 0.7-1.4) : { idx: {titre:1.0, corps:1.0} }
 
@@ -4765,77 +2293,17 @@ function propagerMiseEnPage(){
 }
 
 function fermerEditSlide(e){
-  if(e && e.type === 'click' && e.target !== document.getElementById('cv-edit-overlay')) return;
-  const ov = document.getElementById('cv-edit-overlay');
-  if(ov) ov.classList.remove('on');
+  // Rétrocompat — déléguer vers fermerTousDrawers
+  if(e && e.type==='click' && e.target && e.target.id !== 'cv-drawer-overlay') return;
+  fermerTousDrawers();
 }
 
 function ouvrirEditSlide(idx){
-  if(!carrouselCourant) return;
-  const ovEl = document.getElementById('cv-edit-overlay');
-  if(!ovEl) return;
-  ovEl.classList.add('on');
-  // Titre de la modale
-  const hd = document.getElementById('cv-edit-slide-titre-hd');
-  if(hd) hd.textContent = 'Slide ' + (idx + 1) + ' / ' + carrouselCourant.slides.length;
-  const s = carrouselCourant.slides[idx];
-  if(!s) return;
-  const titre = (s.titre||'').replace(/\[\/?accent\]/gi,'');
-  const el_t  = document.getElementById('cv-edit-titre');
-  const el_c  = document.getElementById('cv-edit-corps');
-  const el_st = document.getElementById('cv-edit-sstitre');
-  const el_m  = document.getElementById('cv-edit-stabilo-mot');
-  const el_k  = document.getElementById('cv-edit-stabilo-couleur');
-  if(el_t)  el_t.value  = titre;
-  if(el_c)  el_c.value  = s.corps||'';
-  if(el_st) el_st.value = nettoyerSousTitre(s.sousTitre||'');
-  // Interligne actuel (stocké dans overridesLH ou valeurs par défaut)
-  const lh = overridesLH[idx] || {};
-  const lhTit = lh.titre || 1.15;
-  const lhCor = lh.corps || 1.20;
-  const slTit = document.getElementById('ed-lh-titre');
-  const slCor = document.getElementById('ed-lh-corps');
-  if(slTit){ slTit.value = lhTit; const v=document.getElementById('ed-lh-titre-val'); if(v) v.textContent = lhTit.toFixed(2); }
-  if(slCor){ slCor.value = lhCor; const v=document.getElementById('ed-lh-corps-val'); if(v) v.textContent = lhCor.toFixed(2); }
-
-  // Taille de police actuelle (facteur — 1.0 = défaut)
-  const fs = overridesFS[idx] || {};
-  const fsTit = fs.titre || 1.0;
-  const fsCor = fs.corps || 1.0;
-  const sfTit = document.getElementById('ed-fs-titre');
-  const sfCor = document.getElementById('ed-fs-corps');
-  if(sfTit){ sfTit.value = fsTit; const v=document.getElementById('ed-fs-titre-val'); if(v) v.textContent = Math.round(fsTit*100)+'%'; }
-  if(sfCor){ sfCor.value = fsCor; const v=document.getElementById('ed-fs-corps-val'); if(v) v.textContent = Math.round(fsCor*100)+'%'; }
-  const ovSt = overridesStabilo[idx] || {};
-  const coul = ovSt.couleur || CFG.couleur1 || '#E8186D';
-  if(el_m) el_m.value = ovSt.mot || '';
-  if(el_k) el_k.value = coul;
-  majPreviewStabilo(ovSt.mot || 'Aperçu stabilo', coul);
-  // Init fond actif dans la modale
-  const fondTypeBtn = document.getElementById('ed-fond-'+edFondTypeActif);
-  document.querySelectorAll('#cv-edit-panel .ed-chip[id^="ed-fond-"]').forEach(b=>b.classList.remove('on'));
-  if(fondTypeBtn) fondTypeBtn.classList.add('on');
-  ['custom','degrade','beton','texture','photo','uni'].forEach(t=>{
-    const el=document.getElementById('ed-cfg-'+t);
-    if(el) el.style.display=(t===edFondTypeActif)?'block':'none';
-  });
-  // Init stabilo toggle
-  edStabiloActif = !!(ovSt.actif !== false);
-  const edTr=document.getElementById('ed-stabilo-track');
-  if(edTr) edTr.classList.toggle('on', edStabiloActif);
-  const edCfg=document.getElementById('ed-stabilo-cfg');
-  if(edCfg) edCfg.style.display=edStabiloActif?'block':'none';
+  // Rétrocompat — désormais l'édition passe par cvSelectSlide + drawers
+  preRemplirDrawerTexte(idx);
 }
 
-function majPreviewStabilo(mot, couleur){
-  const prev = document.getElementById('cv-stabilo-preview');
-  if(!prev) return;
-  const rgb = hexToRgbPhoto(couleur);
-  const bg  = rgb ? 'rgba('+rgb.r+','+rgb.g+','+rgb.b+',.6)' : 'rgba(232,24,109,.6)';
-  prev.textContent = mot || 'Aperçu';
-  prev.style.background = bg;
-  prev.style.color = estCouleurClaire(couleur) ? '#111' : '#fff';
-}
+
 
 function appliquerEditSlide(){
   const idx = cvSlideActive;
@@ -4845,13 +2313,10 @@ function appliquerEditSlide(){
   const titre = (document.getElementById('cv-edit-titre')||{}).value || '';
   const corps = (document.getElementById('cv-edit-corps')||{}).value || '';
   const sstitre = (document.getElementById('cv-edit-sstitre')||{}).value || '';
-  const mot   = ((document.getElementById('cv-edit-stabilo-mot')||{}).value || '').trim();
-  const coul  = (document.getElementById('cv-edit-stabilo-couleur')||{}).value || CFG.couleur1 || '#E8186D';
+
   s.titre = titre;
   s.corps = corps;
   s.sousTitre = sstitre;
-  overridesStabilo[idx] = { mot, couleur: coul, actif: edStabiloActif };
-  majPreviewStabilo(mot || 'Aperçu stabilo', coul);
 
   // ─── Mettre à jour le rendu de la slide (viewer ET fullscreen s'il est ouvert) ───
   const cibles = [
@@ -4863,21 +2328,8 @@ function appliquerEditSlide(){
   const fond   = fondSlide(s.num, carrouselCourant.slides.length, CFG.couleur1||'#E8186D', CFG.couleur2||'#111');
   const tcoul  = texteSlide(fond);
 
-  // Calcul du titre HTML (stabilo éventuel)
-  let titreHtml;
-  if(!edStabiloActif){
-    titreHtml = escapeHtml(titre);
-  } else if(mot && titre.includes(mot)){
-    const rgb = hexToRgbPhoto(coul);
-    const bg  = rgb ? 'rgba('+rgb.r+','+rgb.g+','+rgb.b+',.65)' : 'rgba(232,24,109,.65)';
-    const txtC = estCouleurClaire(coul) ? '#111' : '#fff';
-    titreHtml = escapeHtml(titre).replace(
-      escapeHtml(mot),
-      '<span style="background:'+bg+';border-radius:3px;padding:1px 5px 2px;-webkit-box-decoration-break:clone;color:'+txtC+';">'+escapeHtml(mot)+'</span>'
-    );
-  } else {
-    titreHtml = rendreTitreStabilo(titre, coul, tcoul);
-  }
+  // Titre HTML — stabilo supprimé
+  const titreHtml = escapeHtml(titre);
 
   // Application sur viewer ET fullscreen
   cibles.forEach(slideEl => {
@@ -4914,26 +2366,8 @@ function rendreSlideHTML(idx, c1, fond, partie){
     return corps.split('\n').map(function(l){ return escapeHtml(l); }).join('<br>');
   }
 
-  // Partie titre — applique stabilo personnalisé
-  const titre  = s.titre || '';
-  const ovSt   = overridesStabilo[idx] || {};
-  const stActif= ovSt.actif !== false;
-  const stMot  = ovSt.mot   || '';
-  const stCoul = ovSt.couleur || c1;
-
-  if(!stActif){
-    return escapeHtml(titre);
-  }
-  if(stMot && titre.includes(stMot)){
-    var rgbSt = hexToRgbPhoto(stCoul);
-    var bgSt  = rgbSt ? 'rgba('+rgbSt.r+','+rgbSt.g+','+rgbSt.b+',.65)' : 'rgba(232,24,109,.65)';
-    var txtSt = estCouleurClaire(stCoul) ? '#111' : '#fff';
-    return escapeHtml(titre).replace(
-      escapeHtml(stMot),
-      '<span style="background:'+bgSt+';border-radius:3px;padding:1px 5px 2px;-webkit-box-decoration-break:clone;box-decoration-break:clone;color:'+txtSt+';">'+escapeHtml(stMot)+'</span>'
-    );
-  }
-  return rendreTitreStabilo(titre, stCoul, texteSlide(fond));
+  // Partie titre — stabilo supprimé
+  return escapeHtml(s.titre || '');
 }
 
 function ouvrirCarrouselFullscreen(){
@@ -5142,13 +2576,11 @@ function setCvFondPhotoSlide(input, slideIdx){
 let edFondTypeActif  = 'uni';       // uni|custom|degrade|beton|texture|photo
 let edGradTypeActif  = 'linear';    // linear|radial|circle|diagonal
 let edTexTypeActif   = 'froisse';
-let edStabiloActif   = true;
-
 // État zone photo
 let phFondTypeActif  = 'uni';
 let phGradTypeActif  = 'linear';
 let phTexTypeActif   = 'froisse';
-let phStabiloActif   = true;
+
 
 // ── Utilitaires CSS gradient / texture ──
 function cssGradient(type, c1, c2){
@@ -5237,14 +2669,7 @@ function edApplyFond(){
   if(prev) prev.style.background = bg || '#333';
 }
 
-function edToggleStabilo(){
-  edStabiloActif = !edStabiloActif;
-  const track = document.getElementById('ed-stabilo-track');
-  if(track) track.classList.toggle('on', edStabiloActif);
-  const cfg = document.getElementById('ed-stabilo-cfg');
-  if(cfg) cfg.style.display = edStabiloActif ? 'block' : 'none';
-  appliquerEditSlide();
-}
+
 
 // ════════════════════════════════════════════════════════
 // ZONE PHOTO POST — logique fond
@@ -5301,7 +2726,6 @@ function renderPreviewFondColoreAvecBg(bgOverride){
   const c1 = fondsPhotoCouleurCourante();
   const bg = bgOverride || calculerBgPhoto() || c1;
   const tcoul = estCouleurClaire(c1) ? '#111' : '#fff';
-  const coulStabilo = stabiloCouleurCourante(c1);
   const titre = (genPhotoTitre||'Ton titre ici').substring(0,60);
   const hasPhoto = !!photoFondImageSrc;
   const fondCss = hasPhoto ? 'position:relative;overflow:hidden;' : 'background:'+bg+';';
@@ -5309,24 +2733,15 @@ function renderPreviewFondColoreAvecBg(bgOverride){
     ? '<img src="'+photoFondImageSrc+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7;"/><div style="position:absolute;inset:0;background:rgba(0,0,0,.35);"></div>'
     : '';
   const coulTxt = hasPhoto ? '#fff' : tcoul;
-  const affStabilo = phStabiloActif && !hasPhoto;
 
   preview.innerHTML = '<div style="width:100%;height:100%;'+fondCss+'border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;padding:8% 7%;box-sizing:border-box;overflow:hidden;">'
     + imgHtml
     + '<div style="position:relative;z-index:1;font-family:var(--ptit-tmp,serif);font-size:.92rem;font-weight:700;color:'+coulTxt+';line-height:1.5;width:100%;word-wrap:break-word;overflow-wrap:break-word;">'
-    + (affStabilo ? rendreTitreStabilo(titre, coulStabilo, coulTxt) : escapeHtml(titre))
+    + escapeHtml(titre)
     + '</div></div>';
 }
 
-function phToggleStabilo(){
-  phStabiloActif = !phStabiloActif;
-  const track = document.getElementById('ph-stabilo-track');
-  if(track) track.classList.toggle('on', phStabiloActif);
-  const cfg = document.getElementById('ph-stabilo-cfg');
-  if(cfg) cfg.style.display = phStabiloActif ? 'block' : 'none';
-  photoStabiloCouleur = phStabiloActif ? (photoStabiloCouleur || '#ffffff') : null;
-  renderPreviewFondColoreAvecBg(null);
-}
+
 
 function setV2(id, val){ const el=document.getElementById(id); if(el) el.value=val; }
 function gv(id){ const el=document.getElementById(id); return el?el.value:''; }
@@ -5915,30 +3330,9 @@ let photoFondCouleur  = null;  // null = utiliser CFG.couleur1
 let photoFondTexture  = 'uni'; // uni | degrade | grain | beton
 let photoFondImageSrc = null;  // URL image importée
 
-function rendreTitreStabilo(titre, couleurStabilo, couleurTexte){
-  const mots = titre.trim().split(' ').filter(Boolean);
-  if(!mots.length) return escapeHtml(titre);
-  const rgb = hexToRgbPhoto(couleurStabilo);
-  const bgS = rgb ? 'rgba('+rgb.r+','+rgb.g+','+rgb.b+',.58)' : 'rgba(232,24,109,.58)';
-  const spanOuvert = '<span style="background:'+bgS+';border-radius:3px;padding:1px 5px 2px;-webkit-box-decoration-break:clone;box-decoration-break:clone;">';
-
-  // Choisir le(s) mot(s) à surligner : dernier mot si ≥ 6 lettres
-  // Sinon : dernier mot + avant-dernier (pour que ce soit joli)
-  const dernierMot = mots[mots.length - 1];
-  const motSansAccent = dernierMot.replace(/[^a-zA-ZÀ-ÿ]/g, '');
-
-  if(motSansAccent.length >= 6 || mots.length === 1){
-    // Surligner uniquement le dernier mot
-    const avant = mots.slice(0, -1).join(' ');
-    return (avant ? escapeHtml(avant)+' ' : '')
-      + spanOuvert + escapeHtml(dernierMot) + '</span>';
-  } else {
-    // Dernier mot court : surligner dernier + avant-dernier
-    const avantAvant = mots.slice(0, -2).join(' ');
-    const avantDernier = mots[mots.length - 2];
-    return (avantAvant ? escapeHtml(avantAvant)+' ' : '')
-      + spanOuvert + escapeHtml(avantDernier) + ' ' + escapeHtml(dernierMot) + '</span>';
-  }
+function rendreTitreStabilo(titre){
+  // Stabilo supprimé — retourne le titre sans surligné
+  return escapeHtml(titre || '');
 }
 
 function hexToRgbPhoto(hex){
@@ -5996,35 +3390,23 @@ function renderPreviewFondColore(){
     ?'<img src="'+photoFondImageSrc+'" alt="Fond personnalisé" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7;"/><div style="position:absolute;inset:0;background:rgba(0,0,0,.35);"></div>'
     :'';
   const coulTxt=photoFondImageSrc?'#fff':tcoul;
-  const coulStabilo = photoFondImageSrc
-    ? (photoStabiloCouleur || 'rgba(255,255,255,.55)')
-    : stabiloCouleurCourante(c1);
   preview.innerHTML='<div style="width:100%;height:100%;'+fondCss+'border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;padding:8% 7%;box-sizing:border-box;overflow:hidden;">'
     +imgHtml
     +'<div style="position:relative;z-index:1;font-family:var(--ptit-tmp,serif);font-size:.92rem;font-weight:700;color:'+coulTxt+';line-height:1.5;width:100%;word-wrap:break-word;overflow-wrap:break-word;">'
-    +rendreTitreStabilo(titre,coulStabilo,coulTxt)
+    +escapeHtml(titre)
     +'</div></div>';
 }
 
-// Variable couleur stabilo (indépendante du fond)
-let photoStabiloCouleur = null;
 
-function majStabiloCouleur(valeur){
-  photoStabiloCouleur = valeur;
-  renderPreviewFondColore();
-}
 
-function stabiloCouleurCourante(fondCouleur){
-  if(photoStabiloCouleur) return photoStabiloCouleur;
-  return estCouleurClaire(fondCouleur||'#E8186D') ? '#222222' : '#ffffff';
-}
+
+
+
 
 function initPhotoZone(){
   const c1 = CFG.couleur1||'#E8186D';
   const pFond = document.getElementById('photo-fond-couleur');
   if(pFond && !photoFondCouleur) pFond.value = c1;
-  const pSt = document.getElementById('photo-stabilo-couleur');
-  if(pSt && !photoStabiloCouleur) pSt.value = stabiloCouleurCourante(c1);
   document.documentElement.style.setProperty('--ptit-tmp',"'"+(CFG.policeTitre||'Playfair Display')+"',serif");
   document.documentElement.style.setProperty('--c1-tmp', fondsPhotoCouleurCourante());
   renderPreviewFondColore();
@@ -6980,7 +4362,7 @@ function parseCarrouselRobuste(texteIA) {
         let j = i + 1;
         while (j < s.length && (s[j] === ' ' || s[j] === '\t')) j++;
         const next = s[j] || '';
-        if (':,}]'.includes(next) || next === '') {
+        if (':,}]\n\r \t'.includes(next) || next === '') {
           inStr = false; r.push(c);
         } else {
           r.push('\\'); r.push('"'); // échapper
@@ -7283,6 +4665,7 @@ async function genUnPost(){
     // ── Pipeline unifié d'affichage ──────────────────────────────
     if(format === 'Réel' || format === 'Vidéo' || format === 'Stories'){
       // Formats tableau → rendu dédié
+      cacherBadgeFigure(); // Pas de figure pour les formats script
       document.getElementById('lbl-gen-texte').style.display='block';
       document.getElementById('lbl-gen-texte').textContent = format === 'Stories' ? 'Script stories' : format === 'Réel' ? 'Script Réel' : 'Script vidéo';
       result.textContent=''; result.classList.remove('on');
@@ -7300,6 +4683,7 @@ async function genUnPost(){
       // Carrousel → parseCarrouselRobuste (pipeline unique, robuste)
       const cv = parseCarrouselRobuste(texte);
       if(cv.ok){
+        cacherBadgeFigure(); // Pas de figure pour les carrousels
         document.getElementById('lbl-gen-texte').style.display='block';
         document.getElementById('lbl-gen-texte').textContent='Aperçu carrousel';
         result.textContent=''; result.classList.remove('on');
@@ -8879,7 +6263,6 @@ function resetGenPanel(){
   photoFondCouleur  = null;
   photoFondTexture  = 'uni';
   photoFondImageSrc = null;
-  photoStabiloCouleur = null;
   resetGenPiliers();
   const gs = document.getElementById('gen-sujet'); if(gs) gs.value = '';
   const gr = document.getElementById('gen-result');

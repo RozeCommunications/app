@@ -134,7 +134,7 @@
     .st-publie{font-size:.75rem;font-weight:600;padding:2px 9px;border-radius:20px;background:rgba(46,204,113,.12);color:var(--succes);border:1px solid rgba(46,204,113,.25);}
 
     /* ─ ACCUEIL ─ */
-    .hero{text-align:center;padding:1.2rem 0 1rem;transition:opacity .5s ease, max-height .5s ease, padding .5s ease, margin .5s ease;overflow:hidden;}
+    .hero{text-align:center;padding:1.2rem 0 1rem;transition:opacity .5s ease, max-height .6s ease, padding .5s ease, margin .5s ease;overflow:hidden;max-height:600px;}
     .hero.masque{opacity:0;max-height:0;padding:0;margin:0;pointer-events:none;}
     .hero-badge{display:inline-block;background:linear-gradient(135deg,var(--rose-sombre),var(--rose));color:#fff;font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:4px 14px;border-radius:20px;margin-bottom:1rem;}
     .hero h1{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,7vw,2.4rem);font-weight:900;line-height:1.15;margin-bottom:.8rem;;color:var(--blanc);text-shadow:0 2px 24px rgba(232,24,109,.2),0 1px 0 rgba(0,0,0,.5);}
@@ -519,6 +519,10 @@
     .story-jour-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;}
     .story-jour-hd .jour-nom{font-size:.85rem;font-weight:600;}
     .story-jour-hd .typo-badge{font-size:.75rem;font-weight:700;padding:2px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.06em;}
+    .story-sujet{margin-top:.4rem;}
+    .story-sujet input{width:100%;background:var(--gris-input,rgba(255,255,255,.06));border:1px solid var(--gris-border);border-radius:10px;padding:.55rem .8rem;color:var(--blanc,#f5f4f0);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;transition:border-color .2s;}
+    .story-sujet input:focus{border-color:var(--rose,#E8186D);}
+    .story-jour select{width:100%;background:var(--gris-input,rgba(255,255,255,.06));border:1px solid var(--gris-border);border-radius:10px;padding:.5rem .8rem;color:var(--blanc,#f5f4f0);font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;cursor:pointer;}
     .typo-lifestyle{background:rgba(100,180,255,.18);color:#82c8ff;}
     .typo-valeur{background:rgba(46,204,113,.18);color:#3ddc84;}
     .typo-vente{background:rgba(232,24,109,.18);color:var(--rose-clair);}
@@ -1286,7 +1290,7 @@
 <body>
 
 <!-- ══ ÉCRAN DE LOGIN ══ -->
-<div id="login-screen" style="display:none;">
+<div id="login-screen" style="display:flex;">
   <div class="login-wrap">
     <div class="login-logo">
       <div class="login-badge">✦ Roze Communications</div>
@@ -1303,7 +1307,7 @@
   </div>
 </div>
 
-<header>
+<header style="display:none;">
   <div class="logo">
     <img src="data:image/png;base64,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" alt="Roze" class="logo-img"/>
   </div>
@@ -1334,7 +1338,7 @@
   </div>
 </header>
 
-<div class="scroll">
+<div class="scroll" style="display:none;">
 
   <!-- ══ ACCUEIL ══ -->
   <section id="p-accueil" class="page on">
@@ -2203,7 +2207,7 @@
 </div><!-- /scroll -->
 
 <!-- TAB BAR -->
-<nav class="tabs">
+<nav class="tabs" style="display:none;">
   <button class="tab on" onclick="go('p-accueil',this)"><i>🏠</i>Accueil</button>
   <button class="tab" onclick="go('p-semaine',this)"><i>✍️</i>Semaine</button>
   <button class="tab" onclick="go('p-generer',this)"><i>✨</i>Générer</button>
@@ -2448,7 +2452,18 @@ const STORIES_DEF = [
   {jour:'Samedi',  typo:'lifestyle', sujet:'Valeur incarnée — montrer, pas déclarer'},
   {jour:'Dimanche',typo:'vente',     sujet:'Contextualisation → Problème / douleur du client → Appel à action vers l\'offre'},
 ];
-let STORIES_CFG = lsJ('roze_stories') || JSON.parse(JSON.stringify(STORIES_DEF));
+let STORIES_CFG = (()=>{
+  const raw = lsJ('roze_stories');
+  if(!raw) return JSON.parse(JSON.stringify(STORIES_DEF));
+  // Normaliser les anciennes valeurs de typo
+  return raw.map(s=>({
+    ...s,
+    typo: s.typo==='storytelling-lifestyle'||s.typo==='lifestyle' ? 'lifestyle'
+         : s.typo==='valeur' ? 'valeur'
+         : s.typo==='vente'  ? 'vente'
+         : 'lifestyle'
+  }));
+})();
 
 let editId = null;  // id du post en cours d'édition
 let CAL = { vue:'mois', annee:new Date().getFullYear(), mois:new Date().getMonth(), semDebut:lundiSem(new Date()) };
@@ -2457,10 +2472,11 @@ let CAL = { vue:'mois', annee:new Date().getFullYear(), mois:new Date().getMonth
 // INIT
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded',()=>{
+  // Auth EN PREMIER — évite tout flash de l'app sans connexion
+  initAuth();
   initTheme(); initUI(); chargerCompte(); affDate(); construireStoriesUI(); majGenFormats(getGenReseau()); majRythme();
   syncConfigDepuisSheets(); // Sync multi-appareils au démarrage
   majCompteurBrouillons(); // Init compteur idées
-  initAuth(); // Contrôle d'accès Google Sign-In
   majSemMini(); majKPIs();
   // Afficher le badge sync si posts en attente
   const qInit = getQueueSync();
@@ -2789,7 +2805,13 @@ function toggleDuoTab(id){
 
 function toggleAcc(id){
   const el = document.getElementById(id);
-  if(el) el.classList.toggle('open');
+  if(el){
+    el.classList.toggle('open');
+    // Rafraîchir stories si on ouvre cet accordéon
+    if(id === 'acc-stories' && el.classList.contains('open')){
+      construireStoriesUI();
+    }
+  }
 }
 
 function osTab(btn,os){ document.querySelectorAll('.os-tab').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); document.getElementById('g-ios').style.display=os==='ios'?'block':'none'; document.getElementById('g-and').style.display=os==='android'?'block':'none'; }
@@ -3519,8 +3541,6 @@ function q7EffacerPhoto(){
 // ══════════════════════════════════════════
 // SÉLECTEUR STYLE POST PHOTO
 // ══════════════════════════════════════════
-let genPhotoStyle = 'brute'; // style actif
-let genPhotoTitre = '';      // titre hook extrait du post
 
 function setPhotoStyle(style, btn){
   genPhotoStyle = style;
@@ -3774,9 +3794,9 @@ function afficherLoginStatus(msg, type){
 function afficherApp(){
   const ls = document.getElementById('login-screen');
   if(ls) ls.style.display = 'none';
-  document.querySelector('header').style.display = '';
-  document.querySelector('.scroll').style.display = '';
-  document.querySelector('.tabs').style.display   = '';
+  document.querySelector('header').style.display = 'flex';
+  document.querySelector('.scroll').style.display = 'flex';
+  document.querySelector('.tabs').style.display   = 'flex';
   majAccueil();
   afficherStreak();
   affDate();
@@ -3787,7 +3807,11 @@ function afficherApp(){
 
   setTimeout(() => {
     const hero = document.querySelector('.hero');
-    if(hero) hero.classList.add('masque');
+    if(hero){
+      hero.classList.add('masque');
+      // Retirer complètement du flux après la transition (0.6s)
+      setTimeout(() => { if(hero) hero.style.display = 'none'; }, 650);
+    }
   }, 3500);
 }
 
@@ -4763,6 +4787,615 @@ function contexteAntiRedondance(){
   return `\n\nRÈGLE ANTI-REDONDANCE ABSOLUE :\nVoici les sujets et formulations des 20 derniers posts publiés. Tu dois éviter toute similitude de sujet ET de formulation avec ces posts :\n${derniers20.map((p,i)=>`${i+1}. [${p.reseau} - ${p.typeContenu}] ${resumePost(p.texte)}`).join('\n')}\n`;
 }
 
+
+// ══════════════════════════════════════════════════════════
+// VARIABLES GLOBALES CARROUSEL
+// ══════════════════════════════════════════════════════════
+let carrouselCourant  = null; // { slides, legende, reseau }
+let cvSlideActive     = 0;
+let styleFondActif    = 'uni';
+let overridesSlide    = {};   // { idx: 'uni'|'degrade'|'beton'|'photo'|'__custom__' }
+let overridesLH       = {};   // { idx: {titre:1.15, corps:1.20} }
+let overridesFS       = {};   // { idx: {titre:1.0, corps:1.0} }
+let cvFondPhotoSrc    = null;
+const cvFondPhotoParSlide = {};
+let carFormatRatio    = '3:4';
+const CAR_FORMATS     = { '3:4':{w:1080,h:1440}, '4:5':{w:1080,h:1350}, '1:1':{w:1080,h:1080} };
+let genFigureCourante = null;
+let genFigureForce    = null;
+
+// ══════════════════════════════════════════════════════════
+// UTILITAIRES COULEURS CARROUSEL
+// ══════════════════════════════════════════════════════════
+function ajusterLum(hex, delta){
+  if(!hex||hex.length<6) return hex||'#111';
+  hex=hex.replace('#','');
+  if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+  let r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+  r=Math.max(0,Math.min(255,r+delta)); g=Math.max(0,Math.min(255,g+delta)); b=Math.max(0,Math.min(255,b+delta));
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+function estCouleurClaire(hex){
+  if(!hex||hex.length<4) return false;
+  hex=hex.replace('#','');
+  if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+  const r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+  return (r*299+g*587+b*114)/1000 > 128;
+}
+
+function hexToRgbPhoto(hex){
+  const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex||'');
+  return r?{r:parseInt(r[1],16),g:parseInt(r[2],16),b:parseInt(r[3],16)}:null;
+}
+
+function fondSlide(num, total, c1, c2){
+  // DA "Editorial Noir" : fonds sombres, couleur principale en accent
+  const dark1 = c2 || '#0d0d0d';
+  const dark2 = ajusterLum(c2||'#111111', -8);
+  const dark3 = ajusterLum(c2||'#111111', 6);
+  if(num===1)     return dark1;       // Slide 1 (hook) : noir profond
+  if(num===total) return dark2;       // Slide finale (CTA) : légèrement différent
+  // Slides contenu : alterner entre 2 valeurs proches pour rythmer
+  return (num % 2 === 0) ? dark3 : dark1;
+}
+
+function texteSlide(fond){
+  // DA Editorial Noir : fonds toujours sombres → texte toujours blanc
+  return '#FFFFFF';
+}
+
+function accentSlide(c1, fond){
+  // DA Editorial Noir : accent toujours = couleur principale (rose) sur fond sombre
+  return c1;
+}
+
+function styleFondSlide(num, total, c1, c2){
+  // DA "Editorial Noir" — palette sombre systématique
+  const dark = ajusterLum(c2||'#0d0d0d', -8);
+  const sombre = c2 || '#0d0d0d';
+  const ov = overridesSlide[num-1];
+  const ovCss = overridesSlide['__css__'];
+  if(ov === '__custom__' && ovCss && ovCss[num-1]) return ovCss[num-1];
+  if(ov && ov !== '__custom__'){
+    const style = ov;
+    if(style==='uni')     return 'background:'+sombre+';';
+    if(style==='uni2')    return 'background:'+ajusterLum(sombre, 8)+';';
+    if(style==='degrade') return 'background:linear-gradient(135deg,'+dark+','+ajusterLum(c1,-25)+' 160%);';
+    if(style==='degrade2') return 'background:linear-gradient(160deg,'+sombre+','+ajusterLum(c1,-15)+' 200%);';
+    if(style==='beton')   return 'background:radial-gradient(ellipse at 25% 15%,'+ajusterLum(c1,-20)+','+dark+' 70%);';
+  }
+  // Défaut selon styleFondActif
+  if(styleFondActif==='uni')     return 'background:'+fondSlide(num,total,c1,c2)+';';
+  if(styleFondActif==='uni2')    return 'background:'+ajusterLum(sombre, 8)+';';
+  if(styleFondActif==='degrade') return 'background:linear-gradient(135deg,'+dark+','+ajusterLum(c1,-25)+' 160%);';
+  if(styleFondActif==='degrade2') return 'background:linear-gradient(160deg,'+sombre+','+ajusterLum(c1,-15)+' 200%);';
+  if(styleFondActif==='beton')   return 'background:radial-gradient(ellipse at 25% 15%,'+ajusterLum(c1,-20)+','+dark+' 70%);';
+  return 'background:'+fondSlide(num,total,c1,c2)+';';
+}
+
+function rendreTitreAccent(titre, accent, fond){
+  if(!titre) return '';
+  // Stabilo supprimé — retour simple
+  return escapeHtml(titre);
+}
+
+function nettoyerSousTitre(s){
+  if(!s) return '';
+  return s.replace(/^\s*[-–—•*#]+\s*/,'').replace(/\[.*?\]/g,'').trim();
+}
+
+function fontSizeTitre(titre, facteur, maxPx){
+  if(!titre) return {rem:facteur};
+  const len = titre.length;
+  let rem = facteur;
+  if(len > 60) rem = facteur * 0.72;
+  else if(len > 40) rem = facteur * 0.82;
+  else if(len > 25) rem = facteur * 0.92;
+  return {rem: Math.round(rem * 100) / 100};
+}
+
+function rendreSlideHTML(idx, c1, fond, partie){
+  if(!carrouselCourant) return '';
+  const s = carrouselCourant.slides[idx];
+  if(!s) return '';
+  if(partie === 'corps'){
+    return (s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>');
+  }
+  return escapeHtml((s.titre||'').replace(/\[\/?accent\]/gi,''));
+}
+
+function appliqueFondCSS(el, cssString){
+  if(!el || !cssString) return;
+  el.style.background = '';
+  el.style.backgroundImage = '';
+  el.style.backgroundSize = '';
+  el.style.backgroundPosition = '';
+  cssString.split(';').forEach(decl => {
+    decl = decl.trim();
+    if(!decl) return;
+    const colon = decl.indexOf(':');
+    if(colon < 0) return;
+    const prop = decl.slice(0,colon).trim();
+    const val  = decl.slice(colon+1).trim();
+    if(!prop||!val) return;
+    const camel = prop.replace(/-([a-z])/g,(_,c)=>c.toUpperCase());
+    try{ el.style[camel] = val; }catch(e){}
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// AFFICHER CARROUSEL
+// ══════════════════════════════════════════════════════════
+function afficherCarrousel(slides, legende, reseau, containerId){
+  carrouselCourant = { slides, legende, reseau };
+  cvSlideActive = 0;
+  overridesSlide = {}; overridesLH = {}; overridesFS = {};
+
+  const c1 = CFG.couleur1 || '#E8186D';
+  const c2 = CFG.couleur2 || '#111111';
+  const ptit = CFG.policeTitre || 'Playfair Display';
+  const pcorp = CFG.policeCorps || 'DM Sans';
+
+  const container = document.getElementById(containerId);
+  if(!container) return;
+
+  container.innerHTML = `
+    <div class="carrousel-viewer">
+      <div class="cv-header">
+        <h4>✦ Carrousel (${slides.length} slides)</h4>
+        <div class="cv-actions">
+          <button class="btn btn-sm btn-ghost" onclick="ouvrirCarrouselFullscreen()" style="margin:0;padding:.3rem .7rem;font-size:.72rem;">⛶ Plein écran</button>
+        </div>
+      </div>
+
+      <!-- Hint slide active -->
+      <div class="cv-active-hint" id="cv-active-hint"></div>
+
+      <div class="cv-slides-wrap" id="cv-slides-wrap">
+        ${slides.map((s,i) => {
+          const fond    = fondSlide(s.num||i+1, slides.length, c1, c2);
+          const tcoul   = texteSlide(fond);
+          const sstitre = s.sousTitre ? nettoyerSousTitre(s.sousTitre) : '';
+          return `<div class="cv-slide" id="cv-slide-${i}" onclick="cvSelectSlide(${i})"
+                    style="${styleFondSlide(s.num||i+1,slides.length,c1,c2)}">
+            <div class="cv-slide-num">${i+1}/${slides.length}</div>
+            <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};">
+              ${s.type?`<div class="cv-slide-type" style="color:${accentSlide(c1,fond)};opacity:.75;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">${s.type}</div>`:''}
+              ${sstitre?`<div class="cv-slide-sstitre" style="--slide-sstitre-size:.65rem;">${escapeHtml(sstitre)}</div>`:''}
+              <div class="cv-slide-titre" style="font-family:'${ptit}',serif;font-size:${i===0?fontSizeTitre(s.titre,.82,48).rem+'rem':''};">${rendreTitreAccent(s.titre||'',accentSlide(c1,fond),fond)}</div>
+              <div class="cv-slide-corps">${(s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>')}</div>
+            </div>
+          </div>`;
+        }).join('')}
+        <div class="cv-slide-add" onclick="toast('➕ Slide ajoutée — réédite le carrousel depuis le panneau.','ok')" style="flex-shrink:0;width:52px;height:auto;border-radius:10px;border:1.5px dashed rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.3);font-size:1.2rem;margin:1rem 0;">+</div>
+      </div>
+
+      <!-- Toolbar contextuelle -->
+      <div class="cv-toolbar-ctx" id="cv-toolbar-ctx">
+        <div class="cv-tool-fonds-blk">
+          <span class="cv-tool-fonds-lbl">Fond</span>
+          <div class="cv-tool-fonds-row">
+            <div class="cv-fpill on" id="cvp-uni"  title="Uni" onclick="cvFondPill(this,'uni')" style="background:${c1};"></div>
+            <div class="cv-fpill" id="cvp-deg1"    title="Dégradé" onclick="cvFondPill(this,'degrade')" style="background:linear-gradient(135deg,${c2},${c1});"></div>
+            <div class="cv-fpill" id="cvp-deg2"    title="Dégradé 2" onclick="cvFondPill(this,'degrade2')" style="background:linear-gradient(155deg,${c2},${c1} 160%);"></div>
+            <div class="cv-fpill" id="cvp-mat"     title="Dégradé 3 (matière)" onclick="cvFondPill(this,'beton')" style="background:radial-gradient(ellipse at 20% 20%,${c1},${c2});"></div>
+            <label class="cv-fpill" id="cvp-photo" title="Photo" style="cursor:pointer;">🖼️<input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhoto(this)"/></label>
+            <div class="cv-fpill" id="cvp-reset" title="Réinit." onclick="resetOverrides()" style="background:rgba(255,255,255,.08);font-size:.6rem;">↺</div>
+          </div>
+        </div>
+        <button class="cv-tool-texte-btn" onclick="ouvrirTxtDrawer()"><span>✏️</span><span>Texte</span></button>
+        <div class="cv-tool-plus-btn" onclick="ouvrirAdvDrawer()"><span>⚙️</span><span>Plus</span></div>
+      </div>
+
+      <div class="cv-export-bar">
+        <span style="display:flex;align-items:center;gap:.3rem;">
+          <span style="font-size:.7rem;color:var(--gris-clair);">Format&nbsp;:</span>
+          <select id="car-format-sel" onchange="setCarFormat(this.value)"
+            style="font-size:.75rem;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:6px;padding:3px 6px;color:var(--blanc-doux);cursor:pointer;">
+            <option value="3:4">3:4 (défaut)</option>
+            <option value="4:5">4:5</option>
+            <option value="1:1">1:1 (carré)</option>
+          </select>
+        </span>
+        ${reseau==='Instagram'
+          ? `<button class="btn btn-ghost" onclick="exporterPNG()" style="margin:0;">⬇️ PNG</button>`
+          : `<button class="btn btn-ghost" onclick="exporterPDF()" style="margin:0;">⬇️ PDF</button>`}
+        <button class="btn btn-rose" onclick="ouvrirCanva()" style="margin:0;">🎨 Canva</button>
+      </div>
+      <div style="padding:.6rem 1rem;border-top:1px solid var(--gris-border);font-size:.78rem;color:#aaa;line-height:1.55;"
+           id="cv-legende-txt">${legende?legende.replace(/\n/g,'<br/>'):'<em style="color:#555;">Aucune légende générée</em>'}</div>
+    </div>`;
+
+  // Appliquer les fonds après rendu DOM
+  setTimeout(() => majFondsSlides(), 10);
+}
+
+function cvSelectSlide(idx){
+  document.querySelectorAll('.cv-slide').forEach(s=>s.classList.remove('active'));
+  const el = document.getElementById('cv-slide-'+idx);
+  if(el){ el.classList.add('active'); el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}); }
+  document.getElementById('cv-slides-wrap')?.classList.add('has-active');
+  cvSlideActive = idx;
+  const hint = document.getElementById('cv-active-hint');
+  if(hint && carrouselCourant){
+    const s = carrouselCourant.slides[idx];
+    hint.textContent = 'Slide '+(idx+1)+(s&&s.titre?' — '+s.titre.substring(0,28):'');
+    hint.classList.add('visible');
+  }
+  const toolbar = document.getElementById('cv-toolbar-ctx');
+  if(toolbar) toolbar.classList.add('visible');
+  preRemplirDrawerTexte(idx);
+}
+
+function preRemplirDrawerTexte(idx){
+  if(!carrouselCourant) return;
+  const s = carrouselCourant.slides[idx];
+  if(!s) return;
+  const el_t = document.getElementById('cv-edit-titre');
+  const el_c = document.getElementById('cv-edit-corps');
+  const el_st = document.getElementById('cv-edit-sstitre');
+  if(el_t)  el_t.value  = (s.titre||'').replace(/\[\/?accent\]/gi,'');
+  if(el_c)  el_c.value  = s.corps||'';
+  if(el_st) el_st.value = nettoyerSousTitre(s.sousTitre||'');
+  const lh = overridesLH[idx]||{};
+  const fs = overridesFS[idx]||{};
+  ['titre','corps'].forEach(type=>{
+    const slLH = document.getElementById('ed-lh-'+type);
+    const slFS = document.getElementById('ed-fs-'+type);
+    const valLH = type==='titre'?(lh.titre||1.15):(lh.corps||1.20);
+    const valFS = type==='titre'?(fs.titre||1.0):(fs.corps||1.0);
+    if(slLH){ slLH.value=valLH; const v=document.getElementById('ed-lh-'+type+'-val'); if(v) v.textContent=valLH.toFixed(2); }
+    if(slFS){ slFS.value=valFS; const v=document.getElementById('ed-fs-'+type+'-val'); if(v) v.textContent=Math.round(valFS*100)+'%'; }
+  });
+  const lbl1=document.getElementById('cv-txt-drawer-lbl');
+  const lbl2=document.getElementById('cv-adv-drawer-lbl');
+  const tc = (s.titre||'').replace(/\[\/?accent\]/gi,'').substring(0,20);
+  if(lbl1) lbl1.textContent='Slide '+(idx+1)+(tc?' — '+tc:'');
+  if(lbl2) lbl2.textContent='Options — Slide '+(idx+1);
+}
+
+function ouvrirTxtDrawer(){
+  document.getElementById('cv-drawer-overlay')?.classList.add('on');
+  document.getElementById('cv-txt-drawer')?.classList.add('open');
+}
+function ouvrirAdvDrawer(){
+  document.getElementById('cv-drawer-overlay')?.classList.add('on');
+  document.getElementById('cv-adv-drawer')?.classList.add('open');
+}
+function fermerTousDrawers(){
+  document.getElementById('cv-drawer-overlay')?.classList.remove('on');
+  document.getElementById('cv-txt-drawer')?.classList.remove('open');
+  document.getElementById('cv-adv-drawer')?.classList.remove('open');
+}
+function cvDrawerTab(btn, tab){
+  document.querySelectorAll('.cv-drawer-tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');
+  ['cvdf-titre','cvdf-corps','cvdf-sstitre'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display='none';
+  });
+  const map={titre:'cvdf-titre',corps:'cvdf-corps',sstitre:'cvdf-sstitre'};
+  const target=document.getElementById(map[tab]);
+  if(target){ target.style.display='block'; const inp=target.querySelector('textarea,input'); if(inp) setTimeout(()=>inp.focus(),50); }
+}
+function cvFondPill(el, style){
+  document.querySelectorAll('.cv-fpill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  if(typeof setStyleSlide==='function') setStyleSlide(cvSlideActive,null,style);
+}
+
+function appliquerEditSlide(){
+  const idx = cvSlideActive;
+  if(!carrouselCourant||idx===undefined||idx===null) return;
+  const s = carrouselCourant.slides[idx]; if(!s) return;
+  s.titre    = (document.getElementById('cv-edit-titre')||{}).value||'';
+  s.corps    = (document.getElementById('cv-edit-corps')||{}).value||'';
+  s.sousTitre= (document.getElementById('cv-edit-sstitre')||{}).value||'';
+  const cibles=[document.getElementById('cv-slide-'+idx),document.getElementById('cv-fs-slide-'+idx)].filter(Boolean);
+  cibles.forEach(slideEl=>{
+    const titreEl=slideEl.querySelector('.cv-slide-titre');
+    if(titreEl) titreEl.innerHTML=escapeHtml(s.titre);
+    const corpsEl=slideEl.querySelector('.cv-slide-corps');
+    if(corpsEl) corpsEl.innerHTML=(s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>');
+    const sstEl=slideEl.querySelector('.cv-slide-sstitre');
+    if(sstEl){ const clean=nettoyerSousTitre(s.sousTitre||''); sstEl.innerHTML=clean?escapeHtml(clean):''; sstEl.style.display=clean?'':'none'; }
+  });
+}
+
+function majInterligne(type, val){
+  const v=parseFloat(val); const idx=cvSlideActive;
+  if(idx===undefined||idx===null) return;
+  overridesLH[idx]=overridesLH[idx]||{};
+  overridesLH[idx][type]=v;
+  const lbl=document.getElementById('ed-lh-'+type+'-val'); if(lbl) lbl.textContent=v.toFixed(2);
+  const slideEl=document.getElementById('cv-slide-'+idx);
+  if(slideEl){ const t=slideEl.querySelector(type==='titre'?'.cv-slide-titre':'.cv-slide-corps'); if(t) t.style.lineHeight=v; }
+}
+
+function majTaillePolice(type, val){
+  const v=parseFloat(val); const idx=cvSlideActive;
+  if(idx===undefined||idx===null) return;
+  overridesFS[idx]=overridesFS[idx]||{};
+  overridesFS[idx][type]=v;
+  const lbl=document.getElementById('ed-fs-'+type+'-val'); if(lbl) lbl.textContent=Math.round(v*100)+'%';
+  const appliquer=(el)=>{
+    if(!el) return;
+    if(!el.dataset.fsBase){ el.dataset.fsBase=parseFloat(window.getComputedStyle(el).fontSize); }
+    el.style.fontSize=(parseFloat(el.dataset.fsBase)*v)+'px';
+  };
+  const slideEl=document.getElementById('cv-slide-'+idx);
+  if(slideEl) appliquer(slideEl.querySelector(type==='titre'?'.cv-slide-titre':'.cv-slide-corps'));
+}
+
+function propagerMiseEnPage(){
+  const idx=cvSlideActive;
+  if(!carrouselCourant||idx===undefined) return;
+  const refLH=overridesLH[idx]||{titre:1.15,corps:1.20};
+  const refFS=overridesFS[idx]||{titre:1.0,corps:1.0};
+  const n=carrouselCourant.slides.length;
+  for(let i=0;i<n;i++){
+    if(i===idx) continue;
+    overridesLH[i]={titre:refLH.titre||1.15,corps:refLH.corps||1.20};
+    overridesFS[i]={titre:refFS.titre||1.0,corps:refFS.corps||1.0};
+  }
+  toast('✅ Espacements appliqués aux '+n+' slides','ok');
+}
+
+function majFondsSlides(){
+  if(!carrouselCourant) return;
+  const {slides}=carrouselCourant;
+  const c1=CFG.couleur1||'#E8186D';
+  const c2=CFG.couleur2||'#111111';
+  slides.forEach((s,i)=>{
+    const slideEl=document.getElementById('cv-slide-'+i);
+    if(!slideEl) return;
+    const photoSrc=cvFondPhotoParSlide[i]||(styleFondActif==='photo'?cvFondPhotoSrc:null);
+    if(photoSrc){
+      slideEl.style.backgroundImage=`url('${photoSrc}')`;
+      slideEl.style.backgroundSize='cover';
+      slideEl.style.backgroundPosition='center';
+      let ov=slideEl.querySelector('.cv-photo-overlay');
+      if(!ov){ ov=document.createElement('div'); ov.className='cv-photo-overlay'; ov.style.cssText='position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:0;pointer-events:none;border-radius:inherit;'; slideEl.insertBefore(ov,slideEl.firstChild); }
+      const inner=slideEl.querySelector('.cv-slide-inner'); if(inner){ inner.style.position='relative'; inner.style.zIndex='1'; inner.style.color='#fff'; }
+      return;
+    }
+    const ov2=slideEl.querySelector('.cv-photo-overlay'); if(ov2) ov2.remove();
+    appliqueFondCSS(slideEl, styleFondSlide(s.num||i+1,slides.length,c1,c2));
+    const inner=slideEl.querySelector('.cv-slide-inner');
+    if(inner){ inner.style.color=texteSlide(fondSlide(s.num||i+1,slides.length,c1,c2)); inner.style.position=''; inner.style.zIndex=''; }
+  });
+}
+
+function resetOverrides(){
+  overridesSlide={}; cvFondPhotoSrc=null;
+  Object.keys(cvFondPhotoParSlide).forEach(k=>delete cvFondPhotoParSlide[k]);
+  document.querySelectorAll('.cv-fpill').forEach(p=>p.classList.remove('on'));
+  const uni=document.getElementById('cvp-uni'); if(uni) uni.classList.add('on');
+  majFondsSlides();
+}
+
+function setStyleFond(btn, style){
+  styleFondActif=style;
+  document.querySelectorAll('.cv-fond-opt').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  majFondsSlides();
+}
+
+function setStyleSlide(slideIdx, btn, style){
+  overridesSlide[slideIdx]=style;
+  majFondsSlides();
+}
+
+function setCarFormat(ratio){
+  carFormatRatio=ratio;
+  const fmt=CAR_FORMATS[ratio]||CAR_FORMATS['3:4'];
+  const ar=fmt.w+' / '+fmt.h;
+  document.querySelectorAll('.cv-slide').forEach(s=>{ s.style.aspectRatio=ar; });
+}
+
+function setCvFondPhoto(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{ cvFondPhotoSrc=e.target.result; styleFondActif='photo'; majFondsSlides(); };
+  reader.readAsDataURL(file);
+}
+
+function setCvFondPhotoSlide(input, slideIdx){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{ cvFondPhotoParSlide[slideIdx]=e.target.result; overridesSlide[slideIdx]='photo'; majFondsSlides(); };
+  reader.readAsDataURL(file);
+}
+
+function ouvrirCanva(){
+  if(!carrouselCourant) return;
+  afficherTooltipCanva(carrouselCourant.reseau);
+}
+
+function afficherTooltipCanva(reseau){
+  const old=document.getElementById('canva-tooltip'); if(old) old.remove();
+  const isIG=reseau!=='LinkedIn';
+  const tip=document.createElement('div');
+  tip.id='canva-tooltip';
+  tip.innerHTML=`<div class="cv-tip-inner">
+    <button class="cv-tip-close" onclick="document.getElementById('canva-tooltip').remove()">✕</button>
+    <div class="cv-tip-titre">🎨 Importer dans Canva</div>
+    <ol class="cv-tip-steps">
+      <li>Télécharge tes slides en ${isIG?'PNG':'PDF'} ci-dessous 👇</li>
+      <li>Va sur <strong>canva.com</strong> et connecte-toi</li>
+      <li>Crée un nouveau design <strong>${isIG?'Instagram (1080×1440, ratio 3:4)':'LinkedIn (1080×1440, ratio 3:4)'}</strong></li>
+      <li>Clique sur <strong>Importer un fichier</strong> et sélectionne tes PNG</li>
+      <li>Modifie textes &amp; graphismes librement</li>
+    </ol>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.8rem;">
+      <button class="btn btn-ghost btn-sm" onclick="${isIG?'exporterPNG':'exporterPDF'}();document.getElementById('canva-tooltip').remove();">⬇️ Télécharger en ${isIG?'PNG':'PDF'} d'abord</button>
+      <a href="https://www.canva.com" target="_blank" class="btn btn-rose btn-sm" style="text-decoration:none;" onclick="document.getElementById('canva-tooltip').remove()">Ouvrir canva.com →</a>
+    </div>
+  </div>`;
+  tip.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.88);display:flex;align-items:flex-end;justify-content:center;padding:1rem;';
+  tip.addEventListener('click',e=>{ if(e.target===tip) tip.remove(); });
+  document.body.appendChild(tip);
+}
+
+function ouvrirCarrouselFullscreen(){
+  if(!carrouselCourant) return;
+  const {slides}=carrouselCourant;
+  const c1=CFG.couleur1||'#E8186D';
+  const c2=CFG.couleur2||'#111111';
+  const ptit=CFG.policeTitre||'Playfair Display';
+  const pcorp=CFG.policeCorps||'DM Sans';
+  let fsEl=document.getElementById('cv-fullscreen');
+  if(!fsEl){ fsEl=document.createElement('div'); fsEl.className='cv-fullscreen'; fsEl.id='cv-fullscreen'; document.body.appendChild(fsEl); }
+  const rendreFSSlide=(idx)=>{
+    const s=slides[idx];
+    const fond=fondSlide(s.num||idx+1,slides.length,c1,c2);
+    const tcoul=texteSlide(fond);
+    return `<div class="cv-fs-slide" id="cv-fs-slide-${idx}" style="${styleFondSlide(s.num||idx+1,slides.length,c1,c2)}">
+      <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};">
+        <div class="cv-slide-titre" style="font-family:'${ptit}',serif;">${escapeHtml(s.titre||'')}</div>
+        ${s.sousTitre?`<div class="cv-slide-sstitre">${escapeHtml(nettoyerSousTitre(s.sousTitre||''))}</div>`:''}
+        <div class="cv-slide-corps">${(s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>')}</div>
+      </div>
+    </div>
+    <div class="cv-fs-nav">
+      <button class="cv-fs-btn" onclick="cvFSNav(-1)">‹</button>
+      <span class="cv-fs-counter">${idx+1} / ${slides.length}</span>
+      <button class="cv-fs-btn" onclick="cvFSNav(1)">›</button>
+    </div>`;
+  };
+  fsEl.onclick=(e)=>{ if(e.target===fsEl) fsEl.classList.remove('on'); };
+  fsEl.innerHTML=`<button class="cv-fs-close" onclick="document.getElementById('cv-fullscreen').classList.remove('on')">✕</button>
+    <div id="cv-fs-content">${rendreFSSlide(cvSlideActive)}</div>`;
+  fsEl.classList.add('on');
+  let touchX=0;
+  fsEl.ontouchstart=e=>{touchX=e.touches[0].clientX;};
+  fsEl.ontouchend=e=>{ const dx=e.changedTouches[0].clientX-touchX; if(Math.abs(dx)>50) cvFSNav(dx<0?1:-1); };
+  window.cvFSNav=(dir)=>{
+    const sl=carrouselCourant.slides;
+    cvSlideActive=Math.max(0,Math.min(sl.length-1,cvSlideActive+dir));
+    document.getElementById('cv-fs-content').innerHTML=rendreFSSlide(cvSlideActive);
+  };
+}
+
+
+
+// ══════════════════════════════════════════════════════════
+// VARIABLES GLOBALES PHOTO
+// ══════════════════════════════════════════════════════════
+let genPhotoTitre      = '';   // titre hook extrait du post généré
+let genPhotoStyle      = '';   // 'fond' | 'photo'
+let photoFondImageSrc  = null; // base64 de la photo de fond
+let phFondTypeActif    = 'uni';
+let phGradTypeActif    = 'lr';
+
+// ══════════════════════════════════════════════════════════
+// UTILITAIRES PHOTO
+// ══════════════════════════════════════════════════════════
+function fondsPhotoCouleurCourante(){
+  return CFG.couleur1 || '#E8186D';
+}
+
+function calculerBgPhoto(){
+  // DA "Editorial Noir" : mêmes fonds sombres que les carrousels
+  const c1 = fondsPhotoCouleurCourante();
+  const c2 = CFG.couleur2 || '#0d0d0d';
+  const dark = ajusterLum(c2, -8);
+  const sombre = c2;
+  if(phFondTypeActif === 'uni')     return sombre;
+  if(phFondTypeActif === 'uni2')    return ajusterLum(sombre, 8);
+  if(phFondTypeActif === 'degrade'){
+    // 3 variantes selon phGradTypeActif
+    if(phGradTypeActif === 'deg2') return `linear-gradient(160deg,${sombre},${ajusterLum(c1,-15)} 200%)`;
+    if(phGradTypeActif === 'mat')  return `radial-gradient(ellipse at 25% 15%,${ajusterLum(c1,-20)},${dark} 70%)`;
+    return `linear-gradient(135deg,${dark},${ajusterLum(c1,-25)} 160%)`;
+  }
+  if(phFondTypeActif === 'beton')   return `radial-gradient(ellipse at 25% 15%,${ajusterLum(c1,-20)},${dark} 70%)`;
+  return sombre;
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDU PREVIEW PHOTO
+// ══════════════════════════════════════════════════════════
+function renderPreviewFondColore(){
+  const preview = document.getElementById('gen-photo-preview-zone');
+  if(!preview) return;
+  const c1    = fondsPhotoCouleurCourante();
+  const bg    = calculerBgPhoto() || c1;
+  renderPreviewFondColoreAvecBg(bg);
+}
+
+function renderPreviewFondColoreAvecBg(bgOverride){
+  const preview = document.getElementById('gen-photo-preview-zone');
+  if(!preview) return;
+
+  const c1    = fondsPhotoCouleurCourante();
+  const bg    = bgOverride || calculerBgPhoto() || c1;
+  const tcoul = '#fff'; // DA Editorial Noir : texte toujours blanc sur fond sombre
+  const titre = (genPhotoTitre||'Ton titre ici').substring(0,60);
+
+  const hasPhoto  = !!photoFondImageSrc;
+  const fondCss   = hasPhoto ? 'position:relative;overflow:hidden;' : '';
+  const imgHtml   = hasPhoto
+    ? `<img src="${photoFondImageSrc}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7;"/><div style="position:absolute;inset:0;background:rgba(0,0,0,.35);"></div>`
+    : '';
+  const coulTxt   = hasPhoto ? '#fff' : tcoul;
+
+  const ptit = CFG.policeTitre || 'Playfair Display';
+  const fondStyle = hasPhoto ? '' : `background:${bg};`;
+
+  preview.innerHTML = `<div style="width:100%;height:100%;${fondStyle}${fondCss}border-radius:10px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;padding:8% 7%;box-sizing:border-box;overflow:hidden;">
+    ${imgHtml}
+    <div style="position:relative;z-index:1;font-family:'${ptit}',serif;font-size:.92rem;font-weight:700;color:${coulTxt};line-height:1.5;width:100%;word-wrap:break-word;overflow-wrap:break-word;">
+      ${escapeHtml(titre)}
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// CONTRÔLES FOND PHOTO
+// ══════════════════════════════════════════════════════════
+function phFondType(type, btn){
+  phFondTypeActif = type;
+  document.querySelectorAll('#gen-photo-style-zone .ed-chip[id^="ph-fond-"]').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  const cfgDegrade = document.getElementById('ph-cfg-degrade');
+  if(cfgDegrade) cfgDegrade.style.display = type === 'degrade' ? 'flex' : 'none';
+  phApplyFond();
+}
+
+function phGradType(type, btn){
+  phGradTypeActif = type;
+  document.querySelectorAll('[id^="ph-grad-"]').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  phApplyFond();
+}
+
+function phApplyFond(){
+  if(phFondTypeActif === 'photo'){
+    const hasPhoto = !!photoFondImageSrc;
+    if(!hasPhoto){
+      const msg = document.getElementById('gen-photo-add-msg');
+      if(msg) msg.style.display = 'block';
+      return;
+    }
+  }
+  renderPreviewFondColore();
+}
+
+function initPhotoZone(){
+  const c1 = fondsPhotoCouleurCourante();
+  renderPreviewFondColore();
+}
+
+function regenStylePhoto(){
+  if(genPhotoStyle === 'fond') renderPreviewFondColore();
+  else if(genPhotoStyle){
+    const activeBtn = document.querySelector('#gen-photo-style-zone .ed-chip.on');
+    if(activeBtn) activeBtn.click();
+  }
+}
+
+
 function splitTexteLegende(texte){
   if(!texte) return {texte:'', legende:''};
 
@@ -4920,16 +5553,29 @@ async function genUnPost(){
 
     // Envoi vers Apps Script — la génération se fait côté serveur
     const body = {
-      action:  'generer_post',
-      ia:      CFG.ia || 'claude',
-      cle_ia:  CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+      action:          'generer_post',
+      ia:              CFG.ia || 'claude',
+      cle_ia:          CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
       reseau,
       format,
-      pilier:       genPilier || 'autorite',
+      pilier:          genPilier || 'autorite',
       sujet,
-      matiere:      mat,
-      actu:         actuTexte || '',
-      stats_eviter: buildStatsEviterBloc(),
+      matiere:         mat,
+      actu:            actuTexte || '',
+      stats_eviter:    buildStatsEviterBloc(),
+      anti_redondance: contexteAntiRedondance(),
+      figure_forcee:   genFigureForce || '',
+      figures_recentes: ls('roze_figures_recentes') || '',
+      story_type:      format === 'Stories' ? (genPilier === 'vente' ? 'vente' : genPilier === 'expertise' ? 'valeur' : 'lifestyle') : '',
+      // Profil enrichi
+      cat_metier:   ls('roze_cat_metier')  || '',
+      tronc:        ls('roze_tronc')       || '',
+      registre:     ls('roze_registre')    || '',
+      tonalite:     ls('roze_tonalite')    || '',
+      partage:      ls('roze_partage')     || '',
+      cible:        ls('roze_cible')       || '',
+      expr_marque:  ls('roze_emojis_marque') || '',
+      mots_interdits: ls('roze_mots_interdits') || '',
     };
 
     const r = await fetch(CFG.as, {
@@ -4939,6 +5585,22 @@ async function genUnPost(){
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
     const texte = nettoyerIntroIA(j.texte || '');
+
+    // Afficher le badge figure narrative si retourné par l'AS
+    if(j.figure_code && (format === 'Post texte' || format === 'Photo')){
+      genFigureCourante = { code: j.figure_code, nom: j.figure_nom, levier: j.figure_levier };
+      afficherBadgeFigure(genFigureCourante);
+      // Mémoriser pour anti-répétition
+      const recentes = (ls('roze_figures_recentes') || '').split(',').filter(Boolean).slice(0,5);
+      recentes.unshift(j.figure_code);
+      ss('roze_figures_recentes', recentes.join(','));
+    } else {
+      genFigureCourante = null;
+      if(format !== 'Carrousel' && format !== 'Réel' && format !== 'Vidéo' && format !== 'Stories'){
+        cacherBadgeFigure();
+      }
+    }
+    genFigureForce = null; // Réinitialiser après utilisation
 
     inlineLoader.classList.remove('on');
     if(btnGen) btnGen.disabled=false;

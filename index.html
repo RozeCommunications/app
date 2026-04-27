@@ -4551,6 +4551,218 @@ function parseCarrouselRobuste(texteIA) {
   };
 }
 
+// ══════════════════════════════════════════════════════════
+// RENDU TABLEAU SCRIPT (Réel / Vidéo LI / Stories)
+// ══════════════════════════════════════════════════════════
+function parseMarkdownTable(text) {
+  const lines = text.split('\n').filter(l => l.includes('|'));
+  const rows = lines.filter(l => !l.match(/^[\s|:-]+$/));
+  if (rows.length < 2) return null;
+  const data = rows.slice(1).map(row => {
+    const cleaned = row.split('|');
+    return cleaned.slice(1, cleaned.length - 1).map(c => c.trim());
+  });
+  return { data };
+}
+
+function renderScriptReel(texte) {
+  const scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
+  const legendeMatch = texte.match(/LÉGENDE:\s*([\s\S]*?)(?=CONSEIL:|$)/i);
+  const conseilMatch = texte.match(/CONSEIL:\s*([\s\S]*?)$/i);
+  let html = '';
+  if (scriptMatch) {
+    const tableData = parseMarkdownTable(scriptMatch[1]);
+    if (tableData && tableData.data.length > 0) {
+      html += '<div style="overflow-x:auto"><table class="script-table"><thead><tr>';
+      html += '<th>Temps</th><th>Visuel & texte à l\'écran</th><th>Audio / Voix off</th><th>Émotion</th>';
+      html += '</tr></thead><tbody>';
+      tableData.data.forEach(row => {
+        if (row.length < 2) return;
+        html += '<tr>'
+          + '<td class="script-col-temps">'  + escapeHtml(row[0]||'') + '</td>'
+          + '<td class="script-col-visuel">' + escapeHtml(row[1]||'') + '</td>'
+          + '<td class="script-col-audio">'  + escapeHtml(row[2]||'') + '</td>'
+          + '<td class="script-col-emotion">'+ escapeHtml(row[3]||'') + '</td>'
+          + '</tr>';
+      });
+      html += '</tbody></table></div>';
+    } else {
+      html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">' + escapeHtml(scriptMatch[1]) + '</div>';
+    }
+  }
+  const legende = legendeMatch ? legendeMatch[1].trim() : '';
+  if (legende) {
+    html += '<div class="script-legende-box">'
+      + '<div class="script-legende-lbl">Légende Instagram</div>'
+      + '<div class="script-legende-txt">' + escapeHtml(legende) + '</div>'
+      + '<button class="btn btn-ghost btn-sm" style="margin-top:.5rem;" onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent).then(()=>toast(\'✅ Légende copiée !\',\'ok\'))">📋 Copier la légende</button>'
+      + '</div>';
+  }
+  const conseil = conseilMatch ? conseilMatch[1].trim() : '';
+  if (conseil) {
+    html += '<div class="script-conseil"><div class="script-conseil-lbl">🎬 Conseil de tournage</div>' + escapeHtml(conseil) + '</div>';
+  }
+  return html;
+}
+
+function renderScriptVideoLI(texte) {
+  const scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
+  const legendeMatch = texte.match(/LÉGENDE:\s*([\s\S]*?)$/i);
+  let html = '';
+  if (scriptMatch) {
+    const tableData = parseMarkdownTable(scriptMatch[1]);
+    if (tableData && tableData.data.length > 0) {
+      html += '<div style="overflow-x:auto"><table class="script-table"><thead><tr>';
+      html += '<th>Temps</th><th>Visuel & sous-titres écran</th><th>Audio / Voix off</th><th>Émotion</th>';
+      html += '</tr></thead><tbody>';
+      tableData.data.forEach(row => {
+        if (row.length < 2) return;
+        html += '<tr>'
+          + '<td class="script-col-temps">'  + escapeHtml(row[0]||'') + '</td>'
+          + '<td class="script-col-visuel">' + escapeHtml(row[1]||'') + '</td>'
+          + '<td class="script-col-audio">'  + escapeHtml(row[2]||'') + '</td>'
+          + '<td class="script-col-emotion">'+ escapeHtml(row[3]||'') + '</td>'
+          + '</tr>';
+      });
+      html += '</tbody></table></div>';
+    } else {
+      html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">' + escapeHtml(scriptMatch[1]) + '</div>';
+    }
+  }
+  const legende = legendeMatch ? legendeMatch[1].trim() : '';
+  if (legende) {
+    html += '<div class="script-legende-box">'
+      + '<div class="script-legende-lbl">Légende LinkedIn</div>'
+      + '<div class="script-legende-txt">' + escapeHtml(legende) + '</div>'
+      + '<button class="btn btn-ghost btn-sm" style="margin-top:.5rem;" onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent).then(()=>toast(\'✅ Légende copiée !\',\'ok\'))">📋 Copier la légende</button>'
+      + '</div>';
+  }
+  return html;
+}
+
+function renderScriptStory(texte) {
+  const scriptMatch = texte.match(/SCRIPT:\s*([\s\S]*?)$/i);
+  let html = '';
+  if (scriptMatch) {
+    const tableData = parseMarkdownTable(scriptMatch[1]);
+    if (tableData && tableData.data.length > 0) {
+      html += '<div style="overflow-x:auto"><table class="script-table"><thead><tr>';
+      html += '<th>Slide</th><th>Texte à l\'écran</th><th>Arrière-plan</th>';
+      html += '</tr></thead><tbody>';
+      tableData.data.forEach(row => {
+        if (row.length < 2) return;
+        html += '<tr>'
+          + '<td class="script-col-slide">'+ escapeHtml(row[0]||'') + '</td>'
+          + '<td class="script-col-texte">'+ escapeHtml(row[1]||'') + '</td>'
+          + '<td class="script-col-bg">'   + escapeHtml(row[2]||'') + '</td>'
+          + '</tr>';
+      });
+      html += '</tbody></table></div>';
+    } else {
+      html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">' + escapeHtml(scriptMatch[1] || texte) + '</div>';
+    }
+  } else {
+    html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">' + escapeHtml(texte) + '</div>';
+  }
+  return html;
+}
+
+function isScriptTableau(texte, format) {
+  if (!texte) return false;
+  if (format === 'Réel')    return texte.includes('SCRIPT:') || texte.includes('| Temps |');
+  if (format === 'Vidéo')   return texte.includes('SCRIPT:') || texte.includes('| Temps |');
+  if (format === 'Stories') return texte.includes('SCRIPT:') || texte.includes('| Slide |');
+  return false;
+}
+
+function afficherResultatScript(texte, format, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  let html = '';
+  if (format === 'Réel')         html = renderScriptReel(texte);
+  else if (format === 'Vidéo')   html = renderScriptVideoLI(texte);
+  else if (format === 'Stories') html = renderScriptStory(texte);
+  else html = '<div style="white-space:pre-wrap;font-size:.82rem;">' + escapeHtml(texte) + '</div>';
+  container.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════
+// FIGURES NARRATIVES — badge + rotation
+// ══════════════════════════════════════════════════════════
+function afficherBadgeFigure(fig) {
+  if (!fig) return;
+  const zone = document.getElementById('gen-figure-zone');
+  const nom  = document.getElementById('gen-figure-nom');
+  const lev  = document.getElementById('gen-figure-levier');
+  if (zone) zone.style.display = 'flex';
+  if (nom)  nom.textContent    = fig.nom  || '';
+  if (lev)  lev.textContent    = fig.levier ? '· ' + fig.levier : '';
+}
+
+function cacherBadgeFigure() {
+  const zone = document.getElementById('gen-figure-zone');
+  if (zone) zone.style.display = 'none';
+}
+
+function autreFigure() {
+  genFigureForce = null;
+  genUnPost();
+}
+
+let _srcIdx = 0;
+function prochainIndexSource(max) {
+  _srcIdx = (_srcIdx + 1) % Math.max(max, 1);
+  return _srcIdx;
+}
+
+
+
+function buildStatsEviterBloc(){
+  const stats = getStatsMois();
+  if(!stats.length) return '';
+  return '\n=== DONNÉES DÉJÀ UTILISÉES CE MOIS — NE PAS RÉUTILISER ===\n'
+    + stats.map((s,i) => (i+1)+'. '+s).join('\n')
+    + '\nSi l\'actualité contient l\'une de ces données, utilises-en une différente du même article ou cherche une autre source.\n';
+}
+
+function construireStoriesUI(){
+  const zone = document.getElementById('stories-config');
+  if(!zone) return;
+  const typoMap = {lifestyle:'typo-lifestyle',valeur:'typo-valeur',vente:'typo-vente'};
+  const typoNom = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente'};
+  zone.innerHTML = STORIES_CFG.map((s,i)=>`
+    <div class="story-jour">
+      <div class="story-jour-hd">
+        <span class="jour-nom">${s.jour}</span>
+        <span class="typo-badge ${typoMap[s.typo]}">${typoNom[s.typo]}</span>
+      </div>
+      <select style="margin-bottom:.5rem;font-size:14px;" onchange="STORIES_CFG[${i}].typo=this.value;">
+        <option value="lifestyle" ${s.typo==='lifestyle'?'selected':''}>🎭 Lifestyle / Storytelling</option>
+        <option value="valeur"    ${s.typo==='valeur'?'selected':''}>💡 Valeur / Astuce</option>
+        <option value="vente"     ${s.typo==='vente'?'selected':''}>🎯 Vente</option>
+      </select>
+      <div class="story-sujet">
+        <input type="text" value="${s.sujet}" placeholder="Sujet de la story…"
+          onchange="STORIES_CFG[${i}].sujet=this.value;"/>
+      </div>
+    </div>`).join('');
+}
+
+function syncStories(){
+  // Appelé uniquement depuis sauvegarderCompte()
+  localStorage.setItem('roze_stories', JSON.stringify(STORIES_CFG));
+  majTrackerStories();
+  const panel = document.getElementById('stories-panel');
+  if(panel && panel.classList.contains('on')) majStoriesPanel();
+}
+
+function contexteAntiRedondance(){
+  const biblio = getBiblio();
+  const derniers20 = biblio.slice(0,20);
+  if(!derniers20.length) return '';
+  return `\n\nRÈGLE ANTI-REDONDANCE ABSOLUE :\nVoici les sujets et formulations des 20 derniers posts publiés. Tu dois éviter toute similitude de sujet ET de formulation avec ces posts :\n${derniers20.map((p,i)=>`${i+1}. [${p.reseau} - ${p.typeContenu}] ${resumePost(p.texte)}`).join('\n')}\n`;
+}
+
 function splitTexteLegende(texte){
   if(!texte) return {texte:'', legende:''};
 

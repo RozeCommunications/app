@@ -91,7 +91,7 @@
     .badge-nom{font-size:.75rem;color:var(--blanc-doux);background:var(--gris-fonce);padding:3px 10px;border-radius:20px;border:1px solid var(--gris-border);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
     /* ─ SCROLL ─ */
-    .scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+    .scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin-top:56px;}
     .scroll::-webkit-scrollbar{display:none;}
     .page{display:none;padding:1.4rem 1.2rem calc(80px + var(--safe-bottom));animation:fi .25s ease;}
     .page.on{display:block;}
@@ -865,9 +865,7 @@
         z-index:200;
       }
       /* Compenser la hauteur du header fixe */
-      .scroll{
-        margin-top:56px;
-      }
+      /* scroll : margin-top intégré dans la règle principale */
 
       /* Tabs : pleine largeur, icônes centrées et fixes */
       .tabs{
@@ -6785,61 +6783,103 @@ function getCreerFormat(){
 }
 
 async function genCreerPost(){
+  // Même logique complète que genUnPost — affiche dans la modale calendrier
   if(!verifierCleIA()) return;
+
   const reseau = getCreerReseau();
   const format = getCreerFormat();
-  const sujet  = document.getElementById('creer-sujet').value.trim();
+  const pilier = creerPilier || 'autorite';
+  const sujet  = (document.getElementById('creer-sujet')||{}).value?.trim() || '';
 
-  const loader  = document.getElementById('creer-loader');
+  const loader    = document.getElementById('creer-loader');
   const loaderTxt = document.getElementById('creer-loader-txt');
-  const result  = document.getElementById('creer-result');
-  const legZone = document.getElementById('creer-legende-zone');
-  const actions = document.getElementById('creer-actions');
+  const result    = document.getElementById('creer-result');
+  const legZone   = document.getElementById('creer-legende-zone');
+  const actions   = document.getElementById('creer-actions');
+  const lblTexte  = document.getElementById('lbl-creer-texte');
 
   loader.classList.add('on');
-  loaderTxt.textContent = 'Génération en cours…';
+  if(loaderTxt) loaderTxt.textContent = 'Génération en cours…';
   result.classList.remove('on');
   legZone.classList.remove('on');
   actions.style.display = 'none';
+  if(lblTexte) lblTexte.style.display = 'none';
 
   try{
-    const matiere = matiereSemaine();
+    if(!CFG.as) throw new Error('URL Apps Script manquante — configure Mon Compte');
+
+    const mat = matiereSemaine ? matiereSemaine() : '';
+
     const body = {
-      action:  'generer_post',
-      ia:      CFG.ia || 'claude',
-      cle_ia:  CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
-      reseau,
-      format,
-      pilier:  creerPilier || 'autorite',
+      action:           'generer_post',
+      ia:               CFG.ia || 'claude',
+      cle_ia:           CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
+      reseau, format,
+      pilier,
       sujet,
-      matiere
+      matiere:          mat,
+      actu:             '',
+      stats_eviter:     buildStatsEviterBloc(),
+      anti_redondance:  contexteAntiRedondance(),
+      figure_forcee:    '',
+      figures_recentes: ls('roze_figures_recentes') || '',
+      story_type:       format === 'Stories' ? (pilier === 'vente' ? 'vente' : pilier === 'expertise' ? 'valeur' : 'lifestyle') : '',
+      cat_metier:       ls('roze_cat_metier')     || '',
+      tronc:            ls('roze_tronc')           || '',
+      registre:         ls('roze_registre')        || '',
+      tonalite:         ls('roze_tonalite')        || '',
+      partage:          ls('roze_partage')         || '',
+      cible:            ls('roze_cible')           || '',
+      expr_marque:      ls('roze_emojis_marque')   || '',
+      mots_interdits:   ls('roze_mots_interdits')  || '',
     };
-    if(!CFG.as){ throw new Error('URL Apps Script manquante — configure Mon Compte'); }
-    const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
+
+    const r = await fetch(CFG.as, { method:'POST', body: JSON.stringify(body) });
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
-    const {texte:t, legende:l} = splitTexteLegende(j.texte||'');
+
+    const texte  = nettoyerIntroIA(j.texte || '');
+    const parsed = splitTexteLegende(texte);
+    const leg    = parsed.legende || '';
 
     loader.classList.remove('on');
-    document.getElementById('lbl-creer-texte').style.display = 'block';
-    if(j.texte && splitTexteLegende(j.texte).isCarrousel){
-      const parsed = splitTexteLegende(j.texte);
+    if(lblTexte) lblTexte.style.display = 'block';
+
+    if(parsed.isCarrousel){
+      // Rendu visuel carrousel dans la modale
+      if(lblTexte) lblTexte.textContent = 'Aperçu carrousel';
+      result.textContent = '';
+      result.classList.remove('on');
       const cvId = 'creer-cv-inline';
       let cvDiv = document.getElementById(cvId);
-      if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv,result.nextSibling); }
-      afficherCarrousel(parsed.slides, parsed.legende, reseau, cvId);
-      document.getElementById('creer-legende').value = parsed.legende;
-    } else {
-      result.textContent = t;
+      if(!cvDiv){
+        cvDiv = document.createElement('div');
+        cvDiv.id = cvId;
+        result.parentNode.insertBefore(cvDiv, result.nextSibling);
+      }
+      afficherCarrousel(parsed.slides, leg, reseau, cvId);
+      document.getElementById('creer-legende').value = leg;
+    } else if(format==='Réel'||format==='Vidéo'||format==='Stories'){
+      // Rendu tableau script
+      if(lblTexte) lblTexte.textContent = 'Script généré';
       result.classList.add('on');
-      document.getElementById('creer-legende').value = l;
+      afficherResultatScript(texte, format, 'creer-result');
+      document.getElementById('creer-legende').value = leg;
+    } else {
+      // Post texte / Photo
+      if(lblTexte) lblTexte.textContent = 'Texte du post';
+      result.textContent = parsed.texte || texte;
+      result.classList.add('on');
+      document.getElementById('creer-legende').value = leg;
     }
+
     legZone.classList.add('on');
     actions.style.display = 'flex';
-    toast('✅ Post généré !','ok');
+    toast('✅ Post généré !', 'ok');
+
   } catch(err){
     loader.classList.remove('on');
-    toast('❌ Erreur : ' + err.message, 'err');
+    toast('❌ ' + err.message, 'err');
   }
 }
 

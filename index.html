@@ -543,7 +543,7 @@
     /* ─ MODALE ─ */
     .overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:flex-end;padding-bottom:var(--safe-bottom);}
     .overlay.on{display:flex;}
-    .sheet{background:var(--anthracite);border:1px solid var(--gris-border);border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding:1.2rem 1.4rem 2rem;animation:su .3s ease;padding-top:max(1.2rem,env(safe-area-inset-top));}
+    .sheet{background:var(--anthracite);border:1px solid var(--gris-border);border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:1.2rem 1.4rem 2rem;animation:su .3s ease;padding-top:max(1.2rem,env(safe-area-inset-top));}
     @keyframes su{from{transform:translateY(100%);}to{transform:translateY(0);}}
     .sheet-handle{width:36px;height:4px;background:var(--gris-moyen);border-radius:2px;margin:0 auto 1.2rem;}
     .sheet-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
@@ -2753,7 +2753,6 @@ function go(id, btn){
   document.getElementById('ov-jour').classList.remove('on');
   const cvFs = document.getElementById('cv-fullscreen'); if(cvFs) cvFs.classList.remove('on');
   const smFs = document.getElementById('streak-modal-fond'); if(smFs) smFs.classList.remove('on');
-  document.querySelector('.scroll').style.overflow = '';
   editId = null; storyModalIndex = null;
   if(id==='p-semaine') restaurerDraft();
   // Quand on quitte la page Semaine, synchro silencieuse du draft
@@ -2776,22 +2775,6 @@ function go(id, btn){
   if(id==='p-generer') majGenFormats(getGenReseau());
 }
 
-
-function goStories(){
-  // Naviguer vers Mon Compte et scroller jusqu'à la section Stories
-  go('p-compte');
-  setTimeout(()=>{
-    const el = document.querySelector('.compte-section h3');
-    // Trouver la section "Stories Instagram"
-    const all = document.querySelectorAll('.compte-section h3');
-    for(const h of all){
-      if(h.textContent.includes('Stories')){
-        h.scrollIntoView({behavior:'smooth', block:'start'});
-        break;
-      }
-    }
-  }, 200);
-}
 
 function scrollGuide(){ go('p-compte'); setTimeout(()=>document.getElementById('guide-pwa').scrollIntoView({behavior:'smooth'}),300); }
 
@@ -3053,20 +3036,6 @@ function setCreerPilier(chip, pilier){
   if(autreZone) autreZone.classList.toggle('on', pilier==='autre');
 }
 
-function getGenPilierBloc(){
-  return buildPilierBloc(
-    genPilier,
-    (document.getElementById('gen-pilier-autre')||{}).value||''
-  );
-}
-
-function getCreerPilierBloc(){
-  return buildPilierBloc(
-    creerPilier,
-    (document.getElementById('creer-pilier-autre')||{}).value||''
-  );
-}
-
 function buildPilierBloc(pilier, autreTexte){
   if(!pilier) return '';
   const instructions = {
@@ -3097,12 +3066,6 @@ ${instructions[pilier]||instructions.autre}
 `;
 }
 
-// Reset piliers à l'ouverture des panneaux
-function resetGenPiliers(){
-  genPilier = null;
-  document.querySelectorAll('#gen-piliers .pilier-chip').forEach(c=>c.className='pilier-chip');
-  const z=document.getElementById('gen-pilier-autre-zone'); if(z) z.classList.remove('on');
-}
 function resetCreerPiliers(){
   creerPilier = null;
   document.querySelectorAll('#creer-piliers .pilier-chip').forEach(c=>c.className='pilier-chip');
@@ -3348,16 +3311,6 @@ function chargerScript(src){
   });
 }
 
-function chargerPolice(nom){
-  if(!nom) return;
-  const id = 'font-'+nom.replace(/\s/g,'-');
-  if(document.getElementById(id)) return;
-  const link = document.createElement('link');
-  link.id = id; link.rel = 'stylesheet';
-  link.href = 'https://fonts.googleapis.com/css2?family='+encodeURIComponent(nom)+':wght@400;700;900&display=swap';
-  document.head.appendChild(link);
-}
-
 
 // ══════════════════════════════════════════
 // MINI-EXPLORATEUR DRIVE
@@ -3404,13 +3357,6 @@ function couleurSoulignement(texteCouleur, c1, c2){
   // Éviter la même couleur que le texte, choisir le meilleur contraste
   return opts.filter(c=>c!==texteCouleur)
     .reduce((best, c) => ratioContraste(texteCouleur, c) > ratioContraste(texteCouleur, best) ? c : best, opts[0]);
-}
-
-function ouvrirDriveExplorer(){
-  const exp = document.getElementById('drive-explorer');
-  const visible = exp.style.display !== 'none';
-  exp.style.display = visible ? 'none' : 'block';
-  if(!visible) afficherDossiersDrive();
 }
 
 function fermerDriveExplorer(){
@@ -3665,10 +3611,6 @@ async function q7ImporterPhoto(){
   }
 }
 
-function driveRetour(){
-  afficherDossiersDrive();
-}
-
 // ══════════════════════════════════════════
 // LECTURE FICHIER ROZE_MODELES
 // ══════════════════════════════════════════
@@ -3706,8 +3648,6 @@ function effacerSession(){
 
 // Rétro-compatibilité — fonctions utilisées ailleurs
 function getSessionEmail(){ return localStorage.getItem(AUTH_KEY) || ''; }
-function getSessionNom(){   return localStorage.getItem(AUTH_NOM)  || ''; }
-
 function initAuth(){
   const session = lireSession();
   if(session){
@@ -4082,190 +4022,6 @@ function viderDraft(){
 
 
 
-function promptPost(reseau, typeContenu, profil, matiere, sujetForce='', actuBloc='', pilier=''){
-
-  const base = profil ? `Voici le profil complet du professionnel :\n\n${profil}\n\n` : '';
-  const mat  = `MATIÈRE DE LA SEMAINE (s'en inspirer obligatoirement) :\n\n${matiere}\n\n`;
-  const anti = contexteAntiRedondance();
-  const sujetBloc = sujetForce ? `\nANGLE IMPOSÉ PAR LE CLIENT : ${sujetForce}\n` : '';
-
-  // Photo disponible cette semaine (Q7) — utilisée pour Photo et Carrousel
-  const photoQ7 = v('q7') ? `\nPHOTO DISPONIBLE CETTE SEMAINE : ${v('q7')}\nSi le format est Photo ou Carrousel, le contenu DOIT partir de cette image ou s'y référer explicitement.\n` : '';
-
-  // Q8 — sujet libre optionnel à intégrer si pertinent
-  const q8Bloc = v('q8') ? `\nINTENTION ÉDITORIALE DU CLIENT : ${v('q8')}\n` : '';
-
-  // ── MÉTHODE THIBAULT LOUIS — HOOKS DIFFÉRENCIÉS PAR PILIER ──
-  // Hook LinkedIn : 1 phrase d'accroche SANS point final, en gras dans le post
-  // 4 types de hooks selon pilier :
-  // • Visibilité   → donnée chiffrée surprenante ou contre-intuitive (ex: "65% des Français...")
-  // • Autorité     → anecdote personnelle ou client, ou résultat concret et daté
-  // • Expertise    → question rhétorique + réponse contre-intuitive, ou erreur commune révélée
-  // • Autre/libre  → l'un des 4 au choix selon la matière
-
-  const hookGuide = {
-    visibilite: `HOOK (méthode Thibault Louis) : commence par une DONNÉE CHIFFRÉE surprenante liée au secteur ou à la cible${actuBloc ? ' — utilise de préférence la donnée issue de la recherche web fournie ci-dessous' : ''}. Format : "[chiffre]% de [cible] [fait inattendu]" ou "[chiffre] [professionnels/personnes] [réalité contre-intuitive]". Une phrase, sans point final. Doit donner envie de lire la suite.`,
-
-    autorite: `HOOK (méthode Thibault Louis) : commence par une ANECDOTE PERSONNELLE ou CLIENT concrète et datée. Format : "Il y a [durée], [prénom/un client/je] [situation précise]." ou "Cette semaine, [événement réel tiré de la matière semaine]." Une phrase courte, factuelle, humaine. Sans point final.`,
-
-    expertise: `HOOK (méthode Thibault Louis) : commence par une AFFIRMATION CONTRE-INTUITIVE ou une ERREUR FRÉQUENTE révélée. Format : "[Croyance commune] — c'est faux." ou "La plupart des [cible] font cette erreur sans le savoir :" ou une question rhétorique à laquelle tu réponds immédiatement dans le 2e paragraphe. Une phrase, sans point final.`,
-
-    autre: `HOOK (méthode Thibault Louis) : choisis le type de hook le plus adapté à la matière semaine parmi : donnée chiffrée surprenante, anecdote personnelle/client concrète, affirmation contre-intuitive, ou question rhétorique. Une seule phrase, sans point final.`
-  };
-  const hook = hookGuide[pilier] || hookGuide.autre;
-
-  // ── RÈGLES DE STRUCTURE COMMUNES — MÉTHODE THIBAULT LOUIS ──
-  const reglesTL = `
-RÈGLES COPYWRITING LINKEDIN (méthode Thibault Louis) — OBLIGATOIRES :
-1. HOOK : 1 seule phrase d'accroche, sans point final. Voir instruction ci-dessus.
-2. LIGNE VIDE après le hook — toujours.
-3. DÉVELOPPEMENT : 2 à 4 paragraphes courts (2-3 phrases max chacun). Chaque paragraphe = 1 idée. Ligne vide entre chaque paragraphe.
-4. Aucun point de liste à puce (*) dans un post texte — rédiger en prose fluide.
-5. Phrases courtes. Verbes d'action. Pas de jargon, pas de superlatifs vides ("incroyable", "passionnant", "fascinant").
-6. Tutoiement ou vouvoiement : respecter strictement le profil du client.
-7. CTA final : 1 phrase simple et directe. Pas de "N'hésitez pas à..." ou "Je serais ravi de...".
-8. Le post fait 150 à 220 mots maximum (LinkedIn pénalise au-delà).
-9. Le post doit sembler écrit par un humain, pas par une IA.
-
-EXIGENCES D'HUMANITÉ — NON NÉGOCIABLES :
-- Ancre le post dans un fait réel issu de la matière de la semaine (anecdote, retour client, observation)
-- Utilise des détails concrets et spécifiques — jamais de généralités
-- La voix doit correspondre exactement à la personne décrite dans le profil
-- Évite tout ce qui semble "template" : reformule chaque phrase pour qu'elle soit unique
-- Si la matière de la semaine est vide, invente RIEN — base-toi uniquement sur le profil`;
-
-  const templ = {
-    'Post texte': `${base}${mat}${anti}${sujetBloc}${actuBloc}${q8Bloc}
-PILIER SÉLECTIONNÉ : ${pilier||'non défini — choisir le plus adapté à la matière'}
-${hook}
-${reglesTL}
-
-Génère 1 post ${reseau} qui suit exactement cette méthode.
-Puis sur une nouvelle ligne : "LÉGENDE:" suivi de la légende avec ${reseau==='LinkedIn'?'2-3':'4-5'} hashtags pertinents et 1 emoji d'ouverture.`,
-
-    'Photo': `${base}${mat}${anti}${sujetBloc}${actuBloc}${photoQ7}${q8Bloc}
-PILIER SÉLECTIONNÉ : ${pilier||'autorité'}
-${hook}
-
-Génère un texte d'accompagnement pour une publication PHOTO sur ${reseau}.
-Le texte DOIT partir de la description de la photo disponible (Q7) ou y faire explicitement référence.
-Structure : hook visuel (ce qu'on voit/ressent sur la photo) → développement en 2 paragraphes → CTA.
-80 à 120 mots maximum.
-${reglesTL}
-Puis : "LÉGENDE:" suivi de la légende avec hashtags.`,
-
-    'Carrousel': `${base}${mat}${anti}${sujetBloc}${actuBloc}${photoQ7}${q8Bloc}
-PILIER SÉLECTIONNÉ : ${pilier||'expertise'}
-${hook}
-
-Génère un CARROUSEL ${reseau} (format 1080x1440px, ratio 3:4).
-La slide 1 utilise le hook défini ci-dessus — ancré dans une réalité vécue ou une donnée surprenante.
-Si une photo est disponible (Q7), intègre-la en introduction ou dans le CTA.
-
-EXIGENCES QUALITÉ :
-- Chaque slide parle à UNE personne réelle, pas à "les professionnels"
-- Les titres sont directs, concrets, jamais génériques ni lisses
-- Le corps de chaque slide est une phrase courte et actionnable
-- Le CTA final est personnel et chaleureux, pas commercial
-- Le tout sonne comme si la personne l'avait écrit elle-même
-
-=== RÈGLES LÉGENDE CARROUSEL — OBLIGATOIRES ET SPÉCIFIQUES ===
-
-La légende d'un carrousel remplit 3 fonctions précises, dans cet ordre. Chaque partie est séparée par une ligne vide.
-
-━━ PARTIE 1 — HOOK TEXTUEL (avant le swipe) ━━
-${pilier === 'expertise'
-  ? `Le hook textuel DOIT commencer par une donnée chiffrée concrète et sourcée, une phrase contre-intuitive, ou une affirmation qui révèle une erreur fréquente.${actuBloc ? ' Utilise OBLIGATOIREMENT la donnée issue de la recherche web fournie ci-dessus, avec sa source entre parenthèses.' : ' Cite une statistique vérifiable du secteur avec sa source entre parenthèses.'}
-Il ne répète pas le titre de la slide 1 mot pour mot — il reformule la même réalité avec un angle plus factuel et percutant.`
-  : pilier === 'autorite'
-  ? `Le hook textuel doit ouvrir sur une anecdote personnelle concrète ou un retour client incarné — un fait daté, un frein levé, un avant/après vécu.
-Il ne répète pas le titre de la slide 1 mot pour mot : il l'aborde par un angle plus intime et humain.`
-  : `Le hook textuel doit ouvrir sur une tendance, un fait de société ou une conviction forte du professionnel — ancré dans ce qui se passe dans son secteur.
-Il ne répète pas le titre de la slide 1 mot pour mot : il élargit la perspective et donne envie de swiper.`}
-Longueur : 1 à 2 phrases maximum, tenant en ${reseau === 'LinkedIn' ? '210' : '125'} caractères avant le premier saut de ligne.
-Rôle : donner envie d'ouvrir le carrousel — ne pas résumer les slides, les rendre désirables.
-
-[ligne vide obligatoire]
-
-━━ PARTIE 2 — DÉVELOPPEMENT ENRICHI (pendant ou après le swipe) ━━
-Cette partie est LONGUE et SUBSTANTIELLE. Elle apporte une vraie valeur au lecteur indépendamment des slides.
-Elle ne résume pas les slides — elle les prolonge, les nuance, ou les ancre dans une réalité plus concrète.
-
-Tu dois OBLIGATOIREMENT puiser dans les données disponibles dans ce contexte :
-- La matière de la semaine (8 questions) : anecdotes, retours clients, observations, fiertés, intentions du professionnel
-- Le profil fondateur et la mémoire évolutive : voix, secteur, cible, formulations qui fonctionnent
-- Si la matière est riche : cite des éléments précis (une phrase d'un client, un chiffre vécu, une situation concrète)
-- Si la matière est peu renseignée : apporte une valeur éditoriale forte avec des données concrètes du secteur (sourcées)
-
-Formats autorisés (choisis selon ce qui est le plus lisible et utile) :
-• Paragraphes courts aérés (1 idée = 1 paragraphe, ligne vide entre chaque)
-• Liste à puces détaillée (chaque puce = une information complète, pas un mot-clé vide)
-• Combinaison : intro en prose + liste + phrase de conclusion
-
-Longueur minimale : 6 à 10 phrases ou 4 à 6 puces développées. Jamais moins.
-Ton : conversationnel, direct, ancré dans le réel du professionnel. Pas de généralités.
-
-[ligne vide obligatoire]
-
-━━ PARTIE 3 — CTA FINAL ━━
-1 seule phrase. Reprend ou amplifie la question de la slide 7, ou en pose une légèrement différente.
-Elle invite à l'interaction : commenter, partager un avis, répondre à une question ouverte.
-INTERDIT : tout CTA commercial, même indirect. Pas de "Contactez-moi", "Lien en bio", "DM", "Réservez".
-
-[ligne vide obligatoire]
-
-[hashtags : max 5 Instagram / max 3 LinkedIn — jamais génériques]
-
-RÈGLE D'AÉRATION ABSOLUE :
-Chaque partie séparée par une ligne vide. Chaque paragraphe ou puce séparé par une ligne vide.
-JAMAIS de bloc de texte continu de plus de 3 phrases sans ligne vide.
-Dans le JSON : chaque saut de ligne = \\n, chaque ligne vide = \\n\\n.
-
-=== FIN RÈGLES LÉGENDE ===
-
-RÈGLE ABSOLUE : réponds UNIQUEMENT avec le JSON brut ci-dessous.
-Aucun texte avant, aucun texte après, aucune balise markdown, aucun \`\`\`json.
-Commence directement par { et termine par }.
-
-{
-  "slides": [
-    {"num": 1, "type": "hook", "titre": "...", "sousTitre": "...", "corps": ""},
-    {"num": 2, "type": "contenu", "titre": "...", "sousTitre": "", "corps": "..."},
-    {"num": 3, "type": "contenu", "titre": "...", "sousTitre": "", "corps": "..."},
-    {"num": 4, "type": "contenu", "titre": "...", "sousTitre": "", "corps": "..."},
-    {"num": 5, "type": "contenu", "titre": "...", "sousTitre": "", "corps": "..."},
-    {"num": 6, "type": "contenu", "titre": "...", "sousTitre": "", "corps": "..."},
-    {"num": 7, "type": "cta", "titre": "...", "sousTitre": "...", "corps": "..."}
-  ],
-  "legende": "hook textuel\\n\\ndéveloppement enrichi aéré\\n\\nCTA\\n\\n#hashtags"
-}
-Règles slides :
-- Slide 1 : titre hook max 8 mots, sous-titre max 12 mots, corps vide
-- Slides 2-6 : titre max 6 mots, corps max 25 mots, une seule idée par slide
-- Slide 7 : CTA chaleureux avec mot-clé DM si présent dans le profil
-- Pas de slide surchargée — l'espace vide est un outil de lecture`,
-
-    'Vidéo': `${base}${mat}${anti}${sujetBloc}${actuBloc}${q8Bloc}
-PILIER SÉLECTIONNÉ : ${pilier||'expertise'}
-Génère un script pour une vidéo ${reseau} (60-90 sec).
-Structure : accroche verbale forte (5 premières secondes) → 3 points développés → CTA oral clair.
-Puis "LÉGENDE:" suivi de la légende avec hashtags.`,
-
-    'Réel': `${base}${mat}${anti}${sujetBloc}${actuBloc}${q8Bloc}
-PILIER SÉLECTIONNÉ : ${pilier||'visibilité'}
-Génère un script de Réel Instagram (30-45 sec).
-Structure : accroche visuelle forte (3 premières secondes à l'écran) → message en 2 temps → CTA simple.
-Pas de jargon. Phrases ultra-courtes. Rythme oral.
-Puis "LÉGENDE:" suivi de la légende avec 4-5 hashtags.`,
-
-    'Stories': `${base}${mat}${anti}${q8Bloc}
-Génère les 7 stories Instagram de la semaine selon ce cadre :\n${STORIES_CFG.map(s=>`• ${s.jour} (${s.typo}) : ${s.sujet}`).join('\n')}
-Pour chaque story : texte slide (max 20 mots, direct et engageant) + légende si utile.
-Les stories doivent être dans le ton du profil, pas génériques.`,
-  };
-  return templ[typeContenu] || templ['Post texte'];
-}
-
 
 // ══════════════════════════════════════════
 // SÉLECTEUR IA — Claude / Gemini
@@ -4286,10 +4042,6 @@ function setIA(ia, save=true){
   const cGemini = document.getElementById('ia-champ-gemini');
   if(cClaude) cClaude.classList.toggle('on', ia==='claude');
   if(cGemini) cGemini.classList.toggle('on', ia==='gemini');
-}
-
-function getCleAPI(){
-  return CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api;
 }
 
 // Appel unifié — route vers Claude ou Gemini
@@ -4466,113 +4218,6 @@ function nettoyerJsonNewlines(s){
   return result.join('');
 }
 
-function parseCarrouselRobuste(texteIA) {
-  if (!texteIA) return { ok: false };
-
-  // Étape 1 : Nettoyer les backticks markdown sans toucher au JSON
-  let t = texteIA.trim()
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/i, '')
-    .replace(/\s*```$/,'')
-    .trim();
-
-  // Étape 2 : Trouver le début du JSON { "slides": ...
-  const jStart = (() => {
-    const idx = t.indexOf('"slides"');
-    if (idx < 0) return -1;
-    return t.lastIndexOf('{', idx);
-  })();
-
-  if (jStart < 0) return { ok: false };
-
-  // Étape 3 : Trouver la fin par comptage d'accolades
-  let depth = 0, jEnd = -1;
-  for (let i = jStart; i < t.length; i++) {
-    if (t[i] === '{') depth++;
-    else if (t[i] === '}') { depth--; if (depth === 0) { jEnd = i; break; } }
-  }
-
-  const jsonStr = jEnd > -1 ? t.slice(jStart, jEnd + 1) : t.slice(jStart);
-  const isPartial = jEnd < 0;
-
-  // Étape 4 : Nettoyer les guillemets non échappés et les vrais newlines dans les strings
-  function nettoyerPourParse(s) {
-    const r = [];
-    let inStr = false, prevEsc = false;
-    for (let i = 0; i < s.length; i++) {
-      const c = s[i];
-      if (prevEsc) { prevEsc = false; r.push(c); continue; }
-      if (c === '\\' && inStr) { prevEsc = true; r.push(c); continue; }
-      if (c === '"') {
-        if (!inStr) { inStr = true; r.push(c); continue; }
-        // Guillemet fermant ou non échappé ?
-        let j = i + 1;
-        while (j < s.length && (s[j] === ' ' || s[j] === '\t')) j++;
-        const next = s[j] || '';
-        if (':,}]\n\r \t'.includes(next) || next === '') {
-          inStr = false; r.push(c);
-        } else {
-          r.push('\\'); r.push('"'); // échapper
-        }
-        continue;
-      }
-      if (inStr && c === '\n') { r.push('\\n'); continue; }
-      if (inStr && c === '\r') continue;
-      r.push(c);
-    }
-    return r.join('');
-  }
-
-  // Étape 5 : Tenter JSON.parse avec nettoyage progressif
-  let data = null;
-  const tentatives = [
-    jsonStr,
-    nettoyerPourParse(jsonStr),
-    nettoyerPourParse(jsonStr).replace(/,\s*([}\]])/g, '$1'), // trailing commas
-  ];
-
-  for (const essai of tentatives) {
-    try { data = JSON.parse(essai); break; } catch(e) { /* continuer */ }
-  }
-
-  // Étape 6 : Si tout échoue, récupération slide par slide (JSON tronqué)
-  if (!data) {
-    const slidesRecup = [];
-    let depth2 = 0, slideStart = -1;
-    const propre = nettoyerPourParse(jsonStr);
-    for (let i = 0; i < propre.length; i++) {
-      const c = propre[i];
-      if (c === '{') {
-        depth2++;
-        if (depth2 === 2) slideStart = i;
-      } else if (c === '}') {
-        if (depth2 === 2 && slideStart > -1) {
-          try {
-            const obj = JSON.parse(propre.slice(slideStart, i + 1));
-            if (obj.num && obj.titre) slidesRecup.push(obj);
-          } catch(e) {}
-          slideStart = -1;
-        }
-        depth2--;
-      }
-    }
-    if (slidesRecup.length > 0) {
-      return { ok: true, slides: slidesRecup, legende: '', isPartial: true };
-    }
-    return { ok: false };
-  }
-
-  const slides = data.slides || [];
-  if (!slides.length) return { ok: false };
-
-  return {
-    ok: true,
-    slides,
-    legende: data.legende || '',
-    isPartial: isPartial || slides.length < 3
-  };
-}
-
 // ══════════════════════════════════════════════════════════
 // RENDU TABLEAU SCRIPT (Réel / Vidéo LI / Stories)
 // ══════════════════════════════════════════════════════════
@@ -4689,14 +4334,6 @@ function renderScriptStory(texte) {
   return html;
 }
 
-function isScriptTableau(texte, format) {
-  if (!texte) return false;
-  if (format === 'Réel')    return texte.includes('SCRIPT:') || texte.includes('| Temps |');
-  if (format === 'Vidéo')   return texte.includes('SCRIPT:') || texte.includes('| Temps |');
-  if (format === 'Stories') return texte.includes('SCRIPT:') || texte.includes('| Slide |');
-  return false;
-}
-
 function afficherResultatScript(texte, format, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -4724,11 +4361,6 @@ function afficherBadgeFigure(fig) {
 function cacherBadgeFigure() {
   const zone = document.getElementById('gen-figure-zone');
   if (zone) zone.style.display = 'none';
-}
-
-function autreFigure() {
-  genFigureForce = null;
-  genUnPost();
 }
 
 let _srcIdx = 0;
@@ -4822,11 +4454,6 @@ function estCouleurClaire(hex){
   return (r*299+g*587+b*114)/1000 > 128;
 }
 
-function hexToRgbPhoto(hex){
-  const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex||'');
-  return r?{r:parseInt(r[1],16),g:parseInt(r[2],16),b:parseInt(r[3],16)}:null;
-}
-
 function fondSlide(num, total, c1, c2){
   // DA "Editorial Noir" : fonds sombres, couleur principale en accent
   const dark1 = c2 || '#0d0d0d';
@@ -4891,16 +4518,6 @@ function fontSizeTitre(titre, facteur, maxPx){
   else if(len > 40) rem = facteur * 0.82;
   else if(len > 25) rem = facteur * 0.92;
   return {rem: Math.round(rem * 100) / 100};
-}
-
-function rendreSlideHTML(idx, c1, fond, partie){
-  if(!carrouselCourant) return '';
-  const s = carrouselCourant.slides[idx];
-  if(!s) return '';
-  if(partie === 'corps'){
-    return (s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>');
-  }
-  return escapeHtml((s.titre||'').replace(/\[\/?accent\]/gi,''));
 }
 
 function appliqueFondCSS(el, cssString){
@@ -4982,8 +4599,7 @@ function afficherCarrousel(slides, legende, reseau, containerId){
             <div class="cv-fpill" id="cvp-reset" title="Réinit." onclick="resetOverrides()" style="background:rgba(255,255,255,.08);font-size:.6rem;">↺</div>
           </div>
         </div>
-        <button class="cv-tool-texte-btn" onclick="ouvrirTxtDrawer()"><span>✏️</span><span>Texte</span></button>
-        <div class="cv-tool-plus-btn" onclick="ouvrirAdvDrawer()"><span>⚙️</span><span>Plus</span></div>
+
       </div>
 
       <div class="cv-export-bar">
@@ -5025,118 +4641,10 @@ function cvSelectSlide(idx){
   if(toolbar) toolbar.classList.add('visible');
   preRemplirDrawerTexte(idx);
 }
-
-function preRemplirDrawerTexte(idx){
-  if(!carrouselCourant) return;
-  const s = carrouselCourant.slides[idx];
-  if(!s) return;
-  const el_t = document.getElementById('cv-edit-titre');
-  const el_c = document.getElementById('cv-edit-corps');
-  const el_st = document.getElementById('cv-edit-sstitre');
-  if(el_t)  el_t.value  = (s.titre||'').replace(/\[\/?accent\]/gi,'');
-  if(el_c)  el_c.value  = s.corps||'';
-  if(el_st) el_st.value = nettoyerSousTitre(s.sousTitre||'');
-  const lh = overridesLH[idx]||{};
-  const fs = overridesFS[idx]||{};
-  ['titre','corps'].forEach(type=>{
-    const slLH = document.getElementById('ed-lh-'+type);
-    const slFS = document.getElementById('ed-fs-'+type);
-    const valLH = type==='titre'?(lh.titre||1.15):(lh.corps||1.20);
-    const valFS = type==='titre'?(fs.titre||1.0):(fs.corps||1.0);
-    if(slLH){ slLH.value=valLH; const v=document.getElementById('ed-lh-'+type+'-val'); if(v) v.textContent=valLH.toFixed(2); }
-    if(slFS){ slFS.value=valFS; const v=document.getElementById('ed-fs-'+type+'-val'); if(v) v.textContent=Math.round(valFS*100)+'%'; }
-  });
-  const lbl1=document.getElementById('cv-txt-drawer-lbl');
-  const lbl2=document.getElementById('cv-adv-drawer-lbl');
-  const tc = (s.titre||'').replace(/\[\/?accent\]/gi,'').substring(0,20);
-  if(lbl1) lbl1.textContent='Slide '+(idx+1)+(tc?' — '+tc:'');
-  if(lbl2) lbl2.textContent='Options — Slide '+(idx+1);
-}
-
-function ouvrirTxtDrawer(){
-  document.getElementById('cv-drawer-overlay')?.classList.add('on');
-  document.getElementById('cv-txt-drawer')?.classList.add('open');
-}
-function ouvrirAdvDrawer(){
-  document.getElementById('cv-drawer-overlay')?.classList.add('on');
-  document.getElementById('cv-adv-drawer')?.classList.add('open');
-}
-function fermerTousDrawers(){
-  document.getElementById('cv-drawer-overlay')?.classList.remove('on');
-  document.getElementById('cv-txt-drawer')?.classList.remove('open');
-  document.getElementById('cv-adv-drawer')?.classList.remove('open');
-}
-function cvDrawerTab(btn, tab){
-  document.querySelectorAll('.cv-drawer-tab').forEach(t=>t.classList.remove('on'));
-  btn.classList.add('on');
-  ['cvdf-titre','cvdf-corps','cvdf-sstitre'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.style.display='none';
-  });
-  const map={titre:'cvdf-titre',corps:'cvdf-corps',sstitre:'cvdf-sstitre'};
-  const target=document.getElementById(map[tab]);
-  if(target){ target.style.display='block'; const inp=target.querySelector('textarea,input'); if(inp) setTimeout(()=>inp.focus(),50); }
-}
 function cvFondPill(el, style){
   document.querySelectorAll('.cv-fpill').forEach(p=>p.classList.remove('on'));
   el.classList.add('on');
   if(typeof setStyleSlide==='function') setStyleSlide(cvSlideActive,null,style);
-}
-
-function appliquerEditSlide(){
-  const idx = cvSlideActive;
-  if(!carrouselCourant||idx===undefined||idx===null) return;
-  const s = carrouselCourant.slides[idx]; if(!s) return;
-  s.titre    = (document.getElementById('cv-edit-titre')||{}).value||'';
-  s.corps    = (document.getElementById('cv-edit-corps')||{}).value||'';
-  s.sousTitre= (document.getElementById('cv-edit-sstitre')||{}).value||'';
-  const cibles=[document.getElementById('cv-slide-'+idx),document.getElementById('cv-fs-slide-'+idx)].filter(Boolean);
-  cibles.forEach(slideEl=>{
-    const titreEl=slideEl.querySelector('.cv-slide-titre');
-    if(titreEl) titreEl.innerHTML=escapeHtml(s.titre);
-    const corpsEl=slideEl.querySelector('.cv-slide-corps');
-    if(corpsEl) corpsEl.innerHTML=(s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>');
-    const sstEl=slideEl.querySelector('.cv-slide-sstitre');
-    if(sstEl){ const clean=nettoyerSousTitre(s.sousTitre||''); sstEl.innerHTML=clean?escapeHtml(clean):''; sstEl.style.display=clean?'':'none'; }
-  });
-}
-
-function majInterligne(type, val){
-  const v=parseFloat(val); const idx=cvSlideActive;
-  if(idx===undefined||idx===null) return;
-  overridesLH[idx]=overridesLH[idx]||{};
-  overridesLH[idx][type]=v;
-  const lbl=document.getElementById('ed-lh-'+type+'-val'); if(lbl) lbl.textContent=v.toFixed(2);
-  const slideEl=document.getElementById('cv-slide-'+idx);
-  if(slideEl){ const t=slideEl.querySelector(type==='titre'?'.cv-slide-titre':'.cv-slide-corps'); if(t) t.style.lineHeight=v; }
-}
-
-function majTaillePolice(type, val){
-  const v=parseFloat(val); const idx=cvSlideActive;
-  if(idx===undefined||idx===null) return;
-  overridesFS[idx]=overridesFS[idx]||{};
-  overridesFS[idx][type]=v;
-  const lbl=document.getElementById('ed-fs-'+type+'-val'); if(lbl) lbl.textContent=Math.round(v*100)+'%';
-  const appliquer=(el)=>{
-    if(!el) return;
-    if(!el.dataset.fsBase){ el.dataset.fsBase=parseFloat(window.getComputedStyle(el).fontSize); }
-    el.style.fontSize=(parseFloat(el.dataset.fsBase)*v)+'px';
-  };
-  const slideEl=document.getElementById('cv-slide-'+idx);
-  if(slideEl) appliquer(slideEl.querySelector(type==='titre'?'.cv-slide-titre':'.cv-slide-corps'));
-}
-
-function propagerMiseEnPage(){
-  const idx=cvSlideActive;
-  if(!carrouselCourant||idx===undefined) return;
-  const refLH=overridesLH[idx]||{titre:1.15,corps:1.20};
-  const refFS=overridesFS[idx]||{titre:1.0,corps:1.0};
-  const n=carrouselCourant.slides.length;
-  for(let i=0;i<n;i++){
-    if(i===idx) continue;
-    overridesLH[i]={titre:refLH.titre||1.15,corps:refLH.corps||1.20};
-    overridesFS[i]={titre:refFS.titre||1.0,corps:refFS.corps||1.0};
-  }
-  toast('✅ Espacements appliqués aux '+n+' slides','ok');
 }
 
 function majFondsSlides(){
@@ -5172,13 +4680,6 @@ function resetOverrides(){
   majFondsSlides();
 }
 
-function setStyleFond(btn, style){
-  styleFondActif=style;
-  document.querySelectorAll('.cv-fond-opt').forEach(b=>b.classList.remove('on'));
-  if(btn) btn.classList.add('on');
-  majFondsSlides();
-}
-
 function setStyleSlide(slideIdx, btn, style){
   overridesSlide[slideIdx]=style;
   majFondsSlides();
@@ -5195,13 +4696,6 @@ function setCvFondPhoto(input){
   const file=input.files[0]; if(!file) return;
   const reader=new FileReader();
   reader.onload=e=>{ cvFondPhotoSrc=e.target.result; styleFondActif='photo'; majFondsSlides(); };
-  reader.readAsDataURL(file);
-}
-
-function setCvFondPhotoSlide(input, slideIdx){
-  const file=input.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{ cvFondPhotoParSlide[slideIdx]=e.target.result; overridesSlide[slideIdx]='photo'; majFondsSlides(); };
   reader.readAsDataURL(file);
 }
 
@@ -5352,22 +4846,6 @@ function renderPreviewFondColoreAvecBg(bgOverride){
 // ══════════════════════════════════════════════════════════
 // CONTRÔLES FOND PHOTO
 // ══════════════════════════════════════════════════════════
-function phFondType(type, btn){
-  phFondTypeActif = type;
-  document.querySelectorAll('#gen-photo-style-zone .ed-chip[id^="ph-fond-"]').forEach(b=>b.classList.remove('on'));
-  if(btn) btn.classList.add('on');
-  const cfgDegrade = document.getElementById('ph-cfg-degrade');
-  if(cfgDegrade) cfgDegrade.style.display = type === 'degrade' ? 'flex' : 'none';
-  phApplyFond();
-}
-
-function phGradType(type, btn){
-  phGradTypeActif = type;
-  document.querySelectorAll('[id^="ph-grad-"]').forEach(b=>b.classList.remove('on'));
-  if(btn) btn.classList.add('on');
-  phApplyFond();
-}
-
 function phApplyFond(){
   if(phFondTypeActif === 'photo'){
     const hasPhoto = !!photoFondImageSrc;
@@ -5377,11 +4855,6 @@ function phApplyFond(){
       return;
     }
   }
-  renderPreviewFondColore();
-}
-
-function initPhotoZone(){
-  const c1 = fondsPhotoCouleurCourante();
   renderPreviewFondColore();
 }
 
@@ -6492,14 +5965,12 @@ function ouvrirEdit(id){
   // Cacher zone sujet manuel
   document.getElementById('sujet-manuel-zone').style.display='none';
   document.getElementById('ov-edit').classList.add('on');
-  document.querySelector('.scroll').style.overflow='hidden';
 }
 
 function fermerEdit(e){
   // Si appelé par un clic sur le fond : vérifier que c'est bien le fond
   if(e && e.type==='click' && e.target!==document.getElementById('ov-edit')) return;
   document.getElementById('ov-edit').classList.remove('on');
-  document.querySelector('.scroll').style.overflow='';
   editId=null;
 }
 
@@ -6733,13 +6204,11 @@ function ouvrirCreer(ds){
   majCreerFormats('LinkedIn');
 
   document.getElementById('ov-creer').classList.add('on');
-  document.querySelector('.scroll').style.overflow = 'hidden';
 }
 
 function fermerCreer(e){
   if(e && e.type === 'click' && e.target !== document.getElementById('ov-creer')) return;
   document.getElementById('ov-creer').classList.remove('on');
-  document.querySelector('.scroll').style.overflow = '';
   creerDate = null;
 }
 
@@ -6959,13 +6428,11 @@ function ouvrirJour(ds, items){
   });
 
   document.getElementById('ov-jour').classList.add('on');
-  document.querySelector('.scroll').style.overflow='hidden';
 }
 
 function fermerJour(e){
   if(e && e.target !== document.getElementById('ov-jour')) return;
   document.getElementById('ov-jour').classList.remove('on');
-  document.querySelector('.scroll').style.overflow='';
 }
 
 function ouvrirCreerDepuisJour(){
@@ -7297,13 +6764,11 @@ function ouvrirStory(idx, dateStr){
   }
 
   document.getElementById('ov-story').classList.add('on');
-  document.querySelector('.scroll').style.overflow = 'hidden';
 }
 
 function fermerStory(e){
   if(e && e.type==='click' && e.target !== document.getElementById('ov-story')) return;
   document.getElementById('ov-story').classList.remove('on');
-  document.querySelector('.scroll').style.overflow = '';
   storyModalIndex = null;
 }
 

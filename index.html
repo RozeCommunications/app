@@ -3732,9 +3732,9 @@ function afficherLoginStatus(msg, type){
 function afficherApp(){
   const ls = document.getElementById('login-screen');
   if(ls) ls.style.display = 'none';
-  document.querySelector('header').style.display = 'flex';
-  document.querySelector('.scroll').style.display = 'flex';
-  document.querySelector('.tabs').style.display   = 'flex';
+  document.querySelector('header').style.display = '';
+  document.querySelector('.scroll').style.display = '';
+  document.querySelector('.tabs').style.display   = '';
   majAccueil();
   afficherStreak();
   affDate();

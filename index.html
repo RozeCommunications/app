@@ -865,7 +865,9 @@
         z-index:200;
       }
       /* Compenser la hauteur du header fixe */
-      /* scroll : margin-top intégré dans la règle principale */
+      .scroll{
+        margin-top:56px;
+      }
 
       /* Tabs : pleine largeur, icônes centrées et fixes */
       .tabs{
@@ -4866,6 +4868,70 @@ function regenStylePhoto(){
   }
 }
 
+
+function afficherChipSource(){
+  const chip = document.getElementById('gen-source-chip');
+  const detail = document.getElementById('gen-source-detail');
+  if(!chip || !detail) return;
+  if(actuTexte){
+    chip.style.display = 'block';
+    detail.textContent = actuTexte;
+    detail.style.display = 'none'; // fermé par défaut
+  } else {
+    chip.style.display = 'none';
+  }
+}
+
+function ajouterStatMois(stat){
+  if(!stat || stat.length < 10) return;
+  const moisCle = new Date().toISOString().substring(0,7);
+  try{
+    const data = JSON.parse(localStorage.getItem('roze_stats_mois')||'{}');
+    // Garder seulement le mois courant
+    const fresh = { [moisCle]: (data[moisCle]||[]).concat(stat).slice(-8) };
+    localStorage.setItem('roze_stats_mois', JSON.stringify(fresh));
+  }catch(e){}
+}
+
+function getStatsMois(){
+  const moisCle = new Date().toISOString().substring(0,7); // YYYY-MM
+  try{
+    const data = JSON.parse(localStorage.getItem('roze_stats_mois')||'{}');
+    // Nettoyer les mois anciens (garder seulement le mois courant)
+    return (data[moisCle] || []);
+  }catch(e){ return []; }
+}
+
+function majPreviewCouleurs(){
+  const ids = ['couleur1','couleur2','couleur3','couleur4','couleur-texte'];
+  ids.forEach(id => {
+    const input = document.getElementById('cfg-'+id);
+    const preview = document.getElementById('preview-'+id);
+    if(input && preview){
+      const val = input.value.trim();
+      if(/^#[0-9a-fA-F]{3,6}$/.test(val)) preview.style.background = val;
+      input.addEventListener('input', function(){
+        if(/^#[0-9a-fA-F]{3,6}$/.test(this.value)) preview.style.background = this.value;
+      });
+    }
+  });
+}
+
+function resumePost(texte){
+  // Extrait les 30 premiers mots comme "empreinte" du sujet
+  return texte.split(/\s+/).slice(0,30).join(' ').toLowerCase();
+}
+
+function toggleSourceDetail(){
+  const d = document.getElementById('gen-source-detail');
+  if(d) d.style.display = d.style.display === 'none' ? 'block' : 'none';
+}
+
+function previewCouleur(champ){
+  const input   = document.getElementById('cfg-'+champ);
+  const preview = document.getElementById('preview-'+champ);
+  if(input && preview) preview.style.background = input.value;
+}
 
 function splitTexteLegende(texte){
   if(!texte) return {texte:'', legende:''};

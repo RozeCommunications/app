@@ -729,6 +729,20 @@
     .cv-slide:active{transform:scale(.97);}
     .cv-slide.active{border-color:var(--rose);}
     .cv-slide-inner{width:100%;height:100%;display:flex;flex-direction:column;padding:14px 12px;box-sizing:border-box;position:relative;}
+    .script-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:1rem;}
+    .script-table th{background:rgba(255,255,255,.08);padding:8px 10px;text-align:left;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gris-clair);border-bottom:1px solid var(--gris-border);}
+    .script-table td{padding:8px 10px;vertical-align:top;border-bottom:1px solid rgba(255,255,255,.05);line-height:1.45;}
+    .script-table tr:last-child td{border-bottom:none;}
+    .script-col-temps{width:60px;font-weight:600;color:var(--rose);white-space:nowrap;}
+    .script-col-slide{width:50px;font-weight:600;color:var(--rose);}
+    .script-col-visuel,.script-col-texte{width:35%;}
+    .script-col-audio{width:35%;}
+    .script-col-emotion,.script-col-bg{width:20%;font-style:italic;color:var(--gris-clair);}
+    .script-legende-box{background:rgba(255,255,255,.04);border:1px solid var(--gris-border);border-radius:12px;padding:1rem;margin-top:1rem;}
+    .script-legende-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--rose);margin-bottom:.5rem;}
+    .script-legende-txt{font-size:.85rem;line-height:1.55;white-space:pre-wrap;}
+    .script-conseil{background:rgba(232,24,109,.06);border:1px solid rgba(232,24,109,.2);border-radius:10px;padding:.8rem 1rem;margin-top:.8rem;font-size:.82rem;line-height:1.5;}
+    .script-conseil-lbl{font-weight:700;color:var(--rose);margin-bottom:.4rem;font-size:.72rem;}
     .cv-slide-num{position:absolute;top:8px;right:10px;font-size:.6rem;font-weight:700;opacity:.5;}
     .cv-slide-type{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;opacity:.7;}
     .cv-slide-titre{font-size:.82rem;font-weight:700;line-height:1.3;margin-bottom:6px;}
@@ -4940,13 +4954,10 @@ function splitTexteLegende(texte){
   let t = texte.trim();
   t = t.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/,'').trim();
 
-  // Tentative extraction JSON carrousel
-  const patterns = ['{"slides"', '{ "slides"', '{\n  "slides"', '{\n"slides"'];
+  // Tentative extraction JSON carrousel — regex pour capturer toute indentation
   let jIdx = -1;
-  for(const p of patterns){
-    const i = t.indexOf(p);
-    if(i > -1){ jIdx = i; break; }
-  }
+  const jMatch = t.match(/\{[\s\n]*"slides"/);
+  if(jMatch) jIdx = t.indexOf(jMatch[0]);
 
   if(jIdx > -1){
     // Trouver l'accolade fermante correspondante
@@ -5155,6 +5166,15 @@ async function genUnPost(){
       let cvDiv=document.getElementById(cvId);
       if(!cvDiv){ cvDiv=document.createElement('div'); cvDiv.id=cvId; result.parentNode.insertBefore(cvDiv, result.nextSibling); }
       afficherCarrousel(parsed.slides, l, reseau, cvId);
+      document.getElementById('gen-legende').value = l;
+      if(format !== 'Stories') legZone.classList.add('on');
+      actions.style.display='flex';
+    } else if(format==='Réel'||format==='Vidéo'||format==='Stories'){
+      // Rendu tableau script
+      document.getElementById('lbl-gen-texte').style.display='block';
+      document.getElementById('lbl-gen-texte').textContent='Script';
+      result.classList.add('on');
+      afficherResultatScript(t, format, 'gen-result');
       document.getElementById('gen-legende').value = l;
       if(format !== 'Stories') legZone.classList.add('on');
       actions.style.display='flex';

@@ -1496,51 +1496,9 @@
     <div class="bq"><div class="ql"><div class="qn">5</div><span class="qc">Fierté</span></div><p class="qt">Un résultat qui mérite d'être noté cette semaine.</p><textarea id="q5" oninput="autosaveDraft()" placeholder="Cette semaine, je suis fière d'avoir…"></textarea></div>
     <div class="sep"><span>La semaine à venir</span></div>
     <div class="bq"><div class="ql"><div class="qn">6</div><span class="qc">Offre à mettre en avant</span></div><p class="qt">Quelle offre veux-tu valoriser dans tes contenus cette semaine ?</p><input type="text" id="q6" oninput="autosaveDraft()" placeholder="Ex : Mon offre phare, ma prestation signature…"/></div>
-    <div class="bq" id="bq-photo"><div class="ql"><div class="qn">7</div><span class="qc">Photo disponible</span></div>
-      <p class="qt">Importe ta photo directement dans Drive depuis ton appareil — l'IA l'intègre dans tes posts photo et carrousels.</p>
-
-      <!-- Zone d'import photo -->
-      <div id="q7-import-zone" style="margin-top:.6rem;">
-        <label style="display:block;font-size:.75rem;font-weight:600;color:#999;letter-spacing:.03em;text-transform:uppercase;margin-bottom:.4rem;">Choisir la photo</label>
-        <input type="file" id="q7-file" accept="image/*" onchange="q7OnFileChosen()" style="display:none;"/>
-        <div id="q7-file-btn" onclick="document.getElementById('q7-file').click()"
-          style="display:flex;align-items:center;gap:.7rem;background:var(--gris-input);border:1.5px dashed var(--gris-border);border-radius:10px;padding:.8rem 1rem;cursor:pointer;transition:border-color .2s;">
-          <span style="font-size:1.4rem;">🖼️</span>
-          <div>
-            <div id="q7-file-label" style="font-size:.85rem;font-weight:600;color:var(--blanc-doux);">Sélectionner depuis cet appareil</div>
-            <div style="font-size:.72rem;color:#888;">Photo, portrait, résultat client…</div>
-          </div>
-        </div>
-        <div id="q7-preview" style="display:none;margin-top:.5rem;position:relative;">
-          <img id="q7-img" src="" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;border:1px solid var(--gris-border);"/>
-          <button onclick="q7EffacerPhoto()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.85rem;">✕</button>
-        </div>
-      </div>
-
-      <!-- Sélecteur de dossier -->
-      <div id="q7-dossier-zone" style="margin-top:.7rem;display:none;">
-        <label style="display:block;font-size:.75rem;font-weight:600;color:#999;letter-spacing:.03em;text-transform:uppercase;margin-bottom:.4rem;">Importer dans le dossier</label>
-        <select id="q7-dossier" style="font-size:16px;">
-          <option value="Portraits &amp; Action">🧍 Portraits &amp; Action</option>
-          <option value="Résultats &amp; Clients">✨ Résultats &amp; Clients</option>
-          <option value="Événements">🎉 Événements</option>
-          <option value="Partenaires">🤝 Partenaires</option>
-          <option value="Coulisses">🎬 Coulisses</option>
-          <option value="Produits &amp; Services">📦 Produits &amp; Services</option>
-        </select>
-        <button class="btn btn-rose btn-full" id="q7-import-btn" onclick="q7ImporterPhoto()" style="margin-top:.5rem;padding:.75rem;">
-          ☁️ Importer dans Drive
-        </button>
-        <div id="q7-import-status" style="display:none;margin-top:.5rem;font-size:.78rem;color:var(--succes);text-align:center;"></div>
-      </div>
-
-      <!-- Champ description (rempli automatiquement ou manuellement) -->
-      <div style="margin-top:.7rem;">
-        <label style="display:block;font-size:.75rem;font-weight:600;color:#999;letter-spacing:.03em;text-transform:uppercase;margin-bottom:.4rem;">Description pour l'IA</label>
-        <input type="text" id="q7" oninput="autosaveDraft()" placeholder="Ex : portrait studio fond blanc, regard confiant…"/>
-      </div>
-
-      <div id="drive-photo-preview" style="display:none;"></div>
+    <div class="bq" id="bq-photo"><div class="ql"><div class="qn">7</div><span class="qc">Coulisses du métier</span></div>
+      <p class="qt">Un geste, une décision ou une étape de ton travail que tes clients ne voient jamais, mais qui fait toute la différence.</p>
+      <textarea id="q7" rows="3" oninput="autosaveDraft()" placeholder="Ex : Je passe 2h à préparer chaque formation, rien que pour adapter les exemples à chaque profil de participant…"></textarea>
       <div class="opt">Optionnel</div>
     </div>
 
@@ -1865,6 +1823,38 @@
           </div>
         </div>
       </div>
+
+      <!-- Registre, Tonalité, Partage, Expressions de marque -->
+      <div style="margin-top:1rem;padding-top:.8rem;border-top:1px solid var(--gris-border);">
+        <label class="lbl" style="margin-top:.2rem;">Registre</label>
+        <div style="display:flex;gap:.5rem;" id="cfg-registre-group">
+          <button type="button" class="ed-chip on" id="reg-tutoiement" onclick="setRegistre('tutoiement',this)">Tu</button>
+          <button type="button" class="ed-chip" id="reg-vouvoiement" onclick="setRegistre('vouvoiement',this)">Vous</button>
+        </div>
+        <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.3rem;">Appliqué sur tous les posts générés, Instagram et LinkedIn.</div>
+
+        <label class="lbl" style="margin-top:.8rem;">Tonalité principale</label>
+        <select id="cfg-tonalite" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);">
+          <option value="direct">⚡ Direct &amp; tranchant — je dis ce que je pense, sans tourner autour</option>
+          <option value="chaleureux">🤝 Chaleureux &amp; proche — je crée de la proximité, je suis accessible</option>
+          <option value="pedagogue">📖 Pédagogue &amp; posé — j'explique, je rassure, je structure</option>
+          <option value="sobre">🎯 Expert &amp; sobre — professionnel, factuel, peu d'effusion</option>
+          <option value="enthousiaste">🔥 Enthousiaste &amp; énergique — je mets de l'élan dans tout ce que je fais</option>
+        </select>
+
+        <label class="lbl" style="margin-top:.8rem;">Niveau de partage personnel</label>
+        <select id="cfg-partage" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);">
+          <option value="ouvert">🔓 Ouvert — je partage coulisses, doutes, moments perso</option>
+          <option value="equilibre">⚖️ Équilibré — pro avec quelques touches personnelles</option>
+          <option value="reserve">🔒 Réservé — je reste professionnel, peu de perso</option>
+        </select>
+
+        <label class="lbl" style="margin-top:.8rem;">Expressions de marque <span style="color:#888;font-size:.7rem;font-weight:400;">(formules que tu utilises vraiment)</span></label>
+        <textarea id="cfg-expr-marque" rows="2" placeholder="Ex : on ne lâche rien, du concret toujours, au coeur de…" style="font-size:16px;width:100%;resize:none;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);font-family:'DM Sans',sans-serif;"></textarea>
+
+        <label class="lbl" style="margin-top:.8rem;">Mots &amp; formules à éviter</label>
+        <textarea id="cfg-mots-interdits" rows="2" placeholder="Ex : game-changer, disruptif, révolutionnaire…" style="font-size:16px;width:100%;resize:none;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);font-family:'DM Sans',sans-serif;"></textarea>
+      </div>
       <!-- Onglet Réseaux sociaux -->
       <div class="duo-tab" id="tab-charte">
         <div class="duo-tab-hd" onclick="toggleDuoTab('tab-charte')">
@@ -2028,10 +2018,7 @@
           <div class="opt">Tier gratuit — sans carte bancaire. Génère ta clé en 30 secondes.</div>
         </div>
         <div class="conn-sep"></div>
-        <label class="lbl">Lien dossier Photos Drive</label>
-        <input type="url" id="cfg-drive-photos" placeholder="https://drive.google.com/drive/folders/…"/>
-
-      </div>
+        
     </div>
 
     <div style="margin-top:1.6rem;">
@@ -2428,7 +2415,6 @@ let CFG = {
   api:          ls('roze_api')           || '',
   apiGemini:    ls('roze_api_gemini')    || '',
   ia:           ls('roze_ia')            || 'claude',
-  drivePhotos:  ls('roze_drive_photos')  || '',
   couleur1:     ls('roze_couleur1')      || '#E8186D',
   couleur2:     ls('roze_couleur2')      || '#111111',
   couleur3:     ls('roze_couleur3')      || '',
@@ -3385,11 +3371,8 @@ function afficherDossiersDrive(){
   document.getElementById('drive-back-btn').style.display = 'none';
   document.getElementById('drive-exp-titre').textContent = 'Mes dossiers photos';
   const zone = document.getElementById('drive-exp-contenu');
-  if(!CFG.drivePhotos){
-    zone.innerHTML = '<div class="drive-vide"><p style="margin-bottom:.6rem;">Lien Drive non configur\u00e9.</p>'
-      + '<button class="btn btn-ghost btn-sm" onclick="go(\'p-compte\')" style="margin-top:0;">Configurer dans Mon Compte</button></div>';
-    return;
-  }
+  zone.innerHTML = '<div class="drive-vide"><p>Lien Drive non configuré.</p></div>';
+  return;
   let grid = '<div class="drive-dossiers">';
   DRIVE_DOSSIERS.forEach(function(d){
     grid += '<div class="drive-dossier" onclick="ouvrirDossier(\'' + d.nom.replace(/'/g, "\\'") + '\',\'' + d.ic + '\')">'
@@ -3399,7 +3382,6 @@ function afficherDossiersDrive(){
   });
   grid += '</div>';
   grid += '<div style="padding:.5rem .7rem;border-top:1px solid var(--gris-border);">'
-    + '<a href="' + CFG.drivePhotos + '" target="_blank" style="font-size:.72rem;color:var(--rose-clair);text-decoration:none;">'
     + 'Ouvrir le Drive complet</a></div>';
   zone.innerHTML = grid;
 }
@@ -3414,7 +3396,6 @@ function ouvrirDossier(nomDossier, ic){
 
 function afficherFichiersManuel(nomDossier, ic){
   const zone = document.getElementById('drive-exp-contenu');
-  const lien = CFG.drivePhotos || 'https://drive.google.com';
   zone.innerHTML = '<div style="padding:.8rem .9rem;">'
     + '<p style="font-size:.78rem;color:#ccc;margin-bottom:.7rem;line-height:1.5;">'
     + 'Ouvre ton Drive et choisis une photo dans <strong>' + nomDossier + '</strong>.'
@@ -3463,41 +3444,6 @@ function effacerPhoto(){
 // ══════════════════════════════════════════
 // Q7 — IMPORT PHOTO VERS DRIVE
 // ══════════════════════════════════════════
-function q7OnFileChosen(){
-  const file = document.getElementById('q7-file').files[0];
-  if(!file) return;
-  // Aperçu
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    document.getElementById('q7-img').src = e.target.result;
-    document.getElementById('q7-preview').style.display = 'block';
-    document.getElementById('q7-file-label').textContent = file.name;
-    document.getElementById('q7-file-btn').style.borderColor = 'var(--rose)';
-    document.getElementById('q7-dossier-zone').style.display = 'block';
-    // Pré-remplir la description avec le nom du fichier
-    const descEl = document.getElementById('q7');
-    if(!descEl.value) descEl.value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
-    autosaveDraft();
-    // Stocker comme photo slide 1
-    photoSlide1 = { src: e.target.result, nom: file.name };
-    try{ localStorage.setItem('roze_photo_slide1', JSON.stringify({ src: e.target.result, nom: file.name })); }catch(ex){}
-    toast('🖼️ Photo prête pour la slide 1 !','ok');
-  };
-  reader.readAsDataURL(file);
-}
-
-function q7EffacerPhoto(){
-  document.getElementById('q7-file').value = '';
-  document.getElementById('q7-preview').style.display = 'none';
-  document.getElementById('q7-img').src = '';
-  document.getElementById('q7-file-label').textContent = 'Sélectionner depuis cet appareil';
-  document.getElementById('q7-file-btn').style.borderColor = 'var(--gris-border)';
-  document.getElementById('q7-dossier-zone').style.display = 'none';
-  document.getElementById('q7-import-status').style.display = 'none';
-  photoSlide1 = null;
-  try{ localStorage.removeItem('roze_photo_slide1'); }catch(e){}
-}
-
 // ══════════════════════════════════════════
 // SÉLECTEUR STYLE POST PHOTO
 // ══════════════════════════════════════════
@@ -3569,61 +3515,6 @@ async function genHookPhoto(textePost){
     return rep.trim().replace(/^["«]+|["»]+$/g,'').substring(0,80);
   }catch(e){
     return textePost.split('\n')[0].replace(/^[#*]+\s*/,'').substring(0,80);
-  }
-}
-
-async function q7ImporterPhoto(){
-  if(!CFG.as){ toast('⚙️ URL Apps Script manquante','err'); return; }
-  const file = document.getElementById('q7-file').files[0];
-  if(!file){ toast('⚠️ Aucun fichier sélectionné','err'); return; }
-  const dossier = document.getElementById('q7-dossier').value;
-  const btn = document.getElementById('q7-import-btn');
-  const status = document.getElementById('q7-import-status');
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Import en cours…';
-  status.style.display = 'none';
-
-  try{
-    // Lire la photo en base64
-    const base64 = await new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onload = () => res(r.result.split(',')[1]);
-      r.onerror = rej;
-      r.readAsDataURL(file);
-    });
-
-    const resp = await fetch(CFG.as, {
-      method: 'POST',
-      body: JSON.stringify({
-        action:   'importer_photo',
-        nom:      file.name,
-        dossier:  dossier,
-        mimeType: file.type,
-        base64:   base64
-      })
-    });
-    const j = await resp.json();
-
-    if(j.succes){
-      status.textContent = '✅ Photo importée dans "' + dossier + '"';
-      status.style.cssText = 'display:block;margin-top:.5rem;font-size:.78rem;color:var(--succes);text-align:center;';
-      // Remplir Q7 avec dossier + description
-      const descEl = document.getElementById('q7');
-      const desc = descEl.value.trim() || file.name.replace(/\.[^.]+$/, '');
-      descEl.value = desc + ' [' + dossier + ']';
-      autosaveDraft();
-      toast('✅ Photo importée !','ok');
-    } else {
-      throw new Error(j.erreur || 'Erreur AS');
-    }
-  } catch(e){
-    status.textContent = '❌ ' + e.message;
-    status.style.cssText = 'display:block;margin-top:.5rem;font-size:.78rem;color:var(--rose-clair);text-align:center;';
-    toast('❌ Import échoué : ' + e.message,'err');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '☁️ Importer dans Drive';
   }
 }
 
@@ -3804,7 +3695,6 @@ function buildConfigPayload(){
     api:           CFG.api          || '',
     api_gemini:    CFG.apiGemini    || '',
     ia:            CFG.ia           || 'claude',
-    drive_photos:  CFG.drivePhotos  || '',
     logo_url:      CFG.logoUrl      || '',
     couleur1:      CFG.couleur1     || '#E8186D',
     couleur2:      CFG.couleur2     || '#111111',
@@ -3839,7 +3729,6 @@ function appliquerConfig(config){
     api:          ['api',         'roze_api'],
     api_gemini:   ['apiGemini',   'roze_api_gemini'],
     ia:           ['ia',          'roze_ia'],
-    drive_photos: ['drivePhotos', 'roze_drive_photos'],
     logo_url:     ['logoUrl',     'roze_logo_url'],
     couleur1:     ['couleur1',    'roze_couleur1'],
     couleur2:     ['couleur2',    'roze_couleur2'],
@@ -6529,6 +6418,13 @@ function ouvrirCreerDepuisJour(){
 // ══════════════════════════════════════════
 // MON COMPTE
 // ══════════════════════════════════════════
+
+function setRegistre(val, btn){
+  ss('roze_registre', val);
+  document.querySelectorAll('#cfg-registre-group .ed-chip').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+}
+
 function chargerCompte(){
   const setV2 = (id,val)=>{ const e=document.getElementById(id); if(e) e.value=val||''; };
   setV2('cfg-prenom',       CFG.prenom);
@@ -6542,7 +6438,6 @@ function chargerCompte(){
   setV2('cfg-as',           CFG.as);
   setV2('cfg-api',          CFG.api);
   setV2('cfg-api-gemini',   CFG.apiGemini);
-  setV2('cfg-drive-photos', CFG.drivePhotos);
   setV2('cfg-logo-url',     CFG.logoUrl);
   setV2('cfg-police-titre', CFG.policeTitre);
   setV2('cfg-police-corps', CFG.policeCorps);
@@ -6552,6 +6447,18 @@ function chargerCompte(){
   setV2('cfg-couleur4',     CFG.couleur4);
   setV2('cfg-couleur-texte',CFG.couleurTexte);
   // Rythme
+  // Registre et ton éditorial
+  const reg = ls('roze_registre') || 'tutoiement';
+  document.querySelectorAll('#cfg-registre-group .ed-chip').forEach(b=>b.classList.remove('on'));
+  const regBtn = document.getElementById(reg==='vouvoiement'?'reg-vouvoiement':'reg-tutoiement');
+  if(regBtn) regBtn.classList.add('on');
+  const tonEl = document.getElementById('cfg-tonalite');
+  if(tonEl) tonEl.value = ls('roze_tonalite') || 'direct';
+  const partEl = document.getElementById('cfg-partage');
+  if(partEl) partEl.value = ls('roze_partage') || 'equilibre';
+  setV2('cfg-expr-marque',    ls('roze_emojis_marque') || '');
+  setV2('cfg-mots-interdits', ls('roze_mots_interdits') || '');
+
   document.getElementById('li-actif').checked = RYTHME.li.actif;
   document.getElementById('ig-actif').checked = RYTHME.ig.actif;
   Object.entries(RYTHME.li.formats).forEach(([fmt,n])=>{
@@ -6568,6 +6475,18 @@ function sauvegarderCompte(){
   // Feedback visuel immédiat
   const btnSave = document.getElementById('btn-sauvegarder');
   if(btnSave){ btnSave.disabled = true; btnSave.textContent = '⏳ Synchronisation…'; }
+  // Registre et ton
+  const registre = document.getElementById('reg-vouvoiement')?.classList.contains('on') ? 'vouvoiement' : 'tutoiement';
+  ss('roze_registre', registre);
+  const tonaliteEl = document.getElementById('cfg-tonalite');
+  if(tonaliteEl) ss('roze_tonalite', tonaliteEl.value);
+  const partageEl = document.getElementById('cfg-partage');
+  if(partageEl) ss('roze_partage', partageEl.value);
+  const exprEl = document.getElementById('cfg-expr-marque');
+  if(exprEl) ss('roze_emojis_marque', exprEl.value);
+  const motsForbEl = document.getElementById('cfg-mots-interdits');
+  if(motsForbEl) ss('roze_mots_interdits', motsForbEl.value);
+
   CFG.prenom = document.getElementById('cfg-prenom').value.trim();
   CFG.as     = document.getElementById('cfg-as').value.trim();
   CFG.api    = document.getElementById('cfg-api').value.trim();
@@ -6589,7 +6508,6 @@ function sauvegarderCompte(){
   CFG.policeTitre  = gv('cfg-police-titre') || 'Playfair Display';
   CFG.policeCorps  = gv('cfg-police-corps') || 'DM Sans';
   CFG.logoUrl      = gv('cfg-logo-url');
-  CFG.drivePhotos  = gv('cfg-drive-photos');
   CFG.nom          = gv('cfg-nom');
   CFG.entreprise   = gv('cfg-entreprise');
   CFG.metier       = gv('cfg-metier');
@@ -6601,7 +6519,6 @@ function sauvegarderCompte(){
   localStorage.setItem('roze_police_titre', CFG.policeTitre);
   localStorage.setItem('roze_police_corps', CFG.policeCorps);
   localStorage.setItem('roze_logo_url',     CFG.logoUrl);
-  localStorage.setItem('roze_drive_photos', CFG.drivePhotos);
   localStorage.setItem('roze_nom',          CFG.nom);
   localStorage.setItem('roze_entreprise',   CFG.entreprise);
   localStorage.setItem('roze_metier',       CFG.metier);

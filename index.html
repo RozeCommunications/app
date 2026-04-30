@@ -1,4 +1,71 @@
-<!DOCTYPE html>
+function afficherCarrousel(slides, legende, reseau, containerId){
+  carrouselCourant = { slides, legende, reseau };
+  cvSlideActive = 0;
+  overridesSlide = {}; overridesLH = {}; overridesFS = {};
+
+  const c1   = CFG.couleur1      || '#E8186D';
+  const c2   = CFG.couleur2      || '#111111';
+  const ptit = CFG.policeTitre   || 'Playfair Display';
+  const pcorp= CFG.policeCorps   || 'DM Sans';
+
+  const container = document.getElementById(containerId);
+  if(!container) return;
+
+  container.innerHTML = `
+    <div class="carrousel-viewer">
+      <div class="cv-header">
+        <h4>✦ Carrousel (${slides.length} slides)</h4>
+        <button class="btn btn-sm btn-ghost cv-btn-fs" onclick="ouvrirCarrouselFullscreen()" style="margin:0;padding:.3rem .7rem;font-size:.72rem;">⛶ Plein écran</button>
+      </div>
+
+      <!-- Hint slide active -->
+      <div class="cv-edit-hint" id="cv-edit-hint">Tape directement sur une slide pour l'éditer</div>
+
+      <div class="cv-slides-wrap" id="cv-slides-wrap">
+        ${slides.map((s,i) => renderCvSlide(s, i, slides.length, c1, c2, ptit, pcorp, {small:true, editable:false})).join('')}
+        <div class="cv-slide-add" onclick="toast('➕ Slides — édite directement en plein écran.','ok')">+</div>
+      </div>
+
+      <!-- Toolbar fonds -->
+      <div class="cv-toolbar-ctx" id="cv-toolbar-ctx">
+        <div class="cv-tool-fonds-blk">
+          <span class="cv-tool-fonds-lbl">Fond</span>
+          <div class="cv-tool-fonds-row">
+            <div class="cv-fpill on" id="cvp-uni"   title="Uni"        onclick="cvFondPill(this,'uni')"      style="background:${c1};"></div>
+            <div class="cv-fpill"    id="cvp-deg1"  title="Dégradé"    onclick="cvFondPill(this,'degrade')"  style="background:linear-gradient(135deg,${c2},${c1});"></div>
+            <div class="cv-fpill"    id="cvp-deg2"  title="Dégradé 2"  onclick="cvFondPill(this,'degrade2')" style="background:linear-gradient(155deg,${c2},${c1} 160%);"></div>
+            <div class="cv-fpill"    id="cvp-mat"   title="Matière"    onclick="cvFondPill(this,'beton')"    style="background:radial-gradient(ellipse at 20% 20%,${c1},${c2});"></div>
+            <label class="cv-fpill"  id="cvp-photo" title="Photo" style="cursor:pointer;">🖼️<input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhoto(this)"/></label>
+            <div class="cv-fpill"    id="cvp-reset" title="Réinit."    onclick="resetOverrides()" style="background:rgba(255,255,255,.08);font-size:.6rem;">↺</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cv-export-bar">
+        <span style="display:flex;align-items:center;gap:.3rem;">
+          <span style="font-size:.7rem;color:var(--gris-clair);">Format&nbsp;:</span>
+          <select id="car-format-sel" onchange="setCarFormat(this.value)"
+            style="font-size:.75rem;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:6px;padding:3px 6px;color:var(--blanc-doux);cursor:pointer;">
+            <option value="3:4">3:4 (défaut)</option>
+            <option value="4:5">4:5</option>
+            <option value="1:1">1:1 (carré)</option>
+          </select>
+        </span>
+        ${reseau==='Instagram'
+          ? `<button class="btn btn-ghost" onclick="exporterPNG()" style="margin:0;">⬇️ PNG</button>`
+          : `<button class="btn btn-ghost" onclick="exporterPDF()" style="margin:0;">⬇️ PDF</button>`}
+        <button class="btn btn-rose" onclick="ouvrirCanva()" style="margin:0;">🎨 Canva</button>
+      </div>
+      <div class="cv-legende-zone" id="cv-legende-txt">${legende ? legende.replace(/\n/g,'<br/>') : '<em style="color:#555;">Aucune légende générée</em>'}</div>
+    </div>`;
+
+  // Clic sur slide miniature → ouvrir fullscreen sur cette slide
+  container.querySelectorAll('.cv-slide-sm').forEach((el, i) => {
+    el.addEventListener('click', () => { cvSlideActive = i; ouvrirCarrouselFullscreen(); });
+  });
+
+  setTimeout(() => majFondsSlides(), 10);
+}<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/>
@@ -728,31 +795,78 @@
     .cv-header h4{font-size:.88rem;font-weight:700;}
     .cv-header .cv-actions{display:flex;gap:.5rem;}
     .cv-slides-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:12px;padding:1rem;scroll-snap-type:x mandatory;}
-    .cv-slide{flex-shrink:0;width:180px;height:240px;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;scroll-snap-align:start;transition:transform .15s;border:2px solid transparent;}
-    .cv-slide:active{transform:scale(.97);}
-    .cv-slide.active{border-color:var(--rose);}
+    .cv-slide-sm{flex-shrink:0;width:160px;height:213px;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;scroll-snap-align:start;transition:transform .15s,box-shadow .15s;border:2px solid transparent;}
+    .cv-slide-sm:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.4);}
+    .cv-slide-sm.active{border-color:var(--rose);}
+    .cv-slide-lg{width:100%;max-width:360px;border-radius:16px;overflow:hidden;position:relative;aspect-ratio:3/4;}
+    .cv-slide-editable .cv-slide-titre,
+    .cv-slide-editable .cv-slide-sstitre,
+    .cv-slide-editable .cv-slide-corps{outline:none;cursor:text;border-radius:4px;transition:background .15s;}
+    .cv-slide-editable .cv-slide-titre:focus,
+    .cv-slide-editable .cv-slide-sstitre:focus,
+    .cv-slide-editable .cv-slide-corps:focus{background:rgba(255,255,255,.08);}
     .cv-slide-inner{width:100%;height:100%;display:flex;flex-direction:column;padding:14px 12px;box-sizing:border-box;position:relative;}
-    .script-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:1rem;}
-    .script-table th{background:rgba(255,255,255,.08);padding:8px 10px;text-align:left;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--gris-clair);border-bottom:1px solid var(--gris-border);}
-    .script-table td{padding:8px 10px;vertical-align:top;border-bottom:1px solid rgba(255,255,255,.05);line-height:1.45;}
-    .script-table tr:last-child td{border-bottom:none;}
-    .script-col-temps{width:60px;font-weight:600;color:var(--rose);white-space:nowrap;}
-    .script-col-slide{width:50px;font-weight:600;color:var(--rose);}
-    .script-col-visuel,.script-col-texte{width:35%;}
-    .script-col-audio{width:35%;}
-    .script-col-emotion,.script-col-bg{width:20%;font-style:italic;color:var(--gris-clair);}
-    .script-legende-box{background:rgba(255,255,255,.04);border:1px solid var(--gris-border);border-radius:12px;padding:1rem;margin-top:1rem;}
-    .script-legende-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--rose);margin-bottom:.5rem;}
-    .script-legende-txt{font-size:.85rem;line-height:1.55;white-space:pre-wrap;}
-    .script-conseil{background:rgba(232,24,109,.06);border:1px solid rgba(232,24,109,.2);border-radius:10px;padding:.8rem 1rem;margin-top:.8rem;font-size:.82rem;line-height:1.5;}
-    .script-conseil-lbl{font-weight:700;color:var(--rose);margin-bottom:.4rem;font-size:.72rem;}
     .cv-slide-num{position:absolute;top:8px;right:10px;font-size:.6rem;font-weight:700;opacity:.5;}
-    .cv-slide-type{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;opacity:.7;}
+    .cv-slide-type{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;opacity:.75;}
+    .cv-slide-sstitre{font-size:.62rem;font-weight:600;margin-bottom:4px;opacity:.85;line-height:1.35;}
     .cv-slide-titre{font-size:.82rem;font-weight:700;line-height:1.3;margin-bottom:6px;}
     .cv-slide-corps{font-size:.68rem;line-height:1.5;flex:1;overflow:hidden;}
-    .cv-slide-logo{position:absolute;bottom:8px;right:10px;max-width:40px;max-height:20px;object-fit:contain;opacity:.8;}
-    /* Slide plein écran */
-    .cv-fullscreen{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:600;display:none;align-items:center;justify-content:center;flex-direction:column;gap:1rem;padding:1rem;}
+    .cv-slide-lg .cv-slide-inner{padding:24px 20px;}
+    .cv-slide-lg .cv-slide-titre{font-size:1.15rem;line-height:1.25;}
+    .cv-slide-lg .cv-slide-sstitre{font-size:.75rem;}
+    .cv-slide-lg .cv-slide-corps{font-size:.88rem;overflow:auto;}
+    .cv-slide-add{flex-shrink:0;width:52px;height:auto;border-radius:10px;border:1.5px dashed rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.3);font-size:1.2rem;margin:1rem 0;}
+    .cv-edit-hint{font-size:.65rem;color:rgba(255,255,255,.3);padding:.3rem 1rem;font-style:italic;}
+    /* Fullscreen */
+    .cv-fullscreen{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:600;display:none;overflow:hidden;}
+    .cv-fullscreen.on{display:flex;}
+    /* Layout 2 colonnes */
+    .cv-fs-layout{display:flex;width:100%;height:100%;overflow:hidden;}
+    /* Colonne slide */
+    .cv-fs-col-slide{flex:1;display:flex;flex-direction:column;min-width:0;padding:.75rem .75rem .75rem 1rem;}
+    .cv-fs-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;}
+    .cv-fs-counter-lbl{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.6);}
+    .cv-fs-edit-hint{font-size:.6rem;color:rgba(255,255,255,.3);font-style:italic;}
+    .cv-fs-stage{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden;}
+    .cv-fs-stage .cv-slide-lg{max-height:100%;max-width:100%;height:auto;width:auto;aspect-ratio:3/4;}
+    .cv-fs-nav-bar{display:flex;align-items:center;justify-content:center;gap:.75rem;padding:.5rem 0 .25rem;}
+    .cv-fs-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff;width:34px;height:34px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;}
+    .cv-fs-btn:hover{background:rgba(255,255,255,.18);}
+    .cv-fs-close{background:rgba(255,255,255,.08);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .cv-fs-dots{display:flex;gap:4px;align-items:center;max-width:160px;overflow:hidden;}
+    .cv-fs-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:all .18s;flex-shrink:0;}
+    .cv-fs-dot.on{width:16px;border-radius:3px;background:rgba(255,255,255,.9);}
+    /* Panneau éditeur */
+    .cv-fs-panel{width:260px;min-width:260px;background:rgba(15,15,15,.98);border-left:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;overflow:hidden;}
+    .cv-fs-panel-inner{flex:1;overflow-y:auto;overflow-x:hidden;padding:.6rem .75rem;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent;}
+    .cv-fs-panel-inner::-webkit-scrollbar{width:3px;}
+    .cv-fs-panel-inner::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px;}
+    /* Sections du panneau */
+    .cvp-section{margin-bottom:.9rem;padding-bottom:.9rem;border-bottom:1px solid rgba(255,255,255,.06);}
+    .cvp-section:last-child{border-bottom:none;}
+    .cvp-section-titre{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);margin-bottom:.55rem;}
+    .cvp-sub-titre{font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.25);margin:.5rem 0 .3rem;}
+    .cvp-row{display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem;min-height:24px;}
+    .cvp-lbl{font-size:.62rem;color:rgba(255,255,255,.45);white-space:nowrap;min-width:52px;}
+    .cvp-val{font-size:.6rem;color:rgba(255,255,255,.4);white-space:nowrap;min-width:28px;text-align:right;}
+    .cvp-row-pills{display:flex;flex-wrap:wrap;gap:4px;flex:1;}
+    .cvp-pill{font-size:.6rem;padding:3px 7px;border-radius:20px;border:1px solid rgba(255,255,255,.14);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;transition:all .15s;line-height:1.3;white-space:nowrap;}
+    .cvp-pill.on,.cvp-pill:hover{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.3);}
+    .cvp-slider{flex:1;height:3px;accent-color:var(--rose);cursor:pointer;}
+    .cvp-select{flex:1;font-size:.62rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:3px 5px;color:rgba(255,255,255,.7);cursor:pointer;}
+    /* Toggle switch */
+    .cvp-toggle{position:relative;display:inline-flex;align-items:center;cursor:pointer;}
+    .cvp-toggle input{opacity:0;width:0;height:0;position:absolute;}
+    .cvp-toggle-track{width:28px;height:16px;background:rgba(255,255,255,.15);border-radius:8px;transition:background .2s;flex-shrink:0;}
+    .cvp-toggle-track::after{content:'';position:absolute;top:3px;left:3px;width:10px;height:10px;background:#fff;border-radius:50%;transition:transform .2s;}
+    .cvp-toggle input:checked + .cvp-toggle-track{background:var(--rose);}
+    .cvp-toggle input:checked + .cvp-toggle-track::after{transform:translateX(12px);}
+    /* Mobile : panneau en bas */
+    @media(max-width:600px){
+      .cv-fs-layout{flex-direction:column;}
+      .cv-fs-panel{width:100%;min-width:0;border-left:none;border-top:1px solid rgba(255,255,255,.07);max-height:38vh;}
+      .cv-fs-col-slide{padding:.5rem;}
+    }
     .cv-fullscreen.on{display:flex;}
     .cv-fs-slide{width:min(360px,85vw);height:min(480px,85vw * 1.333);border-radius:14px;overflow:hidden;position:relative;}
     .cv-fs-slide .cv-slide-inner{width:100%;height:100%;padding:24px 20px;}
@@ -4343,10 +4457,34 @@ let carrouselCourant  = null; // { slides, legende, reseau }
 let cvSlideActive     = 0;
 let styleFondActif    = 'uni';
 let overridesSlide    = {};   // { idx: 'uni'|'degrade'|'beton'|'photo'|'__custom__' }
-let overridesLH       = {};   // { idx: {titre:1.15, corps:1.20} }
-let overridesFS       = {};   // { idx: {titre:1.0, corps:1.0} }
+let overridesLH       = {};
+let overridesFS       = {};
 let cvFondPhotoSrc    = null;
 const cvFondPhotoParSlide = {};
+// Styles par slide — panneau éditeur
+let slideStyles = {}; // { idx: {fondType, fondColor, fondPhotoVoile, fondPhotoFlou,
+                      //        fondDeg, titreSize, sstitreSize, corpsSize,
+                      //        titreLH, corpsLH, policeTitre, policeCorps,
+                      //        ombreActive, ombreOpacite, ombreBlur,
+                      //        align, textColor, padding, numVisible} }
+function getSlideStyle(idx){
+  const defs = {
+    fondType:'auto', fondColor:'#111111', fondPhotoVoile:0.45, fondPhotoFlou:0,
+    fondDeg:'135deg', titreSize:1.0, sstitreSize:1.0, corpsSize:1.0,
+    titreLH:1.3, corpsLH:1.5, policeTitre:CFG.policeTitre||'Playfair Display',
+    policeCorps:CFG.policeCorps||'DM Sans',
+    ombreActive:false, ombreOpacite:0.6, ombreBlur:6,
+    align:'left', textColor:'', padding:'14px 12px', numVisible:true
+  };
+  return Object.assign({}, defs, slideStyles[idx]||{});
+}
+function setSlideStyle(idx, key, val){
+  if(!slideStyles[idx]) slideStyles[idx] = {};
+  slideStyles[idx][key] = val;
+  appliquerStylesSlide(idx);
+  // Mettre à jour le panneau si la slide est active
+  if(idx === cvSlideActive) majPanneauEditeur(idx);
+}
 let carFormatRatio    = '3:4';
 const CAR_FORMATS     = { '3:4':{w:1080,h:1440}, '4:5':{w:1080,h:1350}, '1:1':{w:1080,h:1080} };
 let genFigureCourante = null;
@@ -4419,8 +4557,13 @@ function styleFondSlide(num, total, c1, c2){
 
 function rendreTitreAccent(titre, accent, fond){
   if(!titre) return '';
-  // Stabilo supprimé — retour simple
-  return escapeHtml(titre);
+  // Remplacer [ACCENT]...[/ACCENT] par du texte coloré
+  const escaped = titre
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return escaped.replace(
+    /\[ACCENT\](.*?)\[\/ACCENT\]/g,
+    (_, t) => `<em style="color:${accent};font-style:normal;">${t}</em>`
+  );
 }
 
 function nettoyerSousTitre(s){
@@ -4460,6 +4603,47 @@ function appliqueFondCSS(el, cssString){
 // ══════════════════════════════════════════════════════════
 // AFFICHER CARROUSEL
 // ══════════════════════════════════════════════════════════
+
+function renderCvSlide(s, idx, total, c1, c2, ptit, pcorp, opts){
+  // opts = { small: bool, editable: bool }
+  opts = opts || {};
+  const small    = !!opts.small;
+  const editable = !!opts.editable;
+  const fond     = fondSlide(s.num||idx+1, total, c1, c2);
+  const tcoul    = texteSlide(fond);
+  const accent   = accentSlide(c1, fond);
+  const sstitre  = s.sousTitre ? nettoyerSousTitre(s.sousTitre) : '';
+
+  const editAttr = editable ? 'contenteditable="true" spellcheck="false"' : '';
+  const slideClass = 'cv-slide' + (small ? ' cv-slide-sm' : ' cv-slide-lg') + (editable ? ' cv-slide-editable' : '');
+
+  return `<div class="${slideClass}" id="cv-slide-${idx}"
+    style="${styleFondSlide(s.num||idx+1,total,c1,c2)}"
+    ${!editable ? `onclick="cvSelectSlide(${idx})"` : ''}>
+    <div class="cv-slide-num">${idx+1}/${total}</div>
+    <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};">
+      <!-- type masqué — ne s'affiche pas sur les slides -->
+      ${sstitre ? `<div class="cv-slide-sstitre" ${editAttr}
+        data-idx="${idx}" data-field="sousTitre"
+        oninput="cvUpdateSlide(${idx},'sousTitre',this.innerText)">${escapeHtml(sstitre)}</div>` : ''}
+      <div class="cv-slide-titre"
+        style="font-family:'${ptit}',serif;"
+        ${editAttr}
+        data-idx="${idx}" data-field="titre"
+        oninput="cvUpdateSlide(${idx},'titre',this.innerText)">${rendreTitreAccent(s.titre||'', accent, fond)}</div>
+      <div class="cv-slide-corps"
+        ${editAttr}
+        data-idx="${idx}" data-field="corps"
+        oninput="cvUpdateSlide(${idx},'corps',this.innerText)">${(s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>')}</div>
+    </div>
+  </div>`;
+}
+
+function cvUpdateSlide(idx, field, val){
+  if(!carrouselCourant || !carrouselCourant.slides[idx]) return;
+  carrouselCourant.slides[idx][field] = val;
+}
+
 function afficherCarrousel(slides, legende, reseau, containerId){
   carrouselCourant = { slides, legende, reseau };
   cvSlideActive = 0;
@@ -4565,29 +4749,92 @@ function cvFondPill(el, style){
   if(typeof setStyleSlide==='function') setStyleSlide(cvSlideActive,null,style);
 }
 
+function appliquerStylesSlide(idx){
+  if(!carrouselCourant) return;
+  const slides = carrouselCourant.slides;
+  const s = slides[idx];
+  if(!s) return;
+  const el = document.getElementById('cv-slide-'+idx);
+  if(!el) return;
+  const c1 = CFG.couleur1||'#E8186D';
+  const c2 = CFG.couleur2||'#111111';
+  const st = getSlideStyle(idx);
+  const inner = el.querySelector('.cv-slide-inner');
+
+  // ─ FOND ─
+  let ov = el.querySelector('.cv-photo-overlay');
+  if(ov) ov.remove();
+  el.style.backgroundImage = '';
+
+  if(st.fondType === 'photo' && cvFondPhotoParSlide[idx]){
+    const src = cvFondPhotoParSlide[idx];
+    el.style.backgroundImage = `url('${src}')`;
+    el.style.backgroundSize = 'cover';
+    el.style.backgroundPosition = 'center';
+    el.style.filter = st.fondPhotoFlou > 0 ? `blur(0px)` : '';  // flou sur overlay
+    let ov2 = document.createElement('div');
+    ov2.className = 'cv-photo-overlay';
+    ov2.style.cssText = `position:absolute;inset:0;background:rgba(0,0,0,${st.fondPhotoVoile});backdrop-filter:blur(${st.fondPhotoFlou}px);-webkit-backdrop-filter:blur(${st.fondPhotoFlou}px);z-index:0;pointer-events:none;border-radius:inherit;`;
+    el.insertBefore(ov2, el.firstChild);
+  } else if(st.fondType === 'uni' && st.fondColor){
+    el.style.cssText = el.style.cssText.replace(/background[^;]+;/g,'');
+    appliqueFondCSS(el, `background:${st.fondColor};`);
+  } else if(st.fondType === 'degrade'){
+    const deg = st.fondDeg || '135deg';
+    appliqueFondCSS(el, `background:linear-gradient(${deg},${c2},${c1});`);
+  } else if(st.fondType === 'degrade2'){
+    appliqueFondCSS(el, `background:linear-gradient(155deg,${c2},${c1} 160%);`);
+  } else if(st.fondType === 'beton'){
+    appliqueFondCSS(el, `background:radial-gradient(ellipse at 20% 20%,${c1},${c2});`);
+  } else {
+    // auto = fond par défaut selon DA
+    appliqueFondCSS(el, styleFondSlide(s.num||idx+1, slides.length, c1, c2));
+  }
+
+  // ─ TEXTE ─
+  if(inner){
+    inner.style.position = 'relative';
+    inner.style.zIndex = '1';
+    inner.style.padding = st.padding;
+    inner.style.textAlign = st.align;
+    const textCol = st.textColor || texteSlide(fondSlide(s.num||idx+1, slides.length, c1, c2));
+    inner.style.color = textCol;
+    inner.style.fontFamily = `'${st.policeCorps}',sans-serif`;
+
+    const shadowVal = st.ombreActive
+      ? `0 2px ${st.ombreBlur}px rgba(0,0,0,${st.ombreOpacite})`
+      : '';
+
+    const titreEl   = inner.querySelector('.cv-slide-titre');
+    const sstitreEl = inner.querySelector('.cv-slide-sstitre');
+    const corpsEl   = inner.querySelector('.cv-slide-corps');
+    const numEl     = inner.parentElement.querySelector('.cv-slide-num');
+
+    if(titreEl){
+      const base = el.classList.contains('cv-slide-lg') ? 1.15 : 0.82;
+      titreEl.style.fontSize    = (base * st.titreSize) + 'rem';
+      titreEl.style.lineHeight  = st.titreLH;
+      titreEl.style.fontFamily  = `'${st.policeTitre}',serif`;
+      titreEl.style.textShadow  = shadowVal;
+    }
+    if(sstitreEl){
+      const base = el.classList.contains('cv-slide-lg') ? 0.75 : 0.62;
+      sstitreEl.style.fontSize  = (base * st.sstitreSize) + 'rem';
+      sstitreEl.style.textShadow = shadowVal;
+    }
+    if(corpsEl){
+      const base = el.classList.contains('cv-slide-lg') ? 0.88 : 0.68;
+      corpsEl.style.fontSize   = (base * st.corpsSize) + 'rem';
+      corpsEl.style.lineHeight = st.corpsLH;
+      corpsEl.style.textShadow = shadowVal;
+    }
+    if(numEl) numEl.style.display = st.numVisible ? '' : 'none';
+  }
+}
+
 function majFondsSlides(){
   if(!carrouselCourant) return;
-  const {slides}=carrouselCourant;
-  const c1=CFG.couleur1||'#E8186D';
-  const c2=CFG.couleur2||'#111111';
-  slides.forEach((s,i)=>{
-    const slideEl=document.getElementById('cv-slide-'+i);
-    if(!slideEl) return;
-    const photoSrc=cvFondPhotoParSlide[i]||(styleFondActif==='photo'?cvFondPhotoSrc:null);
-    if(photoSrc){
-      slideEl.style.backgroundImage=`url('${photoSrc}')`;
-      slideEl.style.backgroundSize='cover';
-      slideEl.style.backgroundPosition='center';
-      let ov=slideEl.querySelector('.cv-photo-overlay');
-      if(!ov){ ov=document.createElement('div'); ov.className='cv-photo-overlay'; ov.style.cssText='position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:0;pointer-events:none;border-radius:inherit;'; slideEl.insertBefore(ov,slideEl.firstChild); }
-      const inner=slideEl.querySelector('.cv-slide-inner'); if(inner){ inner.style.position='relative'; inner.style.zIndex='1'; inner.style.color='#fff'; }
-      return;
-    }
-    const ov2=slideEl.querySelector('.cv-photo-overlay'); if(ov2) ov2.remove();
-    appliqueFondCSS(slideEl, styleFondSlide(s.num||i+1,slides.length,c1,c2));
-    const inner=slideEl.querySelector('.cv-slide-inner');
-    if(inner){ inner.style.color=texteSlide(fondSlide(s.num||i+1,slides.length,c1,c2)); inner.style.position=''; inner.style.zIndex=''; }
-  });
+  carrouselCourant.slides.forEach((_,i) => appliquerStylesSlide(i));
 }
 
 function resetOverrides(){
@@ -4649,42 +4896,272 @@ function afficherTooltipCanva(reseau){
 
 function ouvrirCarrouselFullscreen(){
   if(!carrouselCourant) return;
-  const {slides}=carrouselCourant;
-  const c1=CFG.couleur1||'#E8186D';
-  const c2=CFG.couleur2||'#111111';
-  const ptit=CFG.policeTitre||'Playfair Display';
-  const pcorp=CFG.policeCorps||'DM Sans';
-  let fsEl=document.getElementById('cv-fullscreen');
-  if(!fsEl){ fsEl=document.createElement('div'); fsEl.className='cv-fullscreen'; fsEl.id='cv-fullscreen'; document.body.appendChild(fsEl); }
-  const rendreFSSlide=(idx)=>{
-    const s=slides[idx];
-    const fond=fondSlide(s.num||idx+1,slides.length,c1,c2);
-    const tcoul=texteSlide(fond);
-    return `<div class="cv-fs-slide" id="cv-fs-slide-${idx}" style="${styleFondSlide(s.num||idx+1,slides.length,c1,c2)}">
-      <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};">
-        <div class="cv-slide-titre" style="font-family:'${ptit}',serif;">${escapeHtml(s.titre||'')}</div>
-        ${s.sousTitre?`<div class="cv-slide-sstitre">${escapeHtml(nettoyerSousTitre(s.sousTitre||''))}</div>`:''}
-        <div class="cv-slide-corps">${(s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>')}</div>
+  const {slides, reseau} = carrouselCourant;
+  const c1    = CFG.couleur1    || '#E8186D';
+  const c2    = CFG.couleur2    || '#111111';
+  const ptit  = CFG.policeTitre || 'Playfair Display';
+  const pcorp = CFG.policeCorps || 'DM Sans';
+
+  let fsEl = document.getElementById('cv-fullscreen');
+  if(!fsEl){
+    fsEl = document.createElement('div');
+    fsEl.className = 'cv-fullscreen';
+    fsEl.id = 'cv-fullscreen';
+    document.body.appendChild(fsEl);
+  }
+
+  const renderFS = (idx) =>
+    renderCvSlide(slides[idx], idx, slides.length, c1, c2, ptit, pcorp, {small:false, editable:true});
+
+  fsEl.innerHTML = `
+    <div class="cv-fs-layout">
+      <!-- ─── COLONNE SLIDE ─── -->
+      <div class="cv-fs-col-slide">
+        <div class="cv-fs-topbar">
+          <span class="cv-fs-counter-lbl" id="cv-fs-lbl">Slide ${cvSlideActive+1} / ${slides.length}</span>
+          <div style="display:flex;gap:.5rem;align-items:center;">
+            <span class="cv-fs-edit-hint">✎ Tap pour éditer</span>
+            <button class="cv-fs-close" onclick="document.getElementById('cv-fullscreen').classList.remove('on')">✕</button>
+          </div>
+        </div>
+        <div class="cv-fs-stage" id="cv-fs-stage">
+          <div id="cv-fs-content">${renderFS(cvSlideActive)}</div>
+        </div>
+        <div class="cv-fs-nav-bar">
+          <button class="cv-fs-btn" onclick="window.cvFSNav(-1)">‹</button>
+          <div class="cv-fs-dots" id="cv-fs-dots">
+            ${slides.map((_,i) => `<div class="cv-fs-dot${i===cvSlideActive?' on':''}"
+              onclick="window.cvFSNav(${i}-cvSlideActive)"></div>`).join('')}
+          </div>
+          <button class="cv-fs-btn" onclick="window.cvFSNav(1)">›</button>
+        </div>
+      </div>
+
+      <!-- ─── PANNEAU ÉDITEUR ─── -->
+      <div class="cv-fs-panel" id="cv-fs-panel">
+        <div class="cv-fs-panel-inner" id="cv-fs-panel-inner">
+          <!-- contenu injecté par majPanneauEditeur() -->
+        </div>
+      </div>
+    </div>`;
+
+  // Init navigation
+  window.cvFSNav = (dir) => {
+    cvSlideActive = Math.max(0, Math.min(slides.length-1, cvSlideActive + dir));
+    document.getElementById('cv-fs-content').innerHTML = renderFS(cvSlideActive);
+    document.getElementById('cv-fs-lbl').textContent = `Slide ${cvSlideActive+1} / ${slides.length}`;
+    document.querySelectorAll('.cv-fs-dot').forEach((d,i) => d.classList.toggle('on', i===cvSlideActive));
+    majPanneauEditeur(cvSlideActive);
+    setTimeout(() => appliquerStylesSlide(cvSlideActive), 20);
+  };
+
+  // Swipe
+  let touchX = 0;
+  fsEl.ontouchstart = e => { touchX = e.touches[0].clientX; };
+  fsEl.ontouchend   = e => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if(Math.abs(dx) > 50 && e.target.closest('.cv-fs-panel') === null)
+      window.cvFSNav(dx < 0 ? 1 : -1);
+  };
+
+  fsEl.classList.add('on');
+  majPanneauEditeur(cvSlideActive);
+  setTimeout(() => majFondsSlides(), 30);
+}
+
+// ─── PANNEAU ÉDITEUR ─────────────────────────────────────────────────
+function majPanneauEditeur(idx){
+  const panel = document.getElementById('cv-fs-panel-inner');
+  if(!panel) return;
+  const st = getSlideStyle(idx);
+  const c1 = CFG.couleur1||'#E8186D';
+  const c2 = CFG.couleur2||'#111111';
+  const policesTitre = ['Playfair Display','Georgia','Cormorant Garamond','Libre Baskerville','Merriweather','Lora'];
+  const policesCorps = ['DM Sans','Nunito','Lato','Open Sans','Raleway','Poppins'];
+
+  panel.innerHTML = `
+    <!-- Section FOND -->
+    <div class="cvp-section">
+      <div class="cvp-section-titre">Fond</div>
+
+      <!-- Type de fond -->
+      <div class="cvp-row-pills">
+        <button class="cvp-pill ${st.fondType==='auto'?'on':''}"  onclick="setSlideStyle(${idx},'fondType','auto')">Auto</button>
+        <button class="cvp-pill ${st.fondType==='uni'?'on':''}"   onclick="cvpFondUniClick(${idx})">Uni</button>
+        <button class="cvp-pill ${st.fondType==='degrade'?'on':''}" onclick="setSlideStyle(${idx},'fondType','degrade')">Dégradé</button>
+        <button class="cvp-pill ${st.fondType==='degrade2'?'on':''}" onclick="setSlideStyle(${idx},'fondType','degrade2')">Dégradé 2</button>
+        <button class="cvp-pill ${st.fondType==='beton'?'on':''}" onclick="setSlideStyle(${idx},'fondType','beton')">Matière</button>
+        <label class="cvp-pill ${st.fondType==='photo'?'on':''}">Photo
+          <input type="file" accept="image/*" style="display:none" onchange="cvpFondPhoto(${idx},this)"/>
+        </label>
+      </div>
+
+      <!-- Couleur fond uni -->
+      ${st.fondType==='uni' ? `
+      <div class="cvp-row">
+        <span class="cvp-lbl">Couleur</span>
+        <input type="color" value="${st.fondColor||c2}" oninput="setSlideStyle(${idx},'fondColor',this.value)" style="width:36px;height:24px;border:none;background:none;cursor:pointer;border-radius:4px;"/>
+      </div>` : ''}
+
+      <!-- Voile + flou photo -->
+      ${st.fondType==='photo' ? `
+      <div class="cvp-row">
+        <span class="cvp-lbl">Voile</span>
+        <input type="range" min="0" max="0.85" step="0.05" value="${st.fondPhotoVoile}"
+          oninput="setSlideStyle(${idx},'fondPhotoVoile',parseFloat(this.value))"
+          class="cvp-slider"/>
+        <span class="cvp-val">${Math.round(st.fondPhotoVoile*100)}%</span>
+      </div>
+      <div class="cvp-row">
+        <span class="cvp-lbl">Flou</span>
+        <input type="range" min="0" max="20" step="1" value="${st.fondPhotoFlou}"
+          oninput="setSlideStyle(${idx},'fondPhotoFlou',parseInt(this.value))"
+          class="cvp-slider"/>
+        <span class="cvp-val">${st.fondPhotoFlou}px</span>
+      </div>` : ''}
+    </div>
+
+    <!-- Section TEXTE -->
+    <div class="cvp-section">
+      <div class="cvp-section-titre">Texte</div>
+
+      <div class="cvp-row">
+        <span class="cvp-lbl">Couleur</span>
+        <div class="cvp-row-pills" style="flex-wrap:nowrap;">
+          <button class="cvp-pill ${!st.textColor||st.textColor==='#ffffff'?'on':''}" onclick="setSlideStyle(${idx},'textColor','#ffffff')">Blanc</button>
+          <button class="cvp-pill ${st.textColor==='#000000'?'on':''}" onclick="setSlideStyle(${idx},'textColor','#000000')">Noir</button>
+          <input type="color" value="${st.textColor||'#ffffff'}" oninput="setSlideStyle(${idx},'textColor',this.value)" style="width:28px;height:24px;border:none;background:none;cursor:pointer;border-radius:4px;"/>
+        </div>
+      </div>
+
+      <div class="cvp-row">
+        <span class="cvp-lbl">Alignement</span>
+        <div class="cvp-row-pills" style="flex-wrap:nowrap;">
+          <button class="cvp-pill ${st.align==='left'?'on':''}"   onclick="setSlideStyle(${idx},'align','left')">◀</button>
+          <button class="cvp-pill ${st.align==='center'?'on':''}" onclick="setSlideStyle(${idx},'align','center')">◼</button>
+          <button class="cvp-pill ${st.align==='right'?'on':''}"  onclick="setSlideStyle(${idx},'align','right')">▶</button>
+        </div>
+      </div>
+
+      <div class="cvp-sub-titre">Titre</div>
+      <div class="cvp-row">
+        <span class="cvp-lbl">Taille</span>
+        <input type="range" min="0.6" max="1.8" step="0.05" value="${st.titreSize}"
+          oninput="setSlideStyle(${idx},'titreSize',parseFloat(this.value))"
+          class="cvp-slider"/>
+        <span class="cvp-val">${Math.round(st.titreSize*100)}%</span>
+      </div>
+      <div class="cvp-row">
+        <span class="cvp-lbl">Interligne</span>
+        <input type="range" min="1.0" max="2.0" step="0.05" value="${st.titreLH}"
+          oninput="setSlideStyle(${idx},'titreLH',parseFloat(this.value))"
+          class="cvp-slider"/>
+        <span class="cvp-val">${st.titreLH}</span>
+      </div>
+      <div class="cvp-row">
+        <span class="cvp-lbl">Police</span>
+        <select class="cvp-select" onchange="setSlideStyle(${idx},'policeTitre',this.value)">
+          ${policesTitre.map(p=>`<option value="${p}" ${st.policeTitre===p?'selected':''}>${p}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="cvp-sub-titre">Corps</div>
+      <div class="cvp-row">
+        <span class="cvp-lbl">Taille</span>
+        <input type="range" min="0.6" max="1.8" step="0.05" value="${st.corpsSize}"
+          oninput="setSlideStyle(${idx},'corpsSize',parseFloat(this.value))"
+          class="cvp-slider"/>
+        <span class="cvp-val">${Math.round(st.corpsSize*100)}%</span>
+      </div>
+      <div class="cvp-row">
+        <span class="cvp-lbl">Interligne</span>
+        <input type="range" min="1.0" max="2.2" step="0.05" value="${st.corpsLH}"
+          oninput="setSlideStyle(${idx},'corpsLH',parseFloat(this.value))"
+          class="cvp-slider"/>
+        <span class="cvp-val">${st.corpsLH}</span>
+      </div>
+      <div class="cvp-row">
+        <span class="cvp-lbl">Police</span>
+        <select class="cvp-select" onchange="setSlideStyle(${idx},'policeCorps',this.value)">
+          ${policesCorps.map(p=>`<option value="${p}" ${st.policeCorps===p?'selected':''}>${p}</option>`).join('')}
+        </select>
       </div>
     </div>
-    <div class="cv-fs-nav">
-      <button class="cv-fs-btn" onclick="cvFSNav(-1)">‹</button>
-      <span class="cv-fs-counter">${idx+1} / ${slides.length}</span>
-      <button class="cv-fs-btn" onclick="cvFSNav(1)">›</button>
+
+    <!-- Section OMBRE -->
+    <div class="cvp-section">
+      <div class="cvp-section-titre" style="display:flex;justify-content:space-between;align-items:center;">
+        Ombre texte
+        <label class="cvp-toggle">
+          <input type="checkbox" ${st.ombreActive?'checked':''} onchange="setSlideStyle(${idx},'ombreActive',this.checked)"/>
+          <span class="cvp-toggle-track"></span>
+        </label>
+      </div>
+      ${st.ombreActive ? `
+      <div class="cvp-row">
+        <span class="cvp-lbl">Opacité</span>
+        <input type="range" min="0.1" max="1.0" step="0.05" value="${st.ombreOpacite}"
+          oninput="setSlideStyle(${idx},'ombreOpacite',parseFloat(this.value))"
+          class="cvp-slider"/>
+        <span class="cvp-val">${Math.round(st.ombreOpacite*100)}%</span>
+      </div>
+      <div class="cvp-row">
+        <span class="cvp-lbl">Intensité</span>
+        <input type="range" min="1" max="20" step="1" value="${st.ombreBlur}"
+          oninput="setSlideStyle(${idx},'ombreBlur',parseInt(this.value))"
+          class="cvp-slider"/>
+        <span class="cvp-val">${st.ombreBlur}px</span>
+      </div>` : ''}
+    </div>
+
+    <!-- Section SLIDE -->
+    <div class="cvp-section">
+      <div class="cvp-section-titre">Mise en page</div>
+      <div class="cvp-row">
+        <span class="cvp-lbl">Marges</span>
+        <div class="cvp-row-pills" style="flex-wrap:nowrap;">
+          <button class="cvp-pill ${st.padding==='8px 8px'?'on':''}"    onclick="setSlideStyle(${idx},'padding','8px 8px')">Serrée</button>
+          <button class="cvp-pill ${st.padding==='14px 12px'?'on':''}"  onclick="setSlideStyle(${idx},'padding','14px 12px')">Normal</button>
+          <button class="cvp-pill ${st.padding==='22px 18px'?'on':''}"  onclick="setSlideStyle(${idx},'padding','22px 18px')">Aérée</button>
+        </div>
+      </div>
+      <div class="cvp-row" style="justify-content:space-between;">
+        <span class="cvp-lbl">Numéro slide</span>
+        <label class="cvp-toggle">
+          <input type="checkbox" ${st.numVisible?'checked':''} onchange="setSlideStyle(${idx},'numVisible',this.checked)"/>
+          <span class="cvp-toggle-track"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Appliquer à toutes -->
+    <div class="cvp-section" style="border-top:1px solid rgba(255,255,255,.06);padding-top:.8rem;">
+      <button class="btn btn-ghost" style="width:100%;font-size:.72rem;" onclick="cvpAppliquerATous(${idx})">
+        Appliquer ce style à toutes les slides
+      </button>
     </div>`;
+}
+
+function cvpFondUniClick(idx){
+  setSlideStyle(idx,'fondType','uni');
+}
+function cvpFondPhoto(idx, input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    cvFondPhotoParSlide[idx] = e.target.result;
+    setSlideStyle(idx,'fondType','photo');
   };
-  fsEl.onclick=(e)=>{ if(e.target===fsEl) fsEl.classList.remove('on'); };
-  fsEl.innerHTML=`<button class="cv-fs-close" onclick="document.getElementById('cv-fullscreen').classList.remove('on')">✕</button>
-    <div id="cv-fs-content">${rendreFSSlide(cvSlideActive)}</div>`;
-  fsEl.classList.add('on');
-  let touchX=0;
-  fsEl.ontouchstart=e=>{touchX=e.touches[0].clientX;};
-  fsEl.ontouchend=e=>{ const dx=e.changedTouches[0].clientX-touchX; if(Math.abs(dx)>50) cvFSNav(dx<0?1:-1); };
-  window.cvFSNav=(dir)=>{
-    const sl=carrouselCourant.slides;
-    cvSlideActive=Math.max(0,Math.min(sl.length-1,cvSlideActive+dir));
-    document.getElementById('cv-fs-content').innerHTML=rendreFSSlide(cvSlideActive);
-  };
+  reader.readAsDataURL(file);
+}
+function cvpAppliquerATous(srcIdx){
+  if(!carrouselCourant) return;
+  const srcStyle = Object.assign({}, slideStyles[srcIdx]||{});
+  carrouselCourant.slides.forEach((_,i) => {
+    if(i !== srcIdx) slideStyles[i] = Object.assign({}, srcStyle);
+  });
+  majFondsSlides();
+  toast('✅ Style appliqué à toutes les slides','ok');
 }
 
 

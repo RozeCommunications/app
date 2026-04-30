@@ -4856,10 +4856,13 @@ function splitTexteLegende(texte){
   let t = texte.trim();
   t = t.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/,'').trim();
 
+
   // Tentative extraction JSON carrousel — regex pour capturer toute indentation
   let jIdx = -1;
   const jMatch = t.match(/\{[\s\n]*"slides"/);
   if(jMatch) jIdx = t.indexOf(jMatch[0]);
+  // DEBUG temporaire
+  console.log('[CV] texte.length='+t.length+' jIdx='+jIdx+' debut='+JSON.stringify(t.slice(0,80)));
 
   if(jIdx > -1){
     // Trouver l'accolade fermante correspondante
@@ -6559,19 +6562,13 @@ function sauvegarderCompte(){
 
   // Si l'URL AS vient d'être saisie ou modifiée → relire le Sheets
   // pour restaurer les données existantes sur cet appareil
+  // Feedback immédiat — la sync Sheets se fait en arrière-plan sans bloquer
+  if(btnSave){ btnSave.disabled = false; btnSave.textContent = '💾 Sauvegarder Mon Compte'; }
+  toast('✅ Sauvegardé !','ok');
   if(CFG.as){
-    // 1. Sync config (bidirectionnel)
-    // 2. Sync posts TOUJOURS — indépendamment du résultat de la config
-    Promise.all([
-      syncConfigDepuisSheets().catch(()=>{}),
-      syncPostsDepuisSheets().catch(()=>{})
-    ]).then(() => {
-      if(btnSave){ btnSave.disabled = false; btnSave.textContent = '💾 Sauvegarder Mon Compte'; }
-      toastSiPage('✅ Synchronisé !','ok','p-compte');
-    });
-  } else {
-    if(btnSave){ btnSave.disabled = false; btnSave.textContent = '💾 Sauvegarder Mon Compte'; }
-    toast('✅ Sauvegardé !','ok');
+    // Sync en fire-and-forget — n'attend pas la réponse pour débloquer le bouton
+    syncConfigDepuisSheets().catch(()=>{});
+    syncPostsDepuisSheets().catch(()=>{});
   }
 }
 

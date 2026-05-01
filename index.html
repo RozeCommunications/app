@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- v=2026-04-30-final cascade=v2 carrousel=editable -->
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/>
@@ -5372,9 +5373,6 @@ function splitTexteLegende(texte){
   let jIdx = -1;
   const jMatch = t.match(/\{[\s\n]*"slides"/);
   if(jMatch) jIdx = t.indexOf(jMatch[0]);
-  // DEBUG temporaire
-  console.log('[CV] texte.length='+t.length+' jIdx='+jIdx+' debut='+JSON.stringify(t.slice(0,80)));
-
   if(jIdx > -1){
     // Trouver l'accolade fermante correspondante
     let depth = 0, endIdx = -1;
@@ -5499,8 +5497,8 @@ async function genUnPost(){
   result.textContent=''; result.classList.remove('on');
   legZone.classList.remove('on'); actions.style.display='none';
   document.getElementById('lbl-gen-texte').style.display='none';
-  inlineLoader.classList.add('on');
-  inlineLoaderTxt.textContent='Génération en cours…';
+  // Loader inline désactivé — le bouton lui-même affiche "Génération..."
+  // inlineLoader.classList.add('on');
   if(btnGen){ btnGen.disabled=true; btnGen.textContent='⏳ Génération…'; }
 
   try{

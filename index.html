@@ -834,6 +834,30 @@
     .acc-titre span:first-child{font-size:1rem;flex-shrink:0;}
     .acc-body{padding:.1rem 1.1rem 1.1rem;display:none;}
     .acc.open .acc-body{display:block;}
+    .ed-chip{
+      display:inline-flex;align-items:center;gap:.3rem;
+      font-size:.85rem;font-weight:500;
+      padding:.55rem .9rem;
+      background:var(--gris-input);
+      border:1px solid var(--gris-border);
+      border-radius:20px;
+      color:var(--gris-clair);
+      cursor:pointer;
+      transition:all .15s;
+      font-family:inherit;
+      white-space:nowrap;
+    }
+    .ed-chip:hover{
+      background:rgba(232,24,109,.08);
+      border-color:rgba(232,24,109,.3);
+      color:var(--blanc-doux);
+    }
+    .ed-chip.on{
+      background:rgba(232,24,109,.15);
+      border-color:var(--rose);
+      color:var(--rose-clair);
+      font-weight:600;
+    }
     .acc-chevron{font-size:.65rem;color:var(--gris-clair);transition:transform .25s;flex-shrink:0;}
     .acc.open .acc-chevron{transform:rotate(180deg);color:var(--rose);}
     .acc-badge{font-size:.68rem;font-weight:600;color:var(--rose-clair);background:rgba(232,24,109,.1);padding:3px 10px;border-radius:20px;white-space:nowrap;border:1px solid rgba(232,24,109,.2);flex-shrink:0;}
@@ -1852,20 +1876,25 @@
           <input type="text" id="cfg-nom" placeholder="Ex : Dupont" autocomplete="family-name" style="font-size:16px;"/>
           <label class="lbl">Entreprise</label>
           <input type="text" id="cfg-entreprise" placeholder="Ex : Roze Communications" style="font-size:16px;"/>
-          <label class="lbl">Métier</label>
-          <input type="text" id="cfg-metier" placeholder="Ex : Plombier, Avocat, Coach sportif, Boulangers…" style="font-size:16px;"/>
-          <label class="lbl" style="margin-top:.6rem;">Catégorie d'activité</label>
-          <select id="cfg-cat-metier" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);">
+          <label class="lbl">Métier précis <span style="color:var(--rose);font-weight:700;">*</span></label>
+          <input type="text" id="cfg-metier" placeholder="Ex : sophrologue à domicile, plombier-chauffagiste, photographe mariage…" required style="font-size:16px;"/>
+          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.3rem;">Plus c'est précis, plus l'IA adapte les exemples à ta cible réelle.</div>
+          <label class="lbl" style="margin-top:.6rem;">Univers professionnel</label>
+          <select id="cfg-univers" onchange="onUniversChange(this.value)" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);">
             <option value="">— Choisir —</option>
-            <option value="artisan">🔨 Artisan (plombier, menuisier, électricien…)</option>
-            <option value="commercant">🛍️ Commerçant (boutique, restauration…)</option>
-            <option value="creatif">🎨 Créatif (designer, photographe, artiste…)</option>
-            <option value="consultant">💼 Consultant / Coach</option>
-            <option value="praticien">🧘 Praticien / Thérapeute</option>
-            <option value="formateur">📚 Formateur / Enseignant</option>
-            <option value="independant">⚡ Indépendant / Freelance</option>
+            <option value="manuel">🛠️ Métiers manuels &amp; artisanat</option>
+            <option value="commerce">🛍️ Commerce &amp; vente</option>
+            <option value="bienetre">🌿 Bien-être, santé &amp; sport</option>
+            <option value="conseil">💼 Conseil, expertise &amp; finance</option>
+            <option value="creation">🎨 Création &amp; contenu</option>
+            <option value="services">🤝 Services &amp; relation</option>
           </select>
-          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.3rem;">L'IA adapte les exemples et le ton selon ta catégorie.</div>
+
+          <label class="lbl" id="lbl-cat-metier" style="margin-top:.6rem;display:none;">Catégorie précise</label>
+          <select id="cfg-cat-metier" onchange="ss('roze_cat_metier',this.value)" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);display:none;">
+            <option value="">— Choisir —</option>
+          </select>
+          <div id="cat-metier-hint" style="font-size:.7rem;color:var(--gris-clair);margin-top:.3rem;display:none;">L'IA adapte exemples, ton, cibles et structures narratives selon ta catégorie.</div>
 
           <label class="lbl" style="margin-top:.8rem;">Type d'activité</label>
           <div style="display:flex;gap:.5rem;flex-wrap:wrap;" id="cfg-tronc-group">
@@ -2093,9 +2122,10 @@
           <div class="opt">Tier gratuit — sans carte bancaire. Génère ta clé en 30 secondes.</div>
         </div>
         <div class="conn-sep"></div>
-        
+      </div>
     </div>
 
+    <!-- Boutons d'action — hors accordéon Connexions -->
     <div style="margin-top:1.6rem;">
       <button class="btn btn-rose btn-full" id="btn-sauvegarder" onclick="sauvegarderCompte()" style="padding:1rem;font-size:.95rem;letter-spacing:.02em;">💾 Sauvegarder Mon Compte</button>
       <button class="btn btn-ghost" style="width:100%;margin-top:.5rem;font-size:.78rem;color:var(--gris-clair);" onclick="seDeconnecter()">↩️ Se déconnecter</button>
@@ -4431,16 +4461,34 @@ function getSlideStyle(idx){
     titreLH:1.3, corpsLH:1.5, policeTitre:CFG.policeTitre||'Playfair Display',
     policeCorps:CFG.policeCorps||'DM Sans',
     ombreActive:false, ombreOpacite:0.6, ombreBlur:6,
-    align:'left', textColor:'', padding:'14px 12px', numVisible:true
+    align:'left', textColor:'', padding:'14px 12px', numVisible:true,
+    logoPos:'center'
   };
   return Object.assign({}, defs, slideStyles[idx]||{});
 }
 function setSlideStyle(idx, key, val){
   if(!slideStyles[idx]) slideStyles[idx] = {};
   slideStyles[idx][key] = val;
+
+  // logoPos change le DOM de la slide → re-render slide
+  if(key === 'logoPos' && idx === cvSlideActive){
+    const stage = document.getElementById('cv-fs-content');
+    if(stage && carrouselCourant){
+      const c1 = CFG.couleur1||'#E8186D', c2 = CFG.couleur2||'#111111';
+      const ptit = CFG.policeTitre||'Playfair Display', pcorp = CFG.policeCorps||'DM Sans';
+      stage.innerHTML = renderCvSlide(carrouselCourant.slides[idx], idx, carrouselCourant.slides.length, c1, c2, ptit, pcorp, {small:false, editable:true});
+    }
+  }
+
+  // Toujours appliquer les styles à la slide
   appliquerStylesSlide(idx);
-  // Mettre à jour le panneau si la slide est active
-  if(idx === cvSlideActive) majPanneauEditeur(idx);
+
+  // Re-render le panneau UNIQUEMENT si la STRUCTURE change (apparition/disparition de contrôles)
+  // Pour les sliders/couleurs/alignement : NE PAS re-render → préserve le focus du slider
+  const STRUCTURE_KEYS = ['fondType', 'ombreActive', 'logoPos'];
+  if(idx === cvSlideActive && STRUCTURE_KEYS.indexOf(key) >= 0){
+    majPanneauEditeur(idx);
+  }
 }
 let carFormatRatio    = '3:4';
 const CAR_FORMATS     = { '3:4':{w:1080,h:1440}, '4:5':{w:1080,h:1350}, '1:1':{w:1080,h:1080} };
@@ -4561,6 +4609,16 @@ function appliqueFondCSS(el, cssString){
 // AFFICHER CARROUSEL
 // ══════════════════════════════════════════════════════════
 
+function renderLogoSlide(idx){
+  if(!CFG.logoUrl) return '';
+  const st = getSlideStyle(idx);
+  const pos = st.logoPos || 'center'; // 'left' | 'center' | 'right'
+  const justify = pos === 'left' ? 'flex-start' : (pos === 'right' ? 'flex-end' : 'center');
+  return `<div style="display:flex;justify-content:${justify};margin:0 0 1.2rem 0;padding:0 .4rem;">
+    <img src="${CFG.logoUrl}" alt="logo" style="max-width:120px;max-height:48px;object-fit:contain;opacity:.85;"/>
+  </div>`;
+}
+
 function renderCvSlide(s, idx, total, c1, c2, ptit, pcorp, opts){
   // opts = { small: bool, editable: bool }
   opts = opts || {};
@@ -4579,6 +4637,7 @@ function renderCvSlide(s, idx, total, c1, c2, ptit, pcorp, opts){
     ${!editable ? `onclick="cvSelectSlide(${idx})"` : ''}>
     <div class="cv-slide-num">${idx+1}/${total}</div>
     <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};">
+      ${(s.type==='conclusion' && CFG.logoUrl) ? renderLogoSlide(idx) : ''}
       <!-- type masqué — ne s'affiche pas sur les slides -->
       ${sstitre ? `<div class="cv-slide-sstitre" ${editAttr}
         data-idx="${idx}" data-field="sousTitre"
@@ -4626,6 +4685,7 @@ function afficherCarrousel(slides, legende, reseau, containerId){
       <!-- Hint slide active -->
       <div class="cv-active-hint" id="cv-active-hint"></div>
 
+      <div class="cv-edit-hint" style="text-align:center;margin:.4rem 0;">↓ Tape sur une slide pour l'éditer en plein écran</div>
       <div class="cv-slides-wrap" id="cv-slides-wrap">
         ${slides.map((s,i) => {
           const fond    = fondSlide(s.num||i+1, slides.length, c1, c2);
@@ -4902,6 +4962,9 @@ function ouvrirCarrouselFullscreen(){
       </div>
     </div>`;
 
+  // Clic sur le fond noir → fermer
+  fsEl.onclick = (e) => { if(e.target === fsEl) fsEl.classList.remove('on'); };
+
   // Init navigation
   window.cvFSNav = (dir) => {
     cvSlideActive = Math.max(0, Math.min(slides.length-1, cvSlideActive + dir));
@@ -5090,6 +5153,20 @@ function majPanneauEditeur(idx){
         </label>
       </div>
     </div>
+
+    <!-- Logo (slide conclusion uniquement) -->
+    ${(carrouselCourant && carrouselCourant.slides[idx] && carrouselCourant.slides[idx].type==='conclusion' && CFG.logoUrl) ? `
+    <div class="cvp-section">
+      <div class="cvp-section-titre">Logo</div>
+      <div class="cvp-row">
+        <span class="cvp-lbl">Position</span>
+        <div class="cvp-row-pills" style="flex-wrap:nowrap;">
+          <button class="cvp-pill ${st.logoPos==='left'?'on':''}"   onclick="setSlideStyle(${idx},'logoPos','left')">◀ Gauche</button>
+          <button class="cvp-pill ${st.logoPos==='center'?'on':''}" onclick="setSlideStyle(${idx},'logoPos','center')">◼ Centre</button>
+          <button class="cvp-pill ${st.logoPos==='right'?'on':''}"  onclick="setSlideStyle(${idx},'logoPos','right')">▶ Droite</button>
+        </div>
+      </div>
+    </div>` : ''}
 
     <!-- Appliquer à toutes -->
     <div class="cvp-section" style="border-top:1px solid rgba(255,255,255,.06);padding-top:.8rem;">
@@ -6869,6 +6946,76 @@ function ouvrirCreerDepuisJour(){
 // MON COMPTE
 // ══════════════════════════════════════════
 
+// ── Cascade Univers → Sous-catégorie ──
+const SOUS_CATEGORIES_PAR_UNIVERS = {
+  manuel: [
+    {val:'artisan',     label:'🔨 Artisan (BTP & finition)'},
+    {val:'metierdart',  label:'🎨 Métier d\'art / Créateur'},
+    {val:'agriculture', label:'🌾 Agriculture & terroir'}
+  ],
+  commerce: [
+    {val:'commercant',  label:'🥖 Commerçant alimentation'},
+    {val:'boutique',    label:'👗 Boutique (mode & déco)'}
+  ],
+  bienetre: [
+    {val:'soin',        label:'💆 Bien-être & soin du corps'},
+    {val:'praticien',   label:'🧘 Thérapeute / Praticien'},
+    {val:'sport',       label:'💪 Sport & coaching physique'}
+  ],
+  conseil: [
+    {val:'consultant',  label:'💼 Conseil & expertise B2B'},
+    {val:'patrimoine',  label:'🏛️ Patrimoine & finance'},
+    {val:'immobilier',  label:'🏘️ Immobilier'},
+    {val:'reglementee', label:'⚖️ Profession réglementée'}
+  ],
+  creation: [
+    {val:'creatif',     label:'📷 Créatif visuel / écrit'},
+    {val:'digital',     label:'💻 Digital & tech'},
+    {val:'createur',    label:'🎬 Créateur de contenu'}
+  ],
+  services: [
+    {val:'formateur',   label:'📚 Formation & enseignement'},
+    {val:'eventiel',    label:'✨ Événementiel'},
+    {val:'transport',   label:'🚗 Transport & mobilité'},
+    {val:'persoServ',   label:'❤️ Services à la personne'}
+  ]
+};
+
+function onUniversChange(univers){
+  const select = document.getElementById('cfg-cat-metier');
+  const lbl    = document.getElementById('lbl-cat-metier');
+  const hint   = document.getElementById('cat-metier-hint');
+  if(!select) return;
+
+  // Sauvegarder l'univers
+  ss('roze_univers', univers);
+
+  if(!univers){
+    select.style.display = 'none';
+    if(lbl)  lbl.style.display  = 'none';
+    if(hint) hint.style.display = 'none';
+    select.innerHTML = '<option value="">— Choisir —</option>';
+    return;
+  }
+
+  const sousCats = SOUS_CATEGORIES_PAR_UNIVERS[univers] || [];
+  select.innerHTML = '<option value="">— Choisir —</option>' +
+    sousCats.map(s => `<option value="${s.val}">${s.label}</option>`).join('');
+
+  // Restaurer la valeur si elle correspond à cet univers
+  const catSauvee = ls('roze_cat_metier') || '';
+  if(sousCats.some(s => s.val === catSauvee)){
+    select.value = catSauvee;
+  } else {
+    select.value = '';
+    ss('roze_cat_metier', '');
+  }
+
+  select.style.display = '';
+  if(lbl)  lbl.style.display  = '';
+  if(hint) hint.style.display = '';
+}
+
 function setRegistre(val, btn){
   ss('roze_registre', val);
   document.querySelectorAll('#cfg-registre-group .ed-chip').forEach(b=>b.classList.remove('on'));
@@ -6903,9 +7050,12 @@ function chargerCompte(){
   setV2('cfg-couleur4',     CFG.couleur4);
   setV2('cfg-couleur-texte',CFG.couleurTexte);
   // Rythme
-  // Catégorie métier, type d'activité, cible
-  const catEl = document.getElementById('cfg-cat-metier');
-  if(catEl) catEl.value = ls('roze_cat_metier') || '';
+  // Univers + Catégorie précise (cascade)
+  const universSauve = ls('roze_univers') || '';
+  const universEl = document.getElementById('cfg-univers');
+  if(universEl) universEl.value = universSauve;
+  if(universSauve) onUniversChange(universSauve); // déclenche le remplissage du 2e select
+
   const tronc = ls('roze_tronc') || '';
   document.querySelectorAll('#cfg-tronc-group .ed-chip').forEach(b=>b.classList.remove('on'));
   if(tronc){
@@ -6942,10 +7092,8 @@ function sauvegarderCompte(){
   // Feedback visuel immédiat
   const btnSave = document.getElementById('btn-sauvegarder');
   if(btnSave){ btnSave.disabled = true; btnSave.textContent = '⏳ Synchronisation…'; }
-  // Catégorie métier, tronc, cible
-  const catEl = document.getElementById('cfg-cat-metier');
-  if(catEl) ss('roze_cat_metier', catEl.value);
-  // tronc déjà sauvé via setTronc
+  // Univers + Catégorie précise (déjà sauvés via onchange)
+  // Tronc déjà sauvé via setTronc
   const cibleEl = document.getElementById('cfg-cible');
   if(cibleEl) ss('roze_cible', cibleEl.value);
 

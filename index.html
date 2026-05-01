@@ -835,6 +835,18 @@
     .acc-titre span:first-child{font-size:1rem;flex-shrink:0;}
     .acc-body{padding:.1rem 1.1rem 1.1rem;display:none;}
     .acc.open .acc-body{display:block;}
+    .gen-date-badge{
+      display:none;
+      background:rgba(232,24,109,.1);
+      border:1px solid rgba(232,24,109,.3);
+      border-radius:10px;
+      padding:.6rem .9rem;
+      margin:0 0 1rem 0;
+      font-size:.85rem;
+      color:var(--rose-clair);
+      animation:fi .3s ease;
+    }
+    .gen-date-badge strong{color:#fff;}
     .ed-chip{
       display:inline-flex;align-items:center;gap:.3rem;
       font-size:.85rem;font-weight:500;
@@ -6674,36 +6686,46 @@ function rendreSemaine(){
 let creerDate = null;
 
 function ouvrirCreer(ds){
+  // Fusion des modales : on redirige vers la page Générer avec la date pré-remplie
   creerDate = ds;
   const date = new Date(ds + 'T12:00:00');
   const opts = { weekday:'long', day:'numeric', month:'long' };
   const dateStr = date.toLocaleDateString('fr-FR', opts);
   const maj = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
 
-  // Afficher la date en badge
-  document.getElementById('creer-date-badge').textContent = '📅 ' + maj;
-  document.getElementById('creer-date').value = ds;
+  // Naviguer vers la page Générer
+  go('p-generer');
 
-  // Reset du formulaire
-  resetCreerPiliers();
-  document.getElementById('creer-sujet').value = '';
-  document.getElementById('creer-result').textContent = '';
-  document.getElementById('creer-result').classList.remove('on');
-  document.getElementById('creer-legende').value = '';
-  document.getElementById('creer-legende-zone').classList.remove('on');
-  document.getElementById('creer-actions').style.display = 'none';
-  document.getElementById('lbl-creer-texte').style.display = 'none';
-  document.getElementById('creer-loader').classList.remove('on');
+  // Afficher le badge de date programmée dans le panneau Générer
+  let badge = document.getElementById('gen-date-badge');
+  if(!badge){
+    // Créer le badge s'il n'existe pas (placé en haut du panneau Générer)
+    const titre = document.querySelector('#p-generer .titre');
+    if(titre){
+      badge = document.createElement('div');
+      badge.id = 'gen-date-badge';
+      badge.className = 'gen-date-badge';
+      titre.parentNode.insertBefore(badge, titre.nextSibling);
+    }
+  }
+  if(badge){
+    badge.innerHTML = '📅 Programmé pour : <strong>' + maj + '</strong> <button onclick="effacerCreerDate()" style="background:none;border:none;color:var(--rose-clair);cursor:pointer;font-size:.85rem;margin-left:.5rem;">✕ Annuler</button>';
+    badge.style.display = 'block';
+  }
 
-  // Réseau par défaut : LinkedIn
-  setCreerReseau(document.querySelector('#creer-reseaux .chip'), 'LinkedIn');
-  // Format par défaut : Post texte
-  document.querySelectorAll('#creer-formats .chip').forEach(c => c.classList.remove('on'));
-  document.querySelector('#creer-formats .chip[data-fmt="Post texte"]').classList.add('on');
-  // Afficher les formats selon le réseau
-  majCreerFormats('LinkedIn');
+  // Reset du formulaire de génération (page Générer)
+  if(typeof resetGenForm === 'function') resetGenForm();
+  // Scroll vers le haut de la page Générer
+  setTimeout(() => {
+    const scroll = document.querySelector('.scroll');
+    if(scroll) scroll.scrollTop = 0;
+  }, 50);
+}
 
-  document.getElementById('ov-creer').classList.add('on');
+function effacerCreerDate(){
+  creerDate = null;
+  const badge = document.getElementById('gen-date-badge');
+  if(badge) badge.style.display = 'none';
 }
 
 function fermerCreer(e){
@@ -6801,6 +6823,7 @@ async function genCreerPost(){
       cible:            ls('roze_cible')           || '',
       expr_marque:      ls('roze_emojis_marque')   || '',
       mots_interdits:   ls('roze_mots_interdits')  || '',
+      date_publi:       creerDate || '',
     };
 
     const r = await fetch(CFG.as, { method:'POST', body: JSON.stringify(body) });
@@ -7012,6 +7035,28 @@ function onUniversChange(univers){
   select.style.display = '';
   if(lbl)  lbl.style.display  = '';
   if(hint) hint.style.display = '';
+}
+
+function resetGenForm(){
+  // Reset des piliers
+  if(typeof resetCreerPiliers === 'function') resetCreerPiliers();
+  document.querySelectorAll('#gen-piliers .pilier-chip').forEach(c => c.className = 'pilier-chip');
+  // Reset du sujet
+  const sujet = document.getElementById('gen-sujet');
+  if(sujet) sujet.value = '';
+  // Reset des résultats précédents
+  const result = document.getElementById('gen-result');
+  if(result){ result.textContent = ''; result.classList.remove('on'); }
+  const lblTexte = document.getElementById('lbl-gen-texte');
+  if(lblTexte) lblTexte.style.display = 'none';
+  const legZone = document.getElementById('gen-legende-zone');
+  if(legZone) legZone.classList.remove('on');
+  const legende = document.getElementById('gen-legende');
+  if(legende) legende.value = '';
+  const cvInline = document.getElementById('gen-cv-inline');
+  if(cvInline) cvInline.innerHTML = '';
+  const actions = document.getElementById('gen-post-actions');
+  if(actions) actions.style.display = 'none';
 }
 
 function setRegistre(val, btn){

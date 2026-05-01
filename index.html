@@ -1,71 +1,4 @@
-function afficherCarrousel(slides, legende, reseau, containerId){
-  carrouselCourant = { slides, legende, reseau };
-  cvSlideActive = 0;
-  overridesSlide = {}; overridesLH = {}; overridesFS = {};
-
-  const c1   = CFG.couleur1      || '#E8186D';
-  const c2   = CFG.couleur2      || '#111111';
-  const ptit = CFG.policeTitre   || 'Playfair Display';
-  const pcorp= CFG.policeCorps   || 'DM Sans';
-
-  const container = document.getElementById(containerId);
-  if(!container) return;
-
-  container.innerHTML = `
-    <div class="carrousel-viewer">
-      <div class="cv-header">
-        <h4>✦ Carrousel (${slides.length} slides)</h4>
-        <button class="btn btn-sm btn-ghost cv-btn-fs" onclick="ouvrirCarrouselFullscreen()" style="margin:0;padding:.3rem .7rem;font-size:.72rem;">⛶ Plein écran</button>
-      </div>
-
-      <!-- Hint slide active -->
-      <div class="cv-edit-hint" id="cv-edit-hint">Tape directement sur une slide pour l'éditer</div>
-
-      <div class="cv-slides-wrap" id="cv-slides-wrap">
-        ${slides.map((s,i) => renderCvSlide(s, i, slides.length, c1, c2, ptit, pcorp, {small:true, editable:false})).join('')}
-        <div class="cv-slide-add" onclick="toast('➕ Slides — édite directement en plein écran.','ok')">+</div>
-      </div>
-
-      <!-- Toolbar fonds -->
-      <div class="cv-toolbar-ctx" id="cv-toolbar-ctx">
-        <div class="cv-tool-fonds-blk">
-          <span class="cv-tool-fonds-lbl">Fond</span>
-          <div class="cv-tool-fonds-row">
-            <div class="cv-fpill on" id="cvp-uni"   title="Uni"        onclick="cvFondPill(this,'uni')"      style="background:${c1};"></div>
-            <div class="cv-fpill"    id="cvp-deg1"  title="Dégradé"    onclick="cvFondPill(this,'degrade')"  style="background:linear-gradient(135deg,${c2},${c1});"></div>
-            <div class="cv-fpill"    id="cvp-deg2"  title="Dégradé 2"  onclick="cvFondPill(this,'degrade2')" style="background:linear-gradient(155deg,${c2},${c1} 160%);"></div>
-            <div class="cv-fpill"    id="cvp-mat"   title="Matière"    onclick="cvFondPill(this,'beton')"    style="background:radial-gradient(ellipse at 20% 20%,${c1},${c2});"></div>
-            <label class="cv-fpill"  id="cvp-photo" title="Photo" style="cursor:pointer;">🖼️<input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhoto(this)"/></label>
-            <div class="cv-fpill"    id="cvp-reset" title="Réinit."    onclick="resetOverrides()" style="background:rgba(255,255,255,.08);font-size:.6rem;">↺</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="cv-export-bar">
-        <span style="display:flex;align-items:center;gap:.3rem;">
-          <span style="font-size:.7rem;color:var(--gris-clair);">Format&nbsp;:</span>
-          <select id="car-format-sel" onchange="setCarFormat(this.value)"
-            style="font-size:.75rem;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:6px;padding:3px 6px;color:var(--blanc-doux);cursor:pointer;">
-            <option value="3:4">3:4 (défaut)</option>
-            <option value="4:5">4:5</option>
-            <option value="1:1">1:1 (carré)</option>
-          </select>
-        </span>
-        ${reseau==='Instagram'
-          ? `<button class="btn btn-ghost" onclick="exporterPNG()" style="margin:0;">⬇️ PNG</button>`
-          : `<button class="btn btn-ghost" onclick="exporterPDF()" style="margin:0;">⬇️ PDF</button>`}
-        <button class="btn btn-rose" onclick="ouvrirCanva()" style="margin:0;">🎨 Canva</button>
-      </div>
-      <div class="cv-legende-zone" id="cv-legende-txt">${legende ? legende.replace(/\n/g,'<br/>') : '<em style="color:#555;">Aucune légende générée</em>'}</div>
-    </div>`;
-
-  // Clic sur slide miniature → ouvrir fullscreen sur cette slide
-  container.querySelectorAll('.cv-slide-sm').forEach((el, i) => {
-    el.addEventListener('click', () => { cvSlideActive = i; ouvrirCarrouselFullscreen(); });
-  });
-
-  setTimeout(() => majFondsSlides(), 10);
-}<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/>
@@ -1921,6 +1854,30 @@ function afficherCarrousel(slides, legende, reseau, containerId){
           <input type="text" id="cfg-entreprise" placeholder="Ex : Roze Communications" style="font-size:16px;"/>
           <label class="lbl">Métier</label>
           <input type="text" id="cfg-metier" placeholder="Ex : Plombier, Avocat, Coach sportif, Boulangers…" style="font-size:16px;"/>
+          <label class="lbl" style="margin-top:.6rem;">Catégorie d'activité</label>
+          <select id="cfg-cat-metier" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);">
+            <option value="">— Choisir —</option>
+            <option value="artisan">🔨 Artisan (plombier, menuisier, électricien…)</option>
+            <option value="commercant">🛍️ Commerçant (boutique, restauration…)</option>
+            <option value="creatif">🎨 Créatif (designer, photographe, artiste…)</option>
+            <option value="consultant">💼 Consultant / Coach</option>
+            <option value="praticien">🧘 Praticien / Thérapeute</option>
+            <option value="formateur">📚 Formateur / Enseignant</option>
+            <option value="independant">⚡ Indépendant / Freelance</option>
+          </select>
+          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.3rem;">L'IA adapte les exemples et le ton selon ta catégorie.</div>
+
+          <label class="lbl" style="margin-top:.8rem;">Type d'activité</label>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;" id="cfg-tronc-group">
+            <button type="button" class="ed-chip" id="tronc-produit"   onclick="setTronc('produit',this)">📦 Je vends des produits</button>
+            <button type="button" class="ed-chip" id="tronc-service"   onclick="setTronc('service',this)">🤝 Je vends des services</button>
+            <button type="button" class="ed-chip" id="tronc-mixte"     onclick="setTronc('mixte',this)">🔀 Les deux</button>
+          </div>
+
+          <label class="lbl" style="margin-top:.8rem;">Cible client idéal</label>
+          <textarea id="cfg-cible" rows="2" placeholder="Ex : indépendantes 30-50 ans qui se lancent dans le digital, ou artisans débordés qui cherchent à structurer leur visibilité…" style="font-size:16px;width:100%;resize:none;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);font-family:'DM Sans',sans-serif;"></textarea>
+          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.3rem;">Décris en 1-2 phrases ton client type. L'IA adressera les posts à cette cible.</div>
+
           <label class="lbl" style="margin-top:.6rem;">
             Sources de veille
             <span style="font-weight:400;color:var(--gris-clair);font-size:.75rem;">— URLs uniquement</span>
@@ -6918,6 +6875,12 @@ function setRegistre(val, btn){
   if(btn) btn.classList.add('on');
 }
 
+function setTronc(val, btn){
+  ss('roze_tronc', val);
+  document.querySelectorAll('#cfg-tronc-group .ed-chip').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+}
+
 function chargerCompte(){
   const setV2 = (id,val)=>{ const e=document.getElementById(id); if(e){ e.value=val||''; e.dispatchEvent(new Event('input')); } };
   setV2('cfg-prenom',       CFG.prenom);
@@ -6940,6 +6903,17 @@ function chargerCompte(){
   setV2('cfg-couleur4',     CFG.couleur4);
   setV2('cfg-couleur-texte',CFG.couleurTexte);
   // Rythme
+  // Catégorie métier, type d'activité, cible
+  const catEl = document.getElementById('cfg-cat-metier');
+  if(catEl) catEl.value = ls('roze_cat_metier') || '';
+  const tronc = ls('roze_tronc') || '';
+  document.querySelectorAll('#cfg-tronc-group .ed-chip').forEach(b=>b.classList.remove('on'));
+  if(tronc){
+    const troncBtn = document.getElementById('tronc-'+tronc);
+    if(troncBtn) troncBtn.classList.add('on');
+  }
+  setV2('cfg-cible', ls('roze_cible') || '');
+
   // Registre et ton éditorial
   const reg = ls('roze_registre') || 'tutoiement';
   document.querySelectorAll('#cfg-registre-group .ed-chip').forEach(b=>b.classList.remove('on'));
@@ -6968,6 +6942,13 @@ function sauvegarderCompte(){
   // Feedback visuel immédiat
   const btnSave = document.getElementById('btn-sauvegarder');
   if(btnSave){ btnSave.disabled = true; btnSave.textContent = '⏳ Synchronisation…'; }
+  // Catégorie métier, tronc, cible
+  const catEl = document.getElementById('cfg-cat-metier');
+  if(catEl) ss('roze_cat_metier', catEl.value);
+  // tronc déjà sauvé via setTronc
+  const cibleEl = document.getElementById('cfg-cible');
+  if(cibleEl) ss('roze_cible', cibleEl.value);
+
   // Registre et ton
   const registre = document.getElementById('reg-vouvoiement')?.classList.contains('on') ? 'vouvoiement' : 'tutoiement';
   ss('roze_registre', registre);

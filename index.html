@@ -4422,7 +4422,7 @@ function construireStoriesUI(){
         <span class="jour-nom">${s.jour}</span>
         <span class="typo-badge ${typoMap[s.typo]}">${typoNom[s.typo]}</span>
       </div>
-      <select style="margin-bottom:.5rem;font-size:14px;" onchange="STORIES_CFG[${i}].typo=this.value;">
+      <select style="margin-bottom:.5rem;font-size:14px;" onchange="STORIES_CFG[${i}].typo=this.value; const b=this.closest('.story-jour').querySelector('.typo-badge'); const tyMap={lifestyle:'typo-lifestyle',valeur:'typo-valeur',vente:'typo-vente'}; const nmMap={lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente'}; b.className='typo-badge '+tyMap[this.value]; b.textContent=nmMap[this.value];">
         <option value="lifestyle" ${s.typo==='lifestyle'?'selected':''}>🎭 Lifestyle / Storytelling</option>
         <option value="valeur"    ${s.typo==='valeur'?'selected':''}>💡 Valeur / Astuce</option>
         <option value="vente"     ${s.typo==='vente'?'selected':''}>🎯 Vente</option>

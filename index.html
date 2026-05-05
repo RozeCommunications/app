@@ -1721,6 +1721,7 @@
         <button class="btn btn-ghost" id="btn-regen-style" onclick="regenStylePhoto()" style="display:none;">🎨 Régénérer le style</button>
         <button class="btn btn-outline" onclick="copierGenPanel()">📋 Copier</button>
         <button class="btn btn-ghost" id="btn-publier-gen" onclick="publierSurReseau()" style="font-size:.78rem;">🚀 Publier →</button>
+        <button class="btn btn-ghost" onclick="supprimerGenPanel()" style="font-size:.78rem;color:rgba(255,100,100,.7);">🗑️ Supprimer</button>
       </div>
     </div>
 
@@ -5379,6 +5380,8 @@ function splitTexteLegende(texte){
   // Nettoyer les balises markdown ```json ... ``` si présentes
   let t = texte.trim();
   t = t.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/,'').trim();
+  // Normaliser guillemets typographiques
+  t = t.replace(/[\u201C\u201D\u00AB\u00BB]/g, '"').replace(/[\u2018\u2019]/g, "'");
 
 
   // Tentative extraction JSON carrousel — regex pour capturer toute indentation
@@ -5405,6 +5408,7 @@ function splitTexteLegende(texte){
           return { texte:t, legende, isCarrousel:true, slides:data.slides };
         }
       }catch(e){
+        console.warn('[CV] JSON.parse échoué:', e.message, '— jsonStr début:', jsonStr.slice(0,100));
         // Tentative 2 : nettoyage virgules trailing
         try{
           const jsonStr2 = jsonStr.replace(/,\s*([}\]])/g,'$1');
@@ -5664,6 +5668,26 @@ async function regenLegendePaneau(){
     toast('✅ Légende régénérée !','ok');
   }catch(e){ toast('❌ Erreur','err'); }
   loader.classList.remove('on');
+}
+
+function supprimerGenPanel(){
+  // Reset tout le panneau Générer — supprime le post en cours
+  const result = document.getElementById('gen-result');
+  if(result){ result.textContent=''; result.classList.remove('on'); }
+  const cvInline = document.getElementById('gen-cv-inline');
+  if(cvInline) cvInline.innerHTML='';
+  const legende = document.getElementById('gen-legende');
+  if(legende) legende.value='';
+  document.getElementById('gen-legende-zone').classList.remove('on');
+  document.getElementById('gen-post-actions').style.display='none';
+  document.getElementById('lbl-gen-texte').style.display='none';
+  const chip = document.getElementById('gen-source-chip');
+  if(chip) chip.style.display='none';
+  const psz = document.getElementById('gen-photo-style-zone');
+  if(psz) psz.style.display='none';
+  cacherBadgeFigure();
+  carrouselCourant = null;
+  toast('🗑️ Post supprimé','ok');
 }
 
 async function sauvegarderGenPanel(){

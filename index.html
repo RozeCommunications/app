@@ -5417,7 +5417,21 @@ function splitTexteLegende(texte){
             const legende = (data.legende||'').replace(/\\n/g,'\n');
             return { texte:t, legende, isCarrousel:true, slides:data.slides };
           }
-        }catch(e2){}
+        }catch(e2){
+          // Tentative 3 : nettoyage agressif (retirer contrôles, échappements cassés)
+          try{
+            let jsonStr3 = jsonStr.replace(/[\x00-\x09\x0B\x0C\x0E-\x1F]/g,'')
+              .replace(/\\'/g,"'")
+              .replace(/([{,]\s*)(\w+):/g, '$1"$2":');
+            const data = JSON.parse(jsonStr3);
+            if(data.slides && Array.isArray(data.slides)){
+              const legende = (data.legende||'').replace(/\\n/g,'\n');
+              return { texte:t, legende, isCarrousel:true, slides:data.slides };
+            }
+          }catch(e3){
+            console.error('[CV] Toutes tentatives JSON échouées. Erreur finale:', e3.message);
+          }
+        }
       }
     }
   }
@@ -5515,7 +5529,7 @@ async function genUnPost(){
   document.getElementById('lbl-gen-texte').style.display='none';
   // Loader inline désactivé — le bouton lui-même affiche "Génération..."
   // inlineLoader.classList.add('on');
-  if(btnGen){ btnGen.disabled=true; btnGen.textContent='⏳ Génération…'; }
+  if(btnGen){ btnGen.disabled=true; btnGen.textContent='⏳ Génération…'; btnGen.classList.add('btn-progress'); }
 
   try{
     const mat = matiereSemaine();
@@ -5638,7 +5652,7 @@ async function genUnPost(){
     result.dataset.isCarrousel = parsed.isCarrousel ? '1' : '0';
     if(parsed.isCarrousel) result.dataset.slides = JSON.stringify(parsed.slides);
 
-    if(btnGen){ btnGen.disabled=false; btnGen.textContent='✨ Générer ce post'; }
+    if(btnGen){ btnGen.disabled=false; btnGen.textContent='✨ Générer ce post'; btnGen.classList.remove('btn-progress'); }
     afficherChipSource(); // Afficher chip source si actu disponible
     // Sauvegarder la stat de l'actu pour éviter répétition ce mois
     if(actuTexte) ajouterStatMois(actuTexte.substring(0,120));
@@ -5646,7 +5660,7 @@ async function genUnPost(){
 
   }catch(e){
     inlineLoader.classList.remove('on');
-    if(btnGen){ btnGen.disabled=false; btnGen.textContent='✨ Générer ce post'; }
+    if(btnGen){ btnGen.disabled=false; btnGen.textContent='✨ Générer ce post'; btnGen.classList.remove('btn-progress'); }
     toast('❌ Erreur : ' + e.message,'err');
     return;
   }
@@ -7231,15 +7245,13 @@ function sauvegarderCompte(){
   syncStories();
   construireStoriesUI();
   const nomAffiche = [CFG.prenom, CFG.nom].filter(Boolean).join(' '); const el_nc = document.getElementById('nom-client'); if(el_nc && !el_nc.onclick) el_nc.textContent = nomAffiche || 'Se repérer ›';
-  syncConfigVersSheets(); // Envoie la config locale vers Sheets
-
-  // Si l'URL AS vient d'être saisie ou modifiée → relire le Sheets
-  // pour restaurer les données existantes sur cet appareil
-  // Feedback immédiat — la sync Sheets se fait en arrière-plan sans bloquer
+  // Feedback immédiat — le bouton se débloque AVANT toute sync réseau
   if(btnSave){ btnSave.disabled = false; btnSave.textContent = '💾 Sauvegarder Mon Compte'; }
   toast('✅ Sauvegardé !','ok');
+
+  // Sync en fire-and-forget — n'attend pas la réponse, ne bloque JAMAIS le bouton
   if(CFG.as){
-    // Sync en fire-and-forget — n'attend pas la réponse pour débloquer le bouton
+    syncConfigVersSheets().catch(()=>{});
     syncConfigDepuisSheets().catch(()=>{});
     syncPostsDepuisSheets().catch(()=>{});
   }

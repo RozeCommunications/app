@@ -4231,19 +4231,35 @@ function limiterHashtags(texte, max=5){
 }
 
 function nettoyerJsonNewlines(s){
-  // Remplace les vraies newlines à l'intérieur des strings JSON
-  // pour éviter "Invalid control character" lors du JSON.parse
+  // Nettoie les strings JSON : newlines + guillemets non échappés dans les valeurs
   const result = [];
   let inString = false;
   for(let i=0; i<s.length; i++){
     const c = s[i];
     if(c === '"' && (i===0 || s[i-1] !== '\\')){
-      inString = !inString;
-      result.push(c);
+      if(!inString){
+        // Ouverture de string
+        inString = true;
+        result.push(c);
+      } else {
+        // Potentielle fermeture — vérifier ce qui suit
+        // Un vrai délimiteur JSON est suivi de : , } ] ou whitespace avant ces chars
+        let j = i + 1;
+        while(j < s.length && (s[j] === ' ' || s[j] === '\n' || s[j] === '\r' || s[j] === '\t')) j++;
+        const next = s[j] || '';
+        if(next === ',' || next === '}' || next === ']' || next === ':' || next === ''){
+          // Vrai délimiteur de fermeture
+          inString = false;
+          result.push(c);
+        } else {
+          // Guillemet intérieur non échappé → échapper
+          result.push('\\"');
+        }
+      }
     } else if(inString && c === '\n'){
       result.push('\\n');
     } else if(inString && c === '\r'){
-      // ignorer \r
+      // ignorer
     } else {
       result.push(c);
     }

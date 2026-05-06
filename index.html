@@ -762,7 +762,7 @@
     .cv-fs-counter-lbl{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.6);}
     .cv-fs-edit-hint{font-size:.6rem;color:rgba(255,255,255,.3);font-style:italic;}
     .cv-fs-stage{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden;}
-    .cv-fs-stage .cv-slide-lg{max-height:100%;max-width:100%;height:auto;width:auto;aspect-ratio:3/4;}
+    .cv-fs-stage .cv-slide-lg{height:min(100%, 520px);width:auto;aspect-ratio:3/4;max-width:100%;overflow:hidden;}
     .cv-fs-nav-bar{display:flex;align-items:center;justify-content:center;gap:.75rem;padding:.5rem 0 .25rem;}
     .cv-fs-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff;width:34px;height:34px;border-radius:50%;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;}
     .cv-fs-btn:hover{background:rgba(255,255,255,.18);}
@@ -4717,21 +4717,7 @@ function afficherCarrousel(slides, legende, reseau, containerId){
 
       <div class="cv-edit-hint" style="text-align:center;margin:.4rem 0;">↓ Tape sur une slide pour l'éditer en plein écran</div>
       <div class="cv-slides-wrap" id="cv-slides-wrap">
-        ${slides.map((s,i) => {
-          const fond    = fondSlide(s.num||i+1, slides.length, c1, c2);
-          const tcoul   = texteSlide(fond);
-          const sstitre = s.sousTitre ? nettoyerSousTitre(s.sousTitre) : '';
-          return `<div class="cv-slide" id="cv-slide-${i}" onclick="cvSelectSlide(${i})"
-                    style="${styleFondSlide(s.num||i+1,slides.length,c1,c2)}">
-            <div class="cv-slide-num">${i+1}/${slides.length}</div>
-            <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};">
-              ${s.type?`<div class="cv-slide-type" style="color:${accentSlide(c1,fond)};opacity:.75;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">${s.type}</div>`:''}
-              ${sstitre?`<div class="cv-slide-sstitre" style="--slide-sstitre-size:.65rem;">${escapeHtml(sstitre)}</div>`:''}
-              <div class="cv-slide-titre" style="font-family:'${ptit}',serif;font-size:${i===0?fontSizeTitre(s.titre,.82,48).rem+'rem':''};">${rendreTitreAccent(s.titre||'',accentSlide(c1,fond),fond)}</div>
-              <div class="cv-slide-corps">${(s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>')}</div>
-            </div>
-          </div>`;
-        }).join('')}
+        ${slides.map((s,i) => renderCvSlide(s, i, slides.length, c1, c2, ptit, pcorp, {small:true, editable:false})).join('')}
         <div class="cv-slide-add" onclick="toast('➕ Slide ajoutée — réédite le carrousel depuis le panneau.','ok')" style="flex-shrink:0;width:52px;height:auto;border-radius:10px;border:1.5px dashed rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.3);font-size:1.2rem;margin:1rem 0;">+</div>
       </div>
 
@@ -4775,20 +4761,8 @@ function afficherCarrousel(slides, legende, reseau, containerId){
 }
 
 function cvSelectSlide(idx){
-  document.querySelectorAll('.cv-slide').forEach(s=>s.classList.remove('active'));
-  const el = document.getElementById('cv-slide-'+idx);
-  if(el){ el.classList.add('active'); el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}); }
-  document.getElementById('cv-slides-wrap')?.classList.add('has-active');
   cvSlideActive = idx;
-  const hint = document.getElementById('cv-active-hint');
-  if(hint && carrouselCourant){
-    const s = carrouselCourant.slides[idx];
-    hint.textContent = 'Slide '+(idx+1)+(s&&s.titre?' — '+s.titre.substring(0,28):'');
-    hint.classList.add('visible');
-  }
-  const toolbar = document.getElementById('cv-toolbar-ctx');
-  if(toolbar) toolbar.classList.add('visible');
-  preRemplirDrawerTexte(idx);
+  ouvrirCarrouselFullscreen();
 }
 function cvFondPill(el, style){
   document.querySelectorAll('.cv-fpill').forEach(p=>p.classList.remove('on'));

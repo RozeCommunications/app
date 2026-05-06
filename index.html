@@ -5388,6 +5388,7 @@ function splitTexteLegende(texte){
   let jIdx = -1;
   const jMatch = t.match(/\{[\s\n]*"slides"/);
   if(jMatch) jIdx = t.indexOf(jMatch[0]);
+  console.log('[CV] len='+t.length+' jIdx='+jIdx+(jIdx<0?' ⚠️ JSON NON DÉTECTÉ':' ✅'));
   if(jIdx > -1){
     // Trouver l'accolade fermante correspondante
     let depth = 0, endIdx = -1;
@@ -5395,6 +5396,8 @@ function splitTexteLegende(texte){
       if(t[i]==='{') depth++;
       else if(t[i]==='}') { depth--; if(depth===0){ endIdx=i; break; } }
     }
+    if(endIdx < 0) console.warn('[CV] ⚠️ JSON tronqué — accolade fermante introuvable (len='+t.length+')');
+    console.log('[CV] endIdx='+endIdx+' jsonStr.length='+(endIdx>-1?endIdx-jIdx+1:0));
     if(endIdx > -1){
       let jsonStr = t.slice(jIdx, endIdx+1);
       // Nettoyer les newlines dans les strings avant JSON.parse

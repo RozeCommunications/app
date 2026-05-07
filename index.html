@@ -740,7 +740,7 @@
     .cv-slide-editable .cv-slide-sstitre:focus,
     .cv-slide-editable .cv-slide-corps:focus{background:rgba(255,255,255,.08);}
     .cv-slide-inner{width:100%;height:100%;display:flex;flex-direction:column;padding:14px 12px;box-sizing:border-box;position:relative;}
-    .cv-slide-num{position:absolute;top:8px;right:10px;font-size:.6rem;font-weight:700;opacity:.5;}
+    .cv-slide-num{position:absolute;top:8px;right:10px;font-size:.6rem;font-weight:700;opacity:.5;display:none;}
     .cv-slide-type{font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;opacity:.75;}
     .cv-slide-sstitre{font-size:.62rem;font-weight:600;margin-bottom:4px;opacity:.85;line-height:1.35;}
     .cv-slide-titre{font-size:.82rem;font-weight:700;line-height:1.3;margin-bottom:6px;}
@@ -4491,7 +4491,7 @@ function getSlideStyle(idx){
     titreLH:1.3, corpsLH:1.5, policeTitre:CFG.policeTitre||'Playfair Display',
     policeCorps:CFG.policeCorps||'DM Sans',
     ombreActive:false, ombreOpacite:0.6, ombreBlur:6,
-    align:'left', textColor:'', padding:'14px 12px', numVisible:true,
+    align:'left', textColor:'', padding:'14px 12px', numVisible:false,
     logoPos:'center'
   };
   return Object.assign({}, defs, slideStyles[idx]||{});
@@ -4764,6 +4764,23 @@ function cvSelectSlide(idx){
   cvSlideActive = idx;
   ouvrirCarrouselFullscreen();
 }
+
+function fermerCarrouselFullscreen(){
+  const fs = document.getElementById('cv-fullscreen');
+  if(fs) fs.classList.remove('on');
+  // Re-rendre les miniatures avec les données modifiées
+  if(carrouselCourant){
+    const wrap = document.getElementById('cv-slides-wrap');
+    if(wrap){
+      const c1 = CFG.couleur1||'#E8186D', c2 = CFG.couleur2||'#111111';
+      const ptit = CFG.policeTitre||'Playfair Display', pcorp = CFG.policeCorps||'DM Sans';
+      wrap.innerHTML = carrouselCourant.slides.map((s,i) =>
+        renderCvSlide(s, i, carrouselCourant.slides.length, c1, c2, ptit, pcorp, {small:true, editable:false})
+      ).join('');
+      setTimeout(() => majFondsSlides(), 20);
+    }
+  }
+}
 function cvFondPill(el, style){
   document.querySelectorAll('.cv-fpill').forEach(p=>p.classList.remove('on'));
   el.classList.add('on');
@@ -4942,7 +4959,7 @@ function ouvrirCarrouselFullscreen(){
           <span class="cv-fs-counter-lbl" id="cv-fs-lbl">Slide ${cvSlideActive+1} / ${slides.length}</span>
           <div style="display:flex;gap:.5rem;align-items:center;">
             <span class="cv-fs-edit-hint">✎ Tap pour éditer</span>
-            <button class="cv-fs-close" onclick="document.getElementById('cv-fullscreen').classList.remove('on')">✕</button>
+            <button class="cv-fs-close" onclick="fermerCarrouselFullscreen()">✕</button>
           </div>
         </div>
         <div class="cv-fs-stage" id="cv-fs-stage">
@@ -4967,7 +4984,7 @@ function ouvrirCarrouselFullscreen(){
     </div>`;
 
   // Clic sur le fond noir → fermer
-  fsEl.onclick = (e) => { if(e.target === fsEl) fsEl.classList.remove('on'); };
+  fsEl.onclick = (e) => { if(e.target === fsEl) fermerCarrouselFullscreen(); };
 
   // Init navigation
   window.cvFSNav = (dir) => {

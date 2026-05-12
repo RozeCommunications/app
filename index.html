@@ -4507,7 +4507,7 @@ function setSlideStyle(idx, key, val){
     if(stage && carrouselCourant){
       const c1 = CFG.couleur1||'#E8186D', c2 = CFG.couleur2||'#111111';
       const ptit = CFG.policeTitre||'Playfair Display', pcorp = CFG.policeCorps||'DM Sans';
-      stage.innerHTML = renderCvSlide(carrouselCourant.slides[idx], idx, carrouselCourant.slides.length, c1, c2, ptit, pcorp, {small:false, editable:true});
+      stage.innerHTML = renderCvSlide(carrouselCourant.slides[idx], idx, carrouselCourant.slides.length, c1, c2, ptit, pcorp, {small:false, editable:true, idPrefix:'fs-cv-slide'});
     }
   }
 
@@ -4663,7 +4663,8 @@ function renderCvSlide(s, idx, total, c1, c2, ptit, pcorp, opts){
   const editAttr = editable ? 'contenteditable="true" spellcheck="false"' : '';
   const slideClass = 'cv-slide' + (small ? ' cv-slide-sm' : ' cv-slide-lg') + (editable ? ' cv-slide-editable' : '');
 
-  return `<div class="${slideClass}" id="cv-slide-${idx}"
+  const idPrefix = opts.idPrefix || 'cv-slide';
+  return `<div class="${slideClass}" id="${idPrefix}-${idx}"
     style="${styleFondSlide(s.num||idx+1,total,c1,c2)}"
     ${!editable ? `onclick="cvSelectSlide(${idx})"` : ''}>
     <div class="cv-slide-num">${idx+1}/${total}</div>
@@ -4793,7 +4794,8 @@ function appliquerStylesSlide(idx){
   const slides = carrouselCourant.slides;
   const s = slides[idx];
   if(!s) return;
-  const el = document.getElementById('cv-slide-'+idx);
+  // Chercher d'abord dans le fullscreen (fs-cv-slide-X), sinon dans la preview (cv-slide-X)
+  const el = document.getElementById('fs-cv-slide-'+idx) || document.getElementById('cv-slide-'+idx);
   if(!el) return;
   const c1 = CFG.couleur1||'#E8186D';
   const c2 = CFG.couleur2||'#111111';
@@ -4950,7 +4952,7 @@ function ouvrirCarrouselFullscreen(){
   }
 
   const renderFS = (idx) =>
-    renderCvSlide(slides[idx], idx, slides.length, c1, c2, ptit, pcorp, {small:false, editable:true});
+    renderCvSlide(slides[idx], idx, slides.length, c1, c2, ptit, pcorp, {small:false, editable:true, idPrefix:'fs-cv-slide'});
 
   fsEl.innerHTML = `
     <div class="cv-fs-layout">

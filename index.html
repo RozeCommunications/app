@@ -528,6 +528,8 @@
     .story-sujet input{width:100%;background:var(--gris-input,rgba(255,255,255,.06));border:1px solid var(--gris-border);border-radius:10px;padding:.55rem .8rem;color:var(--blanc,#f5f4f0);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;transition:border-color .2s;}
     .story-sujet input:focus{border-color:var(--rose,#E8186D);}
     .story-jour select{width:100%;background:var(--gris-input,rgba(255,255,255,.06));border:1px solid var(--gris-border);border-radius:10px;padding:.5rem .8rem;color:var(--blanc,#f5f4f0);font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;cursor:pointer;}
+    .typo-aucune{background:rgba(255,255,255,.04);color:var(--gris-clair) !important;border:1px solid var(--gris-border) !important;}
+    .story-jour-off{opacity:.45;}
     .typo-lifestyle{background:rgba(100,180,255,.18);color:#82c8ff;}
     .typo-valeur{background:rgba(46,204,113,.18);color:#3ddc84;}
     .typo-vente{background:rgba(232,24,109,.18);color:var(--rose-clair);}
@@ -1796,10 +1798,9 @@
         ✨ Générer cette story
       </button>
 
-      <!-- Loader -->
+      <!-- Loader (discret, sans texte redondant) -->
       <div class="inline-loader" id="gsp-loader" style="display:none;">
         <div class="il-dot"></div><div class="il-dot"></div><div class="il-dot"></div>
-        <span id="gsp-loader-txt">Génération en cours…</span>
       </div>
 
       <!-- Résultat -->
@@ -2245,7 +2246,9 @@
 
       <div class="aide-card">
         <div class="ac-titre">📱 Stories</div>
-        <div class="ac-desc">Contenus verticaux éphémères (24h) sur Instagram. Elles ont un cadre hebdomadaire fixe : Lifestyle le lundi, Valeur le mardi, Vente le mercredi, etc. Tu paramètres le sujet de chaque jour dans Mon Compte.</div>
+        <div class="ac-desc">Contenus verticaux éphémères (24h) sur Instagram. Les stories quotidiennes sont le meilleur outil pour créer de la confiance : elles donnent rendez-vous à ton audience chaque jour et montrent que tu es actif, présent, accessible. Sur Instagram, la régularité en stories est souvent plus importante que la régularité en posts — c'est là que se construit le lien humain avec ta communauté.</div>
+        <div class="ac-desc" style="margin-top:.5rem;">L'idéal est d'en publier 6 jours sur 7 — une journée sans story dans la semaine est acceptable pour souffler, mais pas plus. Chaque jour, l'app te propose un thème (Lifestyle, Valeur ou Vente) et génère automatiquement une suggestion de sujet adaptée à ton métier et ta cible.</div>
+        <div class="ac-ex">Tu paramètres les thèmes dans Mon Compte → Stories. La suggestion de sujet du jour est générée par l'IA au premier regard sur l'app.</div>
       </div>
 
       <div class="aide-card">
@@ -2646,13 +2649,21 @@ if(!RYTHME.ig.jours) RYTHME.ig.jours = [4];
 // Stories config (7 jours)
 const STORIES_DEF = [
   {jour:'Lundi',   typo:'lifestyle', sujet:'Scène du quotidien pro ou perso qui révèle qui tu es'},
-  {jour:'Mardi',   typo:'valeur',    sujet:'1 astuce utile pour ton client cible (1 astuce, plusieurs slides en story)'},
+  {jour:'Mardi',   typo:'valeur',    sujet:'1 astuce utile pour ton client cible — angle pratique, 1 slide = 1 idée'},
   {jour:'Mercredi',typo:'vente',     sujet:'Contextualisation → Problème / douleur du client → Appel à action vers l\'offre'},
   {jour:'Jeudi',   typo:'lifestyle', sujet:'Opinion assumée sur un sujet qui touche ta cible'},
-  {jour:'Vendredi',typo:'valeur',    sujet:'1 astuce utile pour ton client cible — nouvelle idée, nouvel angle'},
+  {jour:'Vendredi',typo:'valeur',    sujet:'1 astuce utile pour ton client cible — nouvel angle, nouvelle idée'},
   {jour:'Samedi',  typo:'lifestyle', sujet:'Valeur incarnée — montrer, pas déclarer'},
   {jour:'Dimanche',typo:'vente',     sujet:'Contextualisation → Problème / douleur du client → Appel à action vers l\'offre'},
 ];
+
+// Sujets par défaut proposés quand l'utilisateur change de typo
+const STORY_SUJET_DEFAUT = {
+  lifestyle: 'Scène du quotidien pro ou perso qui révèle qui tu es',
+  valeur:    '1 astuce utile pour ton client cible — angle pratique, 1 slide = 1 idée',
+  vente:     'Contextualisation → Problème / douleur du client → Appel à action vers l\'offre',
+  aucune:    ''
+};
 let STORIES_CFG = (()=>{
   const raw = lsJ('roze_stories');
   if(!raw) return JSON.parse(JSON.stringify(STORIES_DEF));
@@ -2660,8 +2671,9 @@ let STORIES_CFG = (()=>{
   return raw.map(s=>({
     ...s,
     typo: s.typo==='storytelling-lifestyle'||s.typo==='lifestyle' ? 'lifestyle'
-         : s.typo==='valeur' ? 'valeur'
-         : s.typo==='vente'  ? 'vente'
+         : s.typo==='valeur'   ? 'valeur'
+         : s.typo==='vente'    ? 'vente'
+         : s.typo==='aucune'   ? 'aucune'
          : 'lifestyle'
   }));
 })();
@@ -2704,38 +2716,119 @@ function initUI(){
 let sqpIdx = null;   // index story du jour dans STORIES_CFG
 let sqpDate = null;  // date ISO de la story du jour
 
+// ══════════════════════════════════════════
+// SUGGESTION IA STORY DU JOUR
+// Générée 1x/jour, stockée en localStorage
+// ══════════════════════════════════════════
+async function genererSuggestionStoryIA(idx, typo, dateCle){
+  if(!CFG.as || (!CFG.api && !CFG.apiGemini)) return null;
+  const mat = matiereSemaine();
+  const metier = localStorage.getItem('roze_tronc') || localStorage.getItem('roze_metier') || '';
+  const cible  = localStorage.getItem('roze_cible') || '';
+  const themes = { lifestyle:'Lifestyle/Storytelling', valeur:'Valeur/Astuce', vente:'Vente' };
+
+  // Détecter les autres jours avec le même typo cette semaine pour anti-répétition
+  const autresJoursMemeTypo = STORIES_CFG
+    .map((s,i)=>i)
+    .filter(i => i !== idx && STORIES_CFG[i].typo === typo);
+  const suggestionsExistantes = autresJoursMemeTypo
+    .map(i => localStorage.getItem('roze_story_sujet_ia_' + dateCle.slice(0,7) + '_' + i))
+    .filter(Boolean);
+
+  const antiRepBloc = suggestionsExistantes.length
+    ? `\n\nSUJETS DÉJÀ PROPOSÉS CETTE SEMAINE POUR CE THÈME — à éviter absolument :\n${suggestionsExistantes.join('\n')}\n`
+    : '';
+
+  const prompt = `Tu es une assistante contenu Instagram. 
+Professionnel : ${metier || 'indépendant'}. Cible : ${cible || 'clients potentiels'}.
+Thème story du jour : ${themes[typo] || typo}.
+${mat ? 'Matière de la semaine :\n' + mat.substring(0,400) : ''}
+${antiRepBloc}
+Propose UN SEUL sujet de story Instagram en 1 phrase courte (max 12 mots), spécifique au métier et à la cible. Pas de guillemets, pas de préambule, pas d'explication — uniquement la suggestion directe.`;
+
+  try {
+    const body = {
+      action: 'generer_post', ia: CFG.ia||'claude',
+      cle_ia: CFG.ia==='gemini' ? CFG.apiGemini : CFG.api,
+      reseau: 'Instagram', format: 'Post texte', pilier: 'expertise',
+      sujet: prompt, matiere: '', max_tokens_override: 60
+    };
+    const r = await fetch(CFG.as, {method:'POST', body:JSON.stringify(body)});
+    const j = await r.json();
+    if(j.texte) return nettoyerIntroIA(j.texte).split('\n')[0].substring(0,100);
+  } catch(e) { console.log('Suggestion story IA error:', e.message); }
+  return null;
+}
+
 function majStoryDuJour(){
   const aujStr  = dateAujourdhui();
   const lundi   = lundiSem(new Date());
   const joursNoms = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
 
-  // Calculer l'index du jour courant dans la semaine (0=lun … 6=dim)
   const auj  = new Date();
-  const jourJS = auj.getDay(); // 0=dim … 6=sam
-  const idx  = jourJS === 0 ? 6 : jourJS - 1; // convertir en 0=lun
+  const jourJS = auj.getDay();
+  const idx  = jourJS === 0 ? 6 : jourJS - 1;
   sqpIdx  = idx;
   sqpDate = aujStr;
 
   const s = STORIES_CFG[idx];
   if(!s) return;
 
-  const typoNom = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente'};
+  const typoNom = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente',aucune:'—'};
   const publiee = localStorage.getItem('roze_story_pub_' + aujStr) === '1';
 
-  // Mettre à jour l'affichage
-  const elSujet = document.getElementById('pc-story-sujet');
-  const elBadge = document.getElementById('pc-story-badge');
-
-  // Badge thème coloré
+  const elSujet     = document.getElementById('pc-story-sujet');
+  const elBadge     = document.getElementById('pc-story-badge');
   const elTypoBadge = document.getElementById('pc-story-typo-badge');
   const elBtnTxt    = document.getElementById('pc-story-btn-txt');
   const elBtnIcon   = document.getElementById('pc-story-btn-icon');
-  const typoClasse  = {'vente':'typo-vente','valeur':'typo-valeur','lifestyle':'typo-lifestyle'};
+  const typoClasse  = {vente:'typo-vente',valeur:'typo-valeur',lifestyle:'typo-lifestyle',aucune:'typo-aucune'};
+
   if(elTypoBadge){
-    elTypoBadge.textContent = typoNom[s.typo] || s.typo;
+    elTypoBadge.textContent = typoNom[s.typo] || '—';
     elTypoBadge.className   = 'pc-story-typo-badge ' + (typoClasse[s.typo]||'');
   }
-  if(elSujet) elSujet.textContent = s.sujet;
+
+  // Cas "Aucune story"
+  if(s.typo === 'aucune'){
+    if(elSujet) elSujet.textContent = 'Pas de story aujourd\'hui';
+    if(elBadge) elBadge.style.display = 'none';
+    const sqpPanel = document.getElementById('story-quick-panel');
+    if(sqpPanel) sqpPanel.classList.remove('on');
+    const sqpTitre = document.getElementById('sqp-titre');
+    if(sqpTitre) sqpTitre.textContent = 'Pas de story aujourd\'hui';
+    return;
+  }
+
+  // Restaurer le bouton si précédemment caché
+  if(elBadge) elBadge.style.display = '';
+
+  // Afficher la suggestion IA (depuis cache localStorage ou lancer génération)
+  const cleSujet = 'roze_story_sujet_ia_' + aujStr + '_' + idx;
+  const suggestionCachee = localStorage.getItem(cleSujet);
+
+  if(elSujet){
+    if(suggestionCachee){
+      elSujet.textContent = suggestionCachee;
+    } else {
+      elSujet.textContent = '…';
+      // Générer en arrière-plan (1x par jour)
+      genererSuggestionStoryIA(idx, s.typo, aujStr).then(suggestion => {
+        if(suggestion){
+          localStorage.setItem(cleSujet, suggestion);
+          const el = document.getElementById('pc-story-sujet');
+          if(el) el.textContent = suggestion;
+          // Aussi mettre à jour le sqp-titre si panel ouvert
+          const sqpTitre = document.getElementById('sqp-titre');
+          if(sqpTitre) sqpTitre.textContent = 'Story ' + joursNoms[idx] + ' — ' + suggestion;
+        } else {
+          const el = document.getElementById('pc-story-sujet');
+          if(el) el.textContent = STORY_SUJET_DEFAUT[s.typo] || '';
+        }
+      });
+    }
+  }
+
   if(elBadge){
     if(publiee){
       if(elBtnTxt)  elBtnTxt.textContent  = 'Story publiée ✓';
@@ -2748,14 +2841,13 @@ function majStoryDuJour(){
     }
   }
 
-  // Pré-remplir le textarea avec le script sauvegardé s'il existe
   const scriptSave = localStorage.getItem('roze_story_script_' + aujStr) || '';
   const sqpTx = document.getElementById('sqp-texte');
   if(sqpTx && scriptSave) sqpTx.value = scriptSave;
 
-  // Titre du panneau
   const sqpTitre = document.getElementById('sqp-titre');
-  if(sqpTitre) sqpTitre.textContent = 'Story ' + joursNoms[idx] + ' — ' + s.sujet;
+  const sujetAffiche = suggestionCachee || STORY_SUJET_DEFAUT[s.typo] || '';
+  if(sqpTitre) sqpTitre.textContent = 'Story ' + joursNoms[idx] + ' — ' + sujetAffiche;
 }
 
 function toggleStoryQuick(){
@@ -2787,17 +2879,24 @@ async function sqpGenerer(){
   if(sqpIdx === null) return;
 
   const s       = STORIES_CFG[sqpIdx];
+  if(s.typo === 'aucune') return;
+
   const loader  = document.getElementById('sqp-loader');
   const result  = document.getElementById('sqp-result');
+  const btnGen  = document.querySelector('.sqp-actions .btn-rose');
   const saisie  = document.getElementById('sqp-texte').value.trim();
 
   loader.classList.add('on');
   result.classList.remove('on');
+  result.innerHTML = '';
+  if(btnGen){ btnGen.disabled = true; btnGen.textContent = '⏳ Génération…'; }
+
+  // Utiliser la suggestion IA comme sujet si disponible
+  const cleSujet = 'roze_story_sujet_ia_' + sqpDate + '_' + sqpIdx;
+  const suggestionIA = localStorage.getItem(cleSujet) || STORY_SUJET_DEFAUT[s.typo] || '';
+  const sujetFinal = saisie || suggestionIA;
 
   const matiere  = matiereSemaine();
-  const angleBloc = saisie ? '\nANGLE / CONTEXTE SAISI : ' + saisie + '\n' : '';
-
-
 
   const body = {
     action:  'generer_post',
@@ -2806,28 +2905,52 @@ async function sqpGenerer(){
     reseau:  'Instagram',
     format:  'Stories',
     pilier:  s.typo === 'vente' ? 'autorite' : s.typo === 'valeur' ? 'expertise' : 'visibilite',
-    sujet:   '[STORY ' + s.typo.toUpperCase() + '] ' + s.sujet + (saisie ? ' — ' + saisie : ''),
+    sujet:   '[STORY ' + s.typo.toUpperCase() + '] ' + sujetFinal,
     matiere: matiere,
     story_type: s.typo
   };
 
   try{
     if(!CFG.as){ throw new Error('URL Apps Script manquante'); }
-    loader.querySelector('span').textContent = '✨ Génération…';
     const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
     const texte = nettoyerIntroIA(j.texte || '');
     loader.classList.remove('on');
-    result.textContent = texte;
+
+    // Rendu tableau structuré
+    afficherResultatScript(texte, 'Stories', 'sqp-result');
     result.classList.add('on');
-    document.getElementById('sqp-texte').value = texte;
     localStorage.setItem('roze_story_script_' + sqpDate, texte);
+
+    // Mettre à jour les boutons : Régénérer + Corbeille
+    const actions = document.querySelector('.sqp-actions');
+    if(actions) actions.innerHTML = `
+      <button class="btn btn-rose" onclick="sqpGenerer()">🔄 Régénérer</button>
+      <button class="btn btn-ghost" onclick="sqpSauvegarder()">💾 Sauvegarder</button>
+      <button class="btn btn-outline" onclick="sqpCopier()">Copier</button>
+      <button class="btn btn-ghost" onclick="sqpSupprimer()" style="color:#e05555;border-color:rgba(224,85,85,.3);">🗑️</button>`;
     toast('✅ Script généré !','ok');
   }catch(e){
     loader.classList.remove('on');
+    if(btnGen){ btnGen.disabled = false; btnGen.textContent = '✨ Générer le script'; }
     toast('❌ ' + e.message,'err');
   }
+}
+
+function sqpSupprimer(){
+  const result = document.getElementById('sqp-result');
+  result.innerHTML = '';
+  result.classList.remove('on');
+  document.getElementById('sqp-texte').value = '';
+  localStorage.removeItem('roze_story_script_' + sqpDate);
+  // Restaurer le bouton initial
+  const actions = document.querySelector('.sqp-actions');
+  if(actions) actions.innerHTML = `
+    <button class="btn btn-rose" onclick="sqpGenerer()">✨ Générer le script</button>
+    <button class="btn btn-ghost" onclick="sqpSauvegarder()">💾 Sauvegarder</button>
+    <button class="btn btn-outline" onclick="sqpCopier()">Copier</button>`;
+  toast('🗑️ Script supprimé','ok');
 }
 
 
@@ -4570,23 +4693,34 @@ function buildStatsEviterBloc(){
 function construireStoriesUI(){
   const zone = document.getElementById('stories-config');
   if(!zone) return;
-  const typoMap = {lifestyle:'typo-lifestyle',valeur:'typo-valeur',vente:'typo-vente'};
-  const typoNom = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente'};
+  const typoMap = {lifestyle:'typo-lifestyle',valeur:'typo-valeur',vente:'typo-vente',aucune:'typo-aucune'};
+  const typoNom = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente',aucune:'Aucune'};
   zone.innerHTML = STORIES_CFG.map((s,i)=>`
-    <div class="story-jour">
+    <div class="story-jour${s.typo==='aucune' ? ' story-jour-off' : ''}">
       <div class="story-jour-hd">
         <span class="jour-nom">${s.jour}</span>
-        <span class="typo-badge ${typoMap[s.typo]}">${typoNom[s.typo]}</span>
+        <span class="typo-badge ${typoMap[s.typo]||'typo-aucune'}">${typoNom[s.typo]||'—'}</span>
       </div>
-      <select style="margin-bottom:.5rem;font-size:14px;" onchange="STORIES_CFG[${i}].typo=this.value; const b=this.closest('.story-jour').querySelector('.typo-badge'); const tyMap={lifestyle:'typo-lifestyle',valeur:'typo-valeur',vente:'typo-vente'}; const nmMap={lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente'}; b.className='typo-badge '+tyMap[this.value]; b.textContent=nmMap[this.value];">
+      <select style="margin-bottom:.3rem;font-size:14px;" onchange="
+        const nouvelleTypo = this.value;
+        STORIES_CFG[${i}].typo = nouvelleTypo;
+        const b = this.closest('.story-jour').querySelector('.typo-badge');
+        const tyMap = {lifestyle:'typo-lifestyle',valeur:'typo-valeur',vente:'typo-vente',aucune:'typo-aucune'};
+        const nmMap = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente',aucune:'Aucune'};
+        b.className = 'typo-badge ' + (tyMap[nouvelleTypo]||'typo-aucune');
+        b.textContent = nmMap[nouvelleTypo] || '—';
+        this.closest('.story-jour').classList.toggle('story-jour-off', nouvelleTypo==='aucune');
+        if(nouvelleTypo !== 'aucune' && typeof STORY_SUJET_DEFAUT !== 'undefined'){
+          STORIES_CFG[${i}].sujet = STORY_SUJET_DEFAUT[nouvelleTypo] || '';
+        } else {
+          STORIES_CFG[${i}].sujet = '';
+        }
+      ">
         <option value="lifestyle" ${s.typo==='lifestyle'?'selected':''}>🎭 Lifestyle / Storytelling</option>
         <option value="valeur"    ${s.typo==='valeur'?'selected':''}>💡 Valeur / Astuce</option>
         <option value="vente"     ${s.typo==='vente'?'selected':''}>🎯 Vente</option>
+        <option value="aucune"    ${s.typo==='aucune'?'selected':''}>— Aucune story</option>
       </select>
-      <div class="story-sujet">
-        <input type="text" value="${s.sujet}" placeholder="Sujet de la story…"
-          onchange="STORIES_CFG[${i}].sujet=this.value;"/>
-      </div>
     </div>`).join('');
 }
 
@@ -6257,13 +6391,13 @@ async function genererStoryPanel(){
   if(!verifierCleIA()) return;
 
   const loader = document.getElementById('gsp-loader');
-  const loaderTxt = document.getElementById('gsp-loader-txt');
   const btnGen = document.getElementById('gsp-btn-gen');
   const resultZone = document.getElementById('gsp-result-zone');
   const resultEl = document.getElementById('gsp-result');
 
   loader.style.display = 'flex';
   btnGen.disabled = true;
+  btnGen.textContent = '⏳ Génération…';
   resultZone.style.display = 'none';
   gspActuTexte = '';
 
@@ -6271,12 +6405,10 @@ async function genererStoryPanel(){
     // Recherche web si activée
     const cbActu = document.getElementById('gsp-cb-actu');
     if(cbActu && cbActu.checked){
-      loaderTxt.textContent = '🔍 Recherche une actu de ton secteur…';
       await rechercherActu();
       gspActuTexte = actuTexte || '';
     }
 
-    loaderTxt.textContent = '📱 Génération du script story…';
     const sujet = (document.getElementById('gsp-sujet').value || '').trim();
     const datePub = document.getElementById('gsp-date').value || dateAujourdhui();
     const mat = matiereSemaine();
@@ -6287,9 +6419,9 @@ async function genererStoryPanel(){
       cle_ia:     CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
       reseau:     'Instagram',
       format:     'Stories',
-      pilier:     gspTypeActif,
+      pilier:     gspTypeActif === 'vente' ? 'autorite' : gspTypeActif === 'valeur' ? 'expertise' : 'visibilite',
       sujet:      sujet || '[STORY ' + gspTypeActif.toUpperCase() + '] ' + (
-        gspTypeActif === 'vente'     ? "Contextualisation → Problème / douleur du client → Appel à action vers l’offre" :
+        gspTypeActif === 'vente'     ? "Contextualisation → Problème / douleur du client → Appel à action" :
         gspTypeActif === 'valeur'    ? "1 astuce concrète et actionnable pour ta cible" :
         "Scène du quotidien pro ou perso qui révèle qui tu es"
       ),
@@ -6304,7 +6436,8 @@ async function genererStoryPanel(){
 
     const texte = nettoyerIntroIA(j.texte || '');
 
-    resultEl.textContent = texte;
+    // Rendu tableau structuré
+    afficherResultatScript(texte, 'Stories', 'gsp-result');
     resultZone.style.display = 'block';
 
     // Sauvegarder automatiquement
@@ -6317,8 +6450,25 @@ async function genererStoryPanel(){
     });
     toast('✅ Story générée et sauvegardée !','ok');
 
+    // Bouton passe en Régénérer + corbeille
+    btnGen.textContent = '🔄 Régénérer';
+    const gspActions = document.getElementById('gsp-actions');
+    if(gspActions && !gspActions.querySelector('.gsp-trash')){
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-ghost btn-sm gsp-trash';
+      btn.style.cssText = 'color:#e05555;border-color:rgba(224,85,85,.3);';
+      btn.textContent = '🗑️';
+      btn.onclick = () => {
+        resultZone.style.display = 'none';
+        btnGen.textContent = '✨ Générer cette story';
+        btn.remove();
+      };
+      gspActions.appendChild(btn);
+    }
+
   } catch(e){
     toast('❌ Erreur : ' + e.message,'err');
+    btnGen.textContent = '✨ Générer cette story';
   } finally {
     loader.style.display = 'none';
     btnGen.disabled = false;
@@ -7410,7 +7560,9 @@ function chargerCompte(){
 function sauvegarderCompte(){
   // Feedback visuel immédiat
   const btnSave = document.getElementById('btn-sauvegarder');
-  if(btnSave){ btnSave.disabled = true; btnSave.textContent = '⏳ Synchronisation…'; }
+  if(btnSave){ btnSave.disabled = true; btnSave.textContent = '⏳ Sauvegarde…'; }
+
+  try {
   // Univers + Catégorie précise (déjà sauvés via onchange)
   // Tronc déjà sauvé via setTronc
   const cibleEl = document.getElementById('cfg-cible');
@@ -7483,9 +7635,15 @@ function sauvegarderCompte(){
   syncStories();
   construireStoriesUI();
   const nomAffiche = [CFG.prenom, CFG.nom].filter(Boolean).join(' '); const el_nc = document.getElementById('nom-client'); if(el_nc && !el_nc.onclick) el_nc.textContent = nomAffiche || 'Se repérer ›';
-  // Feedback immédiat — le bouton se débloque AVANT toute sync réseau
-  if(btnSave){ btnSave.disabled = false; btnSave.textContent = '💾 Sauvegarder Mon Compte'; }
   toast('✅ Sauvegardé !','ok');
+
+  } catch(err) {
+    console.error('sauvegarderCompte erreur :', err);
+    toast('⚠️ Erreur lors de la sauvegarde : ' + err.message, 'err');
+  } finally {
+    // Le bouton se débloque TOUJOURS — succès ou erreur
+    if(btnSave){ btnSave.disabled = false; btnSave.textContent = '💾 Sauvegarder Mon Compte'; }
+  }
 
   // Sync en fire-and-forget — n'attend pas la réponse, ne bloque JAMAIS le bouton
   if(CFG.as){
@@ -7738,11 +7896,18 @@ async function genStoryTexte(){
 
   const s    = STORIES_CFG[storyModalIndex];
   const zone = document.getElementById('story-modal-exemple-txt');
-  zone.textContent = '⏳ Ton IA rédige ta story…';
+  const btn  = document.querySelector('#ov-story .btn-ghost[onclick="genStoryTexte()"]');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Génération…'; }
+  zone.innerHTML = '<span style="color:var(--gris-clair);font-size:.78rem;">⏳ Ton IA rédige ta story…</span>';
 
   const matiere = matiereSemaine();
+  const joursNoms = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
 
-  // Génération via Apps Script — profil lu depuis Sheets
+  // Utiliser la suggestion IA du jour si disponible
+  const aujStr = dateAujourdhui();
+  const cleSujet = 'roze_story_sujet_ia_' + aujStr + '_' + storyModalIndex;
+  const suggestionIA = localStorage.getItem(cleSujet) || STORY_SUJET_DEFAUT[s.typo] || '';
+
   const body = {
     action:     'generer_post',
     ia:         CFG.ia || 'claude',
@@ -7750,7 +7915,7 @@ async function genStoryTexte(){
     reseau:     'Instagram',
     format:     'Stories',
     pilier:     s.typo === 'vente' ? 'autorite' : s.typo === 'valeur' ? 'expertise' : 'visibilite',
-    sujet:      '[STORY ' + s.typo.toUpperCase() + '] ' + s.sujet,
+    sujet:      '[STORY ' + s.typo.toUpperCase() + '] ' + suggestionIA,
     matiere:    matiere,
     story_type: s.typo
   };
@@ -7760,10 +7925,16 @@ async function genStoryTexte(){
     const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
-    zone.textContent = nettoyerIntroIA(j.texte || '');
+    const texte = nettoyerIntroIA(j.texte || '');
+    // Rendu tableau structuré dans la modale
+    zone.style.cssText = 'overflow-x:auto;';
+    const html = renderScriptStory(texte);
+    zone.innerHTML = html || '<div style="white-space:pre-wrap;font-size:.82rem;">' + escapeHtml(texte) + '</div>';
+    if(btn){ btn.disabled = false; btn.textContent = '🔄 Régénérer'; }
     toast('✅ Script généré !','ok');
   } catch(e){
     zone.textContent = 'Erreur de génération.';
+    if(btn){ btn.disabled = false; btn.textContent = '✨ Générer un script'; }
     toast('❌ ' + e.message,'err');
   }
 }

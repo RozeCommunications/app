@@ -885,6 +885,7 @@
     .pilier-chip{background:var(--gris-carte);border:2px solid var(--gris-border);border-radius:12px;padding:.7rem .5rem;cursor:pointer;transition:all .18s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:.3rem;}
     .pilier-chip:active{transform:scale(.97);}
     #gen-piliers,#creer-piliers{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+    #gen-piliers .pilier-chip-autre,#creer-piliers .pilier-chip-autre{grid-column:1 / -1;}
     .pilier-chip .pi{font-size:1.1rem;}
     .pilier-chip .pn{font-size:.72rem;font-weight:700;color:var(--blanc-doux);}
     .pilier-chip.on-vis{border-color:#5bb8ff;background:rgba(0,119,181,.12);}
@@ -895,8 +896,14 @@
     .pilier-chip.on-exp .pn{color:#3ddc84;}
     .pilier-chip.on-aut2{border-color:var(--rose-clair);background:var(--rose-glow);}
     .pilier-chip.on-aut2 .pn{color:var(--rose-clair);}
+    .pilier-chip.on-act{border-color:#a78bfa;background:rgba(167,139,250,.12);}
+    .pilier-chip.on-act .pn{color:#a78bfa;}
     .pilier-autre-input{margin-top:.4rem;display:none;}
     .pilier-autre-input.on{display:block;}
+    /* Bouton Autre pleine largeur, demi-hauteur */
+    .pilier-chip-autre{grid-column:1 / -1;padding:.4rem .5rem;min-height:0;}
+    .pilier-chip-autre .pi{font-size:.85rem;}
+    .pilier-chip-autre .pn{font-size:.68rem;}
 
     /* ─ PAGE SE REPÉRER ─ */
     .aide-section{margin-bottom:1.4rem;}
@@ -1653,7 +1660,8 @@
         <div class="pilier-chip" onclick="setGenPilier(this,'visibilite')"><span class="pi">🔭</span><span class="pn">Visibilité</span></div>
         <div class="pilier-chip" onclick="setGenPilier(this,'autorite')"><span class="pi">👑</span><span class="pn">Autorité</span></div>
         <div class="pilier-chip" onclick="setGenPilier(this,'expertise')"><span class="pi">🧠</span><span class="pn">Expertise</span></div>
-        <div class="pilier-chip" onclick="setGenPilier(this,'autre')"><span class="pi">✏️</span><span class="pn">Autre</span></div>
+        <div class="pilier-chip" onclick="setGenPilier(this,'activite')"><span class="pi">🏪</span><span class="pn">Activité</span></div>
+        <div class="pilier-chip pilier-chip-autre" onclick="setGenPilier(this,'autre')"><span class="pi">✏️</span><span class="pn">Autre / Série personnalisée</span></div>
       </div>
       <div class="pilier-autre-input" id="gen-pilier-autre-zone">
         <input type="text" id="gen-pilier-autre" placeholder="Ex : Série Excel 30 secondes, Lancement offre…" style="font-size:16px;"/>
@@ -1674,8 +1682,8 @@
         <input type="text" id="gen-sujet" placeholder="Ex : mon retour sur le dernier salon pro…"/>
       </div>
 
-      <!-- Actu web -->
-      <div class="actu-row" style="margin-top:.7rem;" onclick="toggleActu()">
+      <!-- Actu web — visible uniquement pour piliers Visibilité et Expertise -->
+      <div class="actu-row" id="gen-actu-row" style="margin-top:.7rem;display:none;" onclick="toggleActu()">
         <div class="actu-lbl">
           🔍 Inclure une actu du secteur
           <span>Recherche web sur tes références</span>
@@ -2460,7 +2468,8 @@
       <div class="pilier-chip" onclick="setCreerPilier(this,'visibilite')"><span class="pi">🔭</span><span class="pn">Visibilité</span></div>
       <div class="pilier-chip" onclick="setCreerPilier(this,'autorite')"><span class="pi">👑</span><span class="pn">Autorité</span></div>
       <div class="pilier-chip" onclick="setCreerPilier(this,'expertise')"><span class="pi">🧠</span><span class="pn">Expertise</span></div>
-      <div class="pilier-chip" onclick="setCreerPilier(this,'autre')"><span class="pi">✏️</span><span class="pn">Autre</span></div>
+      <div class="pilier-chip" onclick="setCreerPilier(this,'activite')"><span class="pi">🏪</span><span class="pn">Activité</span></div>
+      <div class="pilier-chip pilier-chip-autre" onclick="setCreerPilier(this,'autre')"><span class="pi">✏️</span><span class="pn">Autre / Série personnalisée</span></div>
     </div>
     <div class="pilier-autre-input" id="creer-pilier-autre-zone">
       <input type="text" id="creer-pilier-autre" placeholder="Ex : Série Excel 30 secondes…" style="font-size:16px;"/>
@@ -3143,6 +3152,7 @@ const PILIER_CLASSES = {
   visibilite: 'on-vis',
   autorite:   'on-aut',
   expertise:  'on-exp',
+  activite:   'on-act',
   autre:      'on-aut2'
 };
 
@@ -3152,17 +3162,29 @@ let creerPilier = null;
 
 function setGenPilier(chip, pilier){
   document.querySelectorAll('#gen-piliers .pilier-chip').forEach(c=>{
-    c.className = 'pilier-chip';
+    // Préserver la classe pilier-chip-autre sur le bouton Autre
+    c.className = c.classList.contains('pilier-chip-autre') ? 'pilier-chip pilier-chip-autre' : 'pilier-chip';
   });
   chip.classList.add(PILIER_CLASSES[pilier]||'on-aut2');
   genPilier = pilier;
   const autreZone = document.getElementById('gen-pilier-autre-zone');
   if(autreZone) autreZone.classList.toggle('on', pilier==='autre');
+  // Afficher le toggle actu uniquement pour Visibilité et Expertise
+  const actuRow = document.getElementById('gen-actu-row');
+  if(actuRow) actuRow.style.display = (pilier==='visibilite' || pilier==='expertise') ? '' : 'none';
+  // Réinitialiser le toggle et l'actu si on change de pilier vers un pilier sans actu
+  if(pilier !== 'visibilite' && pilier !== 'expertise'){
+    const cb = document.getElementById('cb-actu');
+    if(cb) cb.checked = false;
+    actuTexte = '';
+    const res = document.getElementById('actu-result');
+    if(res) res.classList.remove('on');
+  }
 }
 
 function setCreerPilier(chip, pilier){
   document.querySelectorAll('#creer-piliers .pilier-chip').forEach(c=>{
-    c.className = 'pilier-chip';
+    c.className = c.classList.contains('pilier-chip-autre') ? 'pilier-chip pilier-chip-autre' : 'pilier-chip';
   });
   chip.classList.add(PILIER_CLASSES[pilier]||'on-aut2');
   creerPilier = pilier;

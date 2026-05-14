@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- v=2026-04-30-final cascade=v2 carrousel=editable -->
+<!-- v=2026-05-14-fix-ecran-noir-editeur-panneau -->
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/>
@@ -789,6 +789,8 @@
     .cvp-pill.on,.cvp-pill:hover{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.3);}
     .cvp-slider{flex:1;height:3px;accent-color:var(--rose);cursor:pointer;}
     .cvp-select{flex:1;font-size:.62rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:3px 5px;color:rgba(255,255,255,.7);cursor:pointer;}
+    .cvp-textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:rgba(255,255,255,.85);font-family:'DM Sans',sans-serif;font-size:.72rem;line-height:1.5;padding:5px 7px;resize:vertical;outline:none;transition:border-color .15s;}
+    .cvp-textarea:focus{border-color:rgba(232,24,109,.5);background:rgba(255,255,255,.08);}
     /* Toggle switch */
     .cvp-toggle{position:relative;display:inline-flex;align-items:center;cursor:pointer;}
     .cvp-toggle input{opacity:0;width:0;height:0;position:absolute;}
@@ -4583,11 +4585,12 @@ function styleFondSlide(num, total, c1, c2){
     if(style==='beton')   return 'background:radial-gradient(ellipse at 25% 15%,'+ajusterLum(c1,-20)+','+dark+' 70%);';
   }
   // Défaut selon styleFondActif
-  if(styleFondActif==='uni')     return 'background:'+fondSlide(num,total,c1,c2)+';';
-  if(styleFondActif==='uni2')    return 'background:'+ajusterLum(sombre, 8)+';';
-  if(styleFondActif==='degrade') return 'background:linear-gradient(135deg,'+dark+','+ajusterLum(c1,-25)+' 160%);';
+  if(styleFondActif==='uni')      return 'background:'+fondSlide(num,total,c1,c2)+';';
+  if(styleFondActif==='uni2')     return 'background:'+ajusterLum(sombre, 8)+';';
+  if(styleFondActif==='degrade')  return 'background:linear-gradient(135deg,'+dark+','+ajusterLum(c1,-25)+' 160%);';
   if(styleFondActif==='degrade2') return 'background:linear-gradient(160deg,'+sombre+','+ajusterLum(c1,-15)+' 200%);';
-  if(styleFondActif==='beton')   return 'background:radial-gradient(ellipse at 25% 15%,'+ajusterLum(c1,-20)+','+dark+' 70%);';
+  if(styleFondActif==='beton')    return 'background:radial-gradient(ellipse at 25% 15%,'+ajusterLum(c1,-20)+','+dark+' 70%);';
+  // 'photo' ou toute valeur inconnue → toujours retourner le fond DA par défaut
   return 'background:'+fondSlide(num,total,c1,c2)+';';
 }
 
@@ -4696,6 +4699,10 @@ function afficherCarrousel(slides, legende, reseau, containerId){
   carrouselCourant = { slides, legende, reseau };
   cvSlideActive = 0;
   overridesSlide = {}; overridesLH = {}; overridesFS = {};
+  slideStyles = {};           // reset des styles individuels
+  styleFondActif = 'uni';     // reset global → jamais de fond noir hérité d'une session précédente
+  // Nettoyer les photos de fond par slide
+  Object.keys(cvFondPhotoParSlide).forEach(k => delete cvFondPhotoParSlide[k]);
 
   const c1 = CFG.couleur1 || '#E8186D';
   const c2 = CFG.couleur2 || '#111111';
@@ -4809,27 +4816,37 @@ function appliquerStylesSlide(idx){
 
   if(st.fondType === 'photo' && cvFondPhotoParSlide[idx]){
     const src = cvFondPhotoParSlide[idx];
+    el.style.background = '';
     el.style.backgroundImage = `url('${src}')`;
     el.style.backgroundSize = 'cover';
     el.style.backgroundPosition = 'center';
-    el.style.filter = st.fondPhotoFlou > 0 ? `blur(0px)` : '';  // flou sur overlay
+    el.style.filter = '';
     let ov2 = document.createElement('div');
     ov2.className = 'cv-photo-overlay';
     ov2.style.cssText = `position:absolute;inset:0;background:rgba(0,0,0,${st.fondPhotoVoile});backdrop-filter:blur(${st.fondPhotoFlou}px);-webkit-backdrop-filter:blur(${st.fondPhotoFlou}px);z-index:0;pointer-events:none;border-radius:inherit;`;
     el.insertBefore(ov2, el.firstChild);
   } else if(st.fondType === 'uni' && st.fondColor){
-    el.style.cssText = el.style.cssText.replace(/background[^;]+;/g,'');
+    el.style.backgroundImage = '';
     appliqueFondCSS(el, `background:${st.fondColor};`);
   } else if(st.fondType === 'degrade'){
     const deg = st.fondDeg || '135deg';
+    el.style.backgroundImage = '';
     appliqueFondCSS(el, `background:linear-gradient(${deg},${c2},${c1});`);
   } else if(st.fondType === 'degrade2'){
+    el.style.backgroundImage = '';
     appliqueFondCSS(el, `background:linear-gradient(155deg,${c2},${c1} 160%);`);
   } else if(st.fondType === 'beton'){
+    el.style.backgroundImage = '';
     appliqueFondCSS(el, `background:radial-gradient(ellipse at 20% 20%,${c1},${c2});`);
   } else {
-    // auto = fond par défaut selon DA
-    appliqueFondCSS(el, styleFondSlide(s.num||idx+1, slides.length, c1, c2));
+    // 'auto' ou 'photo' sans image disponible → fond DA par défaut, jamais noir
+    el.style.backgroundImage = '';
+    const fondAuto = styleFondSlide(s.num||idx+1, slides.length, c1, c2);
+    // styleFondSlide peut retourner vide si styleFondActif='photo' sans override → fallback explicite
+    const fondSafe = (fondAuto && fondAuto.indexOf('background') >= 0)
+      ? fondAuto
+      : `background:${c2||'#1a1a1a'};`;
+    appliqueFondCSS(el, fondSafe);
   }
 
   // ─ TEXTE ─
@@ -4996,7 +5013,7 @@ function ouvrirCarrouselFullscreen(){
     document.getElementById('cv-fs-lbl').textContent = `Slide ${cvSlideActive+1} / ${slides.length}`;
     document.querySelectorAll('.cv-fs-dot').forEach((d,i) => d.classList.toggle('on', i===cvSlideActive));
     majPanneauEditeur(cvSlideActive);
-    setTimeout(() => appliquerStylesSlide(cvSlideActive), 20);
+    requestAnimationFrame(() => requestAnimationFrame(() => appliquerStylesSlide(cvSlideActive)));
   };
 
   // Swipe
@@ -5010,7 +5027,12 @@ function ouvrirCarrouselFullscreen(){
 
   fsEl.classList.add('on');
   majPanneauEditeur(cvSlideActive);
-  setTimeout(() => majFondsSlides(), 30);
+  // Appliquer les styles après que le navigateur ait peint le DOM
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      appliquerStylesSlide(cvSlideActive);
+    });
+  });
 }
 
 // ─── PANNEAU ÉDITEUR ─────────────────────────────────────────────────
@@ -5023,7 +5045,35 @@ function majPanneauEditeur(idx){
   const policesTitre = ['Playfair Display','Georgia','Cormorant Garamond','Libre Baskerville','Merriweather','Lora'];
   const policesCorps = ['DM Sans','Nunito','Lato','Open Sans','Raleway','Poppins'];
 
+  const slide = carrouselCourant && carrouselCourant.slides[idx];
+  const titreCourant  = (slide && slide.titre)  || '';
+  const corpsCourant  = (slide && slide.corps)   || '';
+  const sstitreCourant = (slide && slide.sousTitre) ? slide.sousTitre.replace(/^\s*[-–—•*#]+\s*/, '').trim() : '';
+
   panel.innerHTML = `
+    <!-- Section CONTENU — édition directe du texte -->
+    <div class="cvp-section">
+      <div class="cvp-section-titre" style="display:flex;justify-content:space-between;align-items:center;">
+        Slide ${idx+1} — Contenu
+      </div>
+      ${sstitreCourant ? `
+      <div style="margin-bottom:.35rem;">
+        <div class="cvp-lbl" style="margin-bottom:.2rem;margin-top:.1rem;">Accroche</div>
+        <textarea class="cvp-textarea" rows="1"
+          oninput="cvpMajTexte(${idx},'sousTitre',this.value)">${sstitreCourant.replace(/`/g,"'")}</textarea>
+      </div>` : ''}
+      <div style="margin-bottom:.35rem;">
+        <div class="cvp-lbl" style="margin-bottom:.2rem;margin-top:.1rem;">Titre</div>
+        <textarea class="cvp-textarea" rows="2"
+          oninput="cvpMajTexte(${idx},'titre',this.value)">${titreCourant.replace(/\[ACCENT\]|\[\/ACCENT\]/g,'').replace(/`/g,"'")}</textarea>
+      </div>
+      <div>
+        <div class="cvp-lbl" style="margin-bottom:.2rem;margin-top:.1rem;">Corps</div>
+        <textarea class="cvp-textarea" rows="4"
+          oninput="cvpMajTexte(${idx},'corps',this.value)">${corpsCourant.replace(/`/g,"'")}</textarea>
+      </div>
+    </div>
+
     <!-- Section FOND -->
     <div class="cvp-section">
       <div class="cvp-section-titre">Fond</div>
@@ -5198,6 +5248,25 @@ function majPanneauEditeur(idx){
         Appliquer ce style à toutes les slides
       </button>
     </div>`;
+}
+
+function cvpMajTexte(idx, field, val){
+  if(!carrouselCourant || !carrouselCourant.slides[idx]) return;
+  // Sync vers le modèle de données
+  carrouselCourant.slides[idx][field] = val;
+  // Sync vers l'élément contenteditable visible dans cv-fs-content
+  const slideEl = document.getElementById('fs-cv-slide-'+idx);
+  if(!slideEl) return;
+  if(field === 'titre'){
+    const titreEl = slideEl.querySelector('.cv-slide-titre');
+    if(titreEl && document.activeElement !== titreEl) titreEl.innerText = val;
+  } else if(field === 'corps'){
+    const corpsEl = slideEl.querySelector('.cv-slide-corps');
+    if(corpsEl && document.activeElement !== corpsEl) corpsEl.innerText = val;
+  } else if(field === 'sousTitre'){
+    const ssEl = slideEl.querySelector('.cv-slide-sstitre');
+    if(ssEl && document.activeElement !== ssEl) ssEl.innerText = val;
+  }
 }
 
 function cvpFondUniClick(idx){

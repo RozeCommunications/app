@@ -2720,44 +2720,51 @@ let sqpDate = null;  // date ISO de la story du jour
 // SUGGESTION IA STORY DU JOUR
 // Générée 1x/jour, stockée en localStorage
 // ══════════════════════════════════════════
-async function genererSuggestionStoryIA(idx, typo, dateCle){
-  if(!CFG.as || (!CFG.api && !CFG.apiGemini)) return null;
-  const mat = matiereSemaine();
+function genererSuggestionStoryIA(idx, typo, dateCle){
+  // Construire la suggestion localement depuis le profil — pas d'appel API
+  // pour éviter de recevoir un hook de post au lieu d'un sujet court
   const metier = localStorage.getItem('roze_tronc') || localStorage.getItem('roze_metier') || '';
   const cible  = localStorage.getItem('roze_cible') || '';
-  const themes = { lifestyle:'Lifestyle/Storytelling', valeur:'Valeur/Astuce', vente:'Vente' };
 
-  // Détecter les autres jours avec le même typo cette semaine pour anti-répétition
-  const autresJoursMemeTypo = STORIES_CFG
-    .map((s,i)=>i)
-    .filter(i => i !== idx && STORIES_CFG[i].typo === typo);
-  const suggestionsExistantes = autresJoursMemeTypo
-    .map(i => localStorage.getItem('roze_story_sujet_ia_' + dateCle.slice(0,7) + '_' + i))
+  // Pools de suggestions par typo, avec variables {metier} et {cible}
+  const pools = {
+    vente: [
+      `Parler d'un client qui hésitait → ce qui l'a décidé → invitation à te contacter`,
+      `Montrer le "avant" d'un client, sa situation, puis ce que ça a changé pour lui`,
+      `Évoquer la question que te posent le plus souvent tes clients → ta réponse directe`,
+      `Partager ce que tu aurais voulu savoir avant de te lancer dans ${metier||'ton métier'}`,
+      `Décrire une douleur concrète de ${cible||'ta cible'} → ce que tu proposes → comment prendre RDV`,
+    ],
+    lifestyle: [
+      `Une scène de ce matin dans ton quotidien pro qui dit quelque chose sur qui tu es`,
+      `Une conviction que tu as sur ${metier||'ton métier'} que peu de gens dans ton secteur défendent`,
+      `Ce que tu fais différemment des autres dans ta façon de travailler`,
+      `Un moment cette semaine qui t'a rappelé pourquoi tu fais ce métier`,
+      `Ton avis tranché sur une idée reçue que ${cible||'tes clients'} ont souvent`,
+    ],
+    valeur: [
+      `L'erreur la plus fréquente que font ${cible||'tes clients'} — et comment l'éviter`,
+      `1 astuce concrète sur ${metier||'ton domaine'} que peu de gens connaissent`,
+      `Ce que ${cible||'tes clients'} font souvent à l'envers — et la bonne façon de faire`,
+      `La question que tu poses à chaque nouveau client et pourquoi elle change tout`,
+      `3 choses à vérifier avant de ${cible ? 'choisir un ' + metier : 'démarrer'}`,
+    ]
+  };
+
+  const pool = pools[typo] || pools.lifestyle;
+
+  // Anti-répétition : exclure les suggestions déjà utilisées cette semaine pour ce typo
+  const semaine = dateCle.substring(0, 7); // YYYY-MM
+  const used = STORIES_CFG
+    .map((s, i) => i !== idx && s.typo === typo ? localStorage.getItem('roze_story_sujet_ia_' + dateCle.slice(0,7) + '_' + i) : null)
     .filter(Boolean);
 
-  const antiRepBloc = suggestionsExistantes.length
-    ? `\n\nSUJETS DÉJÀ PROPOSÉS CETTE SEMAINE POUR CE THÈME — à éviter absolument :\n${suggestionsExistantes.join('\n')}\n`
-    : '';
+  const disponibles = pool.filter(s => !used.some(u => u === s));
+  const source = disponibles.length > 0 ? disponibles : pool;
 
-  const prompt = `Tu es une assistante contenu Instagram. 
-Professionnel : ${metier || 'indépendant'}. Cible : ${cible || 'clients potentiels'}.
-Thème story du jour : ${themes[typo] || typo}.
-${mat ? 'Matière de la semaine :\n' + mat.substring(0,400) : ''}
-${antiRepBloc}
-Propose UN SEUL sujet de story Instagram en 1 phrase courte (max 12 mots), spécifique au métier et à la cible. Pas de guillemets, pas de préambule, pas d'explication — uniquement la suggestion directe.`;
-
-  try {
-    const body = {
-      action: 'generer_post', ia: CFG.ia||'claude',
-      cle_ia: CFG.ia==='gemini' ? CFG.apiGemini : CFG.api,
-      reseau: 'Instagram', format: 'Post texte', pilier: 'expertise',
-      sujet: prompt, matiere: '', max_tokens_override: 60
-    };
-    const r = await fetch(CFG.as, {method:'POST', body:JSON.stringify(body)});
-    const j = await r.json();
-    if(j.texte) return nettoyerIntroIA(j.texte).split('\n')[0].substring(0,100);
-  } catch(e) { console.log('Suggestion story IA error:', e.message); }
-  return null;
+  // Choisir de façon pseudo-aléatoire mais stable pour la journée (pas de rechargement = même suggestion)
+  const seed = parseInt(dateCle.replace(/-/g,'')) + idx;
+  return Promise.resolve(source[seed % source.length]);
 }
 
 function majStoryDuJour(){
@@ -4619,28 +4626,47 @@ function renderScriptVideoLI(texte) {
 }
 
 function renderScriptStory(texte) {
-  const scriptMatch = texte.match(/SCRIPT:\s*([\s\S]*?)$/i);
+  // L'AS retourne : SCRIPT: ... LÉGENDE: ... (pas de CONSEIL pour stories)
+  const scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
+  const legendeMatch = texte.match(/LÉGENDE:\s*([\s\S]*?)$/i);
   let html = '';
+
   if (scriptMatch) {
     const tableData = parseMarkdownTable(scriptMatch[1]);
     if (tableData && tableData.data.length > 0) {
       html += '<div style="overflow-x:auto"><table class="script-table"><thead><tr>';
-      html += '<th>Slide</th><th>Texte à l\'écran</th><th>Arrière-plan</th>';
+      html += '<th>Durée</th><th>Texte à l\'écran</th><th>Format & décor</th><th>Ton</th>';
       html += '</tr></thead><tbody>';
       tableData.data.forEach(row => {
         if (row.length < 2) return;
         html += '<tr>'
-          + '<td class="script-col-slide">'+ escapeHtml(row[0]||'') + '</td>'
-          + '<td class="script-col-texte">'+ escapeHtml(row[1]||'') + '</td>'
-          + '<td class="script-col-bg">'   + escapeHtml(row[2]||'') + '</td>'
+          + '<td class="script-col-temps">'  + escapeHtml(row[0]||'') + '</td>'
+          + '<td class="script-col-texte">'  + escapeHtml(row[1]||'') + '</td>'
+          + '<td class="script-col-visuel">' + escapeHtml(row[2]||'') + '</td>'
+          + '<td class="script-col-ton">'    + escapeHtml(row[3]||'') + '</td>'
           + '</tr>';
       });
       html += '</tbody></table></div>';
     } else {
-      html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">' + escapeHtml(scriptMatch[1] || texte) + '</div>';
+      // Fallback : affichage texte brut si le tableau n'est pas parseable
+      html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">'
+        + escapeHtml(scriptMatch[1].trim() || texte) + '</div>';
     }
   } else {
-    html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">' + escapeHtml(texte) + '</div>';
+    html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">'
+      + escapeHtml(texte) + '</div>';
+  }
+
+  // Légende Instagram
+  if (legendeMatch) {
+    const legende = legendeMatch[1].trim();
+    if (legende) {
+      html += '<div class="script-legende-box">'
+        + '<div class="script-legende-lbl">Légende Instagram</div>'
+        + '<div class="script-legende-txt">' + escapeHtml(legende) + '</div>'
+        + '<button class="btn btn-ghost btn-sm" style="margin-top:.5rem;" onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent).then(()=>toast(\'✅ Légende copiée !\',\'ok\'))">📋 Copier la légende</button>'
+        + '</div>';
+    }
   }
   return html;
 }
@@ -7940,6 +7966,7 @@ async function genStoryTexte(){
 }
 
 function ls(k){ return localStorage.getItem(k); }
+function ss(k,v){ localStorage.setItem(k, v); }
 function lsJ(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch{ return null; } }
 function v(id){ return (document.getElementById(id)||{}).value||''; }
 

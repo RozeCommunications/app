@@ -670,7 +670,7 @@
     .sqp-loader{display:none;align-items:center;gap:.6rem;padding:.5rem 0;font-size:.78rem;color:var(--gris-clair);}
     .sqp-loader.on{display:flex;}
     .sqp-mini-ring{width:14px;height:14px;border:2px solid var(--gris-moyen);border-top-color:var(--rose);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
-    .sqp-result{display:none;background:var(--gris-carte);border-radius:8px;padding:.8rem;font-size:.82rem;line-height:1.65;color:var(--blanc-doux);white-space:pre-wrap;margin-top:.6rem;}
+    .sqp-result{display:none;background:var(--gris-carte);border-radius:8px;padding:.8rem;font-size:.82rem;line-height:1.65;color:var(--blanc-doux);margin-top:.6rem;overflow-x:auto;}
     .sqp-result.on{display:block;}
 
     input::placeholder,textarea::placeholder{color:#777777;opacity:1;}
@@ -1814,7 +1814,7 @@
       <!-- Résultat -->
       <div id="gsp-result-zone" style="display:none;margin-top:1rem;">
         <span class="creer-lbl">Script story</span>
-        <div class="res-body" id="gsp-result" style="white-space:pre-wrap;font-size:.82rem;line-height:1.7;padding:1rem;background:var(--gris-input);border-radius:10px;border:1px solid var(--gris-border);min-height:80px;"></div>
+        <div class="res-body" id="gsp-result" style="font-size:.82rem;line-height:1.7;padding:1rem;background:var(--gris-input);border-radius:10px;border:1px solid var(--gris-border);min-height:80px;"></div>
         <div class="gen-post-actions" id="gsp-actions" style="margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap;">
           <button class="btn btn-ghost btn-sm" onclick="gspCopier()">📋 Copier</button>
           <button class="btn btn-ghost btn-sm" onclick="gspRegenerer()">🔄 Régénérer</button>
@@ -4655,19 +4655,28 @@ function renderScriptVideoLI(texte) {
 }
 
 function renderScriptStory(texte) {
-  // L'AS retourne : SCRIPT: ... LÉGENDE: ... (pas de CONSEIL pour stories)
-  const scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
-  const legendeMatch = texte.match(/LÉGENDE:\s*([\s\S]*?)$/i);
+  // Nettoyer : supprimer toute phrase d'intro avant SCRIPT:
+  const idxScript = texte.search(/SCRIPT\s*:/i);
+  const texteNet  = idxScript >= 0 ? texte.slice(idxScript) : texte;
+
+  // Extraire bloc SCRIPT (s'arrête à LÉGENDE: ou CONSEIL: ou fin)
+  const scriptMatch  = texteNet.match(/SCRIPT\s*:\s*([\s\S]*?)(?=LÉGENDE\s*:|CONSEIL\s*:|$)/i);
+  // Extraire LÉGENDE si présente
+  const legendeMatch = texteNet.match(/LÉGENDE\s*:\s*([\s\S]*?)(?=CONSEIL\s*:|$)/i);
+  // Extraire CONSEIL si présent
+  const conseilMatch = texteNet.match(/CONSEIL\s*:\s*([\s\S]*?)$/i);
+
   let html = '';
 
-  if (scriptMatch) {
+  if (scriptMatch && scriptMatch[1].trim()) {
     const tableData = parseMarkdownTable(scriptMatch[1]);
     if (tableData && tableData.data.length > 0) {
-      html += '<div style="overflow-x:auto"><table class="script-table"><thead><tr>';
+      html += '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">';
+      html += '<table class="script-table"><thead><tr>';
       html += '<th>Durée</th><th>Texte à l\'écran</th><th>Format & décor</th><th>Ton</th>';
       html += '</tr></thead><tbody>';
       tableData.data.forEach(row => {
-        if (row.length < 2) return;
+        if (!row || row.every(c => !c)) return;
         html += '<tr>'
           + '<td class="script-col-temps">'  + escapeHtml(row[0]||'') + '</td>'
           + '<td class="script-col-texte">'  + escapeHtml(row[1]||'') + '</td>'
@@ -4677,27 +4686,35 @@ function renderScriptStory(texte) {
       });
       html += '</tbody></table></div>';
     } else {
-      // Fallback : affichage texte brut si le tableau n'est pas parseable
-      html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">'
-        + escapeHtml(scriptMatch[1].trim() || texte) + '</div>';
+      // Tableau non parseable — afficher le texte brut proprement
+      html += '<div style="white-space:pre-wrap;font-size:.82rem;line-height:1.7;color:var(--blanc-doux);">'
+        + escapeHtml(scriptMatch[1].trim()) + '</div>';
     }
-  } else {
-    html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">'
-      + escapeHtml(texte) + '</div>';
+  } else if (texteNet.trim()) {
+    // Pas de bloc SCRIPT trouvé — afficher tout le texte tel quel
+    html += '<div style="white-space:pre-wrap;font-size:.82rem;line-height:1.7;color:var(--blanc-doux);">'
+      + escapeHtml(texteNet.trim()) + '</div>';
   }
 
-  // Légende Instagram
-  if (legendeMatch) {
-    const legende = legendeMatch[1].trim();
-    if (legende) {
-      html += '<div class="script-legende-box">'
-        + '<div class="script-legende-lbl">Légende Instagram</div>'
-        + '<div class="script-legende-txt">' + escapeHtml(legende) + '</div>'
-        + '<button class="btn btn-ghost btn-sm" style="margin-top:.5rem;" onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent).then(()=>toast(\'✅ Légende copiée !\',\'ok\'))">📋 Copier la légende</button>'
-        + '</div>';
-    }
+  // Légende Instagram (si présente)
+  if (legendeMatch && legendeMatch[1].trim()) {
+    html += '<div class="script-legende-box">'
+      + '<div class="script-legende-lbl">Légende Instagram</div>'
+      + '<div class="script-legende-txt">' + escapeHtml(legendeMatch[1].trim()) + '</div>'
+      + '<button class="btn btn-ghost btn-sm" style="margin-top:.5rem;" '
+      + 'onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent).then(()=>toast(\'✅ Légende copiée !\',\'ok\'))">📋 Copier la légende</button>'
+      + '</div>';
   }
-  return html;
+
+  // Conseil de tournage (si présent)
+  if (conseilMatch && conseilMatch[1].trim()) {
+    html += '<div class="script-legende-box" style="margin-top:.5rem;border-left-color:#a78bfa;">'
+      + '<div class="script-legende-lbl" style="color:#a78bfa;">🎬 Conseil de tournage</div>'
+      + '<div class="script-legende-txt">' + escapeHtml(conseilMatch[1].trim()) + '</div>'
+      + '</div>';
+  }
+
+  return html || '<div style="color:#888;font-size:.82rem;">Aucun script généré.</div>';
 }
 
 function afficherResultatScript(texte, format, containerId) {

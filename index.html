@@ -831,6 +831,14 @@
     .duo-tab.open .duo-tab-chevron{transform:rotate(180deg);color:var(--rose);}
     .duo-tab-body{display:none;padding:0 1rem 1rem;border-top:1px solid var(--gris-border);}
     .duo-tab.open .duo-tab-body{display:block;}
+    /* Indicateur de complétion par section */
+    .duo-tab-pct{font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:10px;flex-shrink:0;transition:background .3s,color .3s;}
+    .duo-tab-pct.pct-low{background:rgba(255,255,255,.06);color:var(--gris-clair);}
+    .duo-tab-pct.pct-mid{background:rgba(232,24,109,.12);color:var(--rose-clair);}
+    .duo-tab-pct.pct-ok{background:rgba(46,204,113,.14);color:#2ecc71;}
+    /* Barre de chargement bouton Sauvegarder */
+    #btn-sauvegarder{position:relative;overflow:hidden;transition:color .2s;}
+    #btn-sauvegarder .btn-save-bar{position:absolute;left:0;top:0;height:100%;width:0%;background:rgba(0,0,0,.28);border-radius:inherit;transition:width .05s linear;pointer-events:none;}
 
     /* ─ ACCORDÉON MON COMPTE ─ */
     .acc{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:16px;overflow:hidden;margin-bottom:.85rem;transition:border-color .25s,box-shadow .25s;}
@@ -1905,6 +1913,7 @@
       <div class="duo-tab" id="tab-identite">
         <div class="duo-tab-hd" onclick="toggleDuoTab('tab-identite')">
           <div class="duo-tab-titre"><span>👤</span><span>Identité personnelle</span></div>
+          <span class="duo-tab-pct pct-low" id="pct-identite">0%</span>
           <span class="duo-tab-chevron">▼</span>
         </div>
         <div class="duo-tab-body">
@@ -2001,6 +2010,7 @@
       <div class="duo-tab" id="tab-charte">
         <div class="duo-tab-hd" onclick="toggleDuoTab('tab-charte')">
           <div class="duo-tab-titre"><span>🎨</span><span>Identité visuelle</span></div>
+          <span class="duo-tab-pct pct-low" id="pct-charte">0%</span>
           <span class="duo-tab-chevron">▼</span>
         </div>
         <div class="duo-tab-body">
@@ -2040,6 +2050,7 @@
       </div><div class="duo-tab" id="tab-reseaux">
         <div class="duo-tab-hd" onclick="toggleDuoTab('tab-reseaux')">
           <div class="duo-tab-titre"><span>📲</span><span>Mes réseaux sociaux</span></div>
+          <span class="duo-tab-pct pct-low" id="pct-reseaux">0%</span>
           <span class="duo-tab-chevron">▼</span>
         </div>
         <div class="duo-tab-body">
@@ -2160,12 +2171,30 @@
           <div class="opt">Tier gratuit — sans carte bancaire. Génère ta clé en 30 secondes.</div>
         </div>
         <div class="conn-sep"></div>
+
+        <!-- Préférences email — RGPD -->
+        <div style="margin-top:.8rem;">
+          <div style="font-size:.78rem;font-weight:700;color:var(--blanc-doux);margin-bottom:.5rem;">📬 Rappel hebdomadaire par email</div>
+          <div class="actu-row" id="mail-optin-row" style="cursor:pointer;" onclick="toggleMailOptin()">
+            <div class="actu-lbl">
+              Recevoir mon rappel hebdomadaire
+              <span>Un email chaque semaine pour alimenter ton IA</span>
+            </div>
+            <label class="toggle-sw" onclick="event.stopPropagation()">
+              <input type="checkbox" id="cb-mail-optin" onchange="toggleMailOptin()"/>
+              <span class="sw"></span>
+            </label>
+          </div>
+          <div style="font-size:.68rem;color:#666;line-height:1.5;margin-top:.4rem;">
+            Conformément au RGPD, tu es libre d'activer ou désactiver ce rappel à tout moment. Ton choix est enregistré immédiatement.
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Boutons d'action — hors accordéon Connexions -->
     <div style="margin-top:1.6rem;">
-      <button class="btn btn-rose btn-full" id="btn-sauvegarder" onclick="sauvegarderCompte()" style="padding:1rem;font-size:.95rem;letter-spacing:.02em;">💾 Sauvegarder Mon Compte</button>
+      <button class="btn btn-rose btn-full" id="btn-sauvegarder" onclick="sauvegarderCompte()" style="padding:1rem;font-size:.95rem;letter-spacing:.02em;"><span class="btn-save-bar" id="btn-save-bar"></span>💾 Sauvegarder Mon Compte</button>
       <button class="btn btn-ghost" style="width:100%;margin-top:.5rem;font-size:.78rem;color:var(--gris-clair);" onclick="seDeconnecter()">↩️ Se déconnecter</button>
     </div>
     
@@ -4786,7 +4815,9 @@ let slideStyles = {}; // { idx: {fondType, fondColor, fondPhotoVoile, fondPhotoF
 function getSlideStyle(idx){
   const defs = {
     fondType:'auto', fondColor:'#111111', fondPhotoVoile:0.45, fondPhotoFlou:0,
-    fondDeg:'135deg', titreSize:1.0, sstitreSize:1.0, corpsSize:1.0,
+    fondDeg:'135deg', degradeDir:'dark',
+    photoMode:'filter', filtreColor:'noir', filtreOpacite:0.30,
+    titreSize:1.0, sstitreSize:1.0, corpsSize:1.0,
     titreLH:1.3, corpsLH:1.5, policeTitre:CFG.policeTitre||'Playfair Display',
     policeCorps:CFG.policeCorps||'DM Sans',
     ombreActive:false, ombreOpacite:0.6, ombreBlur:6,
@@ -5122,28 +5153,53 @@ function appliquerStylesSlide(idx){
     el.style.backgroundSize = 'cover';
     el.style.backgroundPosition = 'center';
     el.style.filter = '';
-    let ov2 = document.createElement('div');
-    ov2.className = 'cv-photo-overlay';
-    ov2.style.cssText = `position:absolute;inset:0;background:rgba(0,0,0,${st.fondPhotoVoile});backdrop-filter:blur(${st.fondPhotoFlou}px);-webkit-backdrop-filter:blur(${st.fondPhotoFlou}px);z-index:0;pointer-events:none;border-radius:inherit;`;
-    el.insertBefore(ov2, el.firstChild);
+    // Supprimer les anciens overlays
+    el.querySelectorAll('.cv-photo-overlay').forEach(o=>o.remove());
+    const mode = st.photoMode || 'filter';
+
+    if(mode === 'raw'){
+      // Photo brute — aucun traitement
+    } else if(mode === 'blur'){
+      // Flou direct sur l'image via backdrop-filter sur un overlay
+      el.style.filter = `blur(${st.fondPhotoFlou||8}px)`;
+    } else {
+      // Mode filtre couleur
+      let filtreRgb = '0,0,0';
+      if(st.filtreColor === 'couleur1'){
+        const hx = (c1||'#E8186D').replace('#','');
+        const r=parseInt(hx.slice(0,2),16), g=parseInt(hx.slice(2,4),16), b=parseInt(hx.slice(4,6),16);
+        filtreRgb = `${r},${g},${b}`;
+      } else if(st.filtreColor === 'blanc'){
+        filtreRgb = '255,255,255';
+      }
+      const ov2 = document.createElement('div');
+      ov2.className = 'cv-photo-overlay';
+      ov2.style.cssText = `position:absolute;inset:0;background:rgba(${filtreRgb},${st.filtreOpacite||0.30});z-index:0;pointer-events:none;border-radius:inherit;`;
+      el.insertBefore(ov2, el.firstChild);
+    }
   } else if(st.fondType === 'uni' && st.fondColor){
     el.style.backgroundImage = '';
+    el.style.filter = '';
     appliqueFondCSS(el, `background:${st.fondColor};`);
-  } else if(st.fondType === 'degrade'){
-    const deg = st.fondDeg || '135deg';
+  } else if(st.fondType === 'degrade' || st.fondType === 'degrade2'){
     el.style.backgroundImage = '';
-    appliqueFondCSS(el, `background:linear-gradient(${deg},${c2},${c1});`);
-  } else if(st.fondType === 'degrade2'){
-    el.style.backgroundImage = '';
-    appliqueFondCSS(el, `background:linear-gradient(155deg,${c2},${c1} 160%);`);
+    el.style.filter = '';
+    const dir = st.degradeDir || 'dark';
+    if(dir === 'light'){
+      // Couleur principale → blanc
+      appliqueFondCSS(el, `background:linear-gradient(155deg,${c1},#ffffff);`);
+    } else {
+      // Couleur principale → noir (défaut)
+      appliqueFondCSS(el, `background:linear-gradient(135deg,${c2},${c1});`);
+    }
   } else if(st.fondType === 'beton'){
     el.style.backgroundImage = '';
+    el.style.filter = '';
     appliqueFondCSS(el, `background:radial-gradient(ellipse at 20% 20%,${c1},${c2});`);
   } else {
-    // 'auto' ou 'photo' sans image disponible → fond DA par défaut, jamais noir
     el.style.backgroundImage = '';
+    el.style.filter = '';
     const fondAuto = styleFondSlide(s.num||idx+1, slides.length, c1, c2);
-    // styleFondSlide peut retourner vide si styleFondActif='photo' sans override → fallback explicite
     const fondSafe = (fondAuto && fondAuto.indexOf('background') >= 0)
       ? fondAuto
       : `background:${c2||'#1a1a1a'};`;
@@ -5396,11 +5452,10 @@ function majPanneauEditeur(idx){
 
       <!-- Type de fond -->
       <div class="cvp-row-pills">
-        <button class="cvp-pill ${st.fondType==='auto'?'on':''}"  onclick="setSlideStyle(${idx},'fondType','auto')">Auto</button>
+        <button class="cvp-pill ${st.fondType==='auto'?'on':''}"  onclick="setSlideStyle(${idx},'fondType','auto');majPanneauEditeur(${idx})">Auto</button>
         <button class="cvp-pill ${st.fondType==='uni'?'on':''}"   onclick="cvpFondUniClick(${idx})">Uni</button>
-        <button class="cvp-pill ${st.fondType==='degrade'?'on':''}" onclick="setSlideStyle(${idx},'fondType','degrade')">Dégradé</button>
-        <button class="cvp-pill ${st.fondType==='degrade2'?'on':''}" onclick="setSlideStyle(${idx},'fondType','degrade2')">Dégradé 2</button>
-        <button class="cvp-pill ${st.fondType==='beton'?'on':''}" onclick="setSlideStyle(${idx},'fondType','beton')">Matière</button>
+        <button class="cvp-pill ${'degrade'===st.fondType||'degrade2'===st.fondType?'on':''}" onclick="setSlideStyle(${idx},'fondType','degrade');majPanneauEditeur(${idx})">Dégradé</button>
+        <button class="cvp-pill ${st.fondType==='beton'?'on':''}" onclick="setSlideStyle(${idx},'fondType','beton');majPanneauEditeur(${idx})">Matière</button>
         <label class="cvp-pill ${st.fondType==='photo'?'on':''}">Photo
           <input type="file" accept="image/*" style="display:none" onchange="cvpFondPhoto(${idx},this)"/>
         </label>
@@ -5413,22 +5468,73 @@ function majPanneauEditeur(idx){
         <input type="color" value="${st.fondColor||c2}" oninput="setSlideStyle(${idx},'fondColor',this.value)" style="width:36px;height:24px;border:none;background:none;cursor:pointer;border-radius:4px;"/>
       </div>` : ''}
 
-      <!-- Voile + flou photo -->
-      ${st.fondType==='photo' ? `
-      <div class="cvp-row">
-        <span class="cvp-lbl">Voile</span>
-        <input type="range" min="0" max="0.85" step="0.05" value="${st.fondPhotoVoile}"
-          oninput="setSlideStyle(${idx},'fondPhotoVoile',parseFloat(this.value))"
-          class="cvp-slider"/>
-        <span class="cvp-val">${Math.round(st.fondPhotoVoile*100)}%</span>
+      <!-- Dégradé : choix foncé / clair -->
+      ${'degrade'===st.fondType||'degrade2'===st.fondType ? `
+      <div class="cvp-lbl" style="margin:.4rem 0 .25rem;">Direction du dégradé</div>
+      <div class="cvp-row-pills">
+        <button class="cvp-pill ${(st.degradeDir||'dark')==='dark'?'on':''}"
+          onclick="setSlideStyle(${idx},'degradeDir','dark');setSlideStyle(${idx},'fondType','degrade');appliquerStylesSlide(${idx})">
+          🌑 Foncé
+        </button>
+        <button class="cvp-pill ${st.degradeDir==='light'?'on':''}"
+          onclick="setSlideStyle(${idx},'degradeDir','light');setSlideStyle(${idx},'fondType','degrade2');appliquerStylesSlide(${idx})">
+          ☀️ Clair
+        </button>
       </div>
-      <div class="cvp-row">
-        <span class="cvp-lbl">Flou</span>
-        <input type="range" min="0" max="20" step="1" value="${st.fondPhotoFlou}"
-          oninput="setSlideStyle(${idx},'fondPhotoFlou',parseInt(this.value))"
-          class="cvp-slider"/>
-        <span class="cvp-val">${st.fondPhotoFlou}px</span>
+      <div class="cvp-note" style="font-size:.65rem;color:#888;margin-top:.25rem;">
+        Ta couleur principale → ${(st.degradeDir||'dark')==='dark' ? 'noir' : 'blanc'}
       </div>` : ''}
+
+      <!-- Photo : 3 modes -->
+      ${st.fondType==='photo' ? `
+      <div class="cvp-lbl" style="margin:.4rem 0 .25rem;">Traitement photo</div>
+      <div class="cvp-row-pills">
+        <button class="cvp-pill ${'raw'===(st.photoMode||'filter')?'on':''}"
+          onclick="setSlideStyle(${idx},'photoMode','raw');appliquerStylesSlide(${idx})">
+          🖼️ Photo brute
+        </button>
+        <button class="cvp-pill ${'filter'===(st.photoMode||'filter')?'on':''}"
+          onclick="setSlideStyle(${idx},'photoMode','filter');appliquerStylesSlide(${idx})">
+          🎨 Filtre couleur
+        </button>
+        <button class="cvp-pill ${'blur'===st.photoMode?'on':''}"
+          onclick="setSlideStyle(${idx},'photoMode','blur');appliquerStylesSlide(${idx})">
+          💧 Flou
+        </button>
+      </div>
+
+      ${(st.photoMode||'filter')==='filter' ? `
+      <div class="cvp-lbl" style="margin:.4rem 0 .2rem;">Couleur du filtre</div>
+      <div class="cvp-row-pills">
+        <button class="cvp-pill ${'couleur1'===(st.filtreColor||'noir')?'on':''}"
+          onclick="setSlideStyle(${idx},'filtreColor','couleur1');appliquerStylesSlide(${idx})">
+          ● Ta couleur
+        </button>
+        <button class="cvp-pill ${'noir'===(st.filtreColor||'noir')?'on':''}"
+          onclick="setSlideStyle(${idx},'filtreColor','noir');appliquerStylesSlide(${idx})">
+          ● Noir
+        </button>
+        <button class="cvp-pill ${'blanc'===st.filtreColor?'on':''}"
+          onclick="setSlideStyle(${idx},'filtreColor','blanc');appliquerStylesSlide(${idx})">
+          ● Blanc
+        </button>
+      </div>
+      <div class="cvp-row" style="margin-top:.4rem;">
+        <span class="cvp-lbl">Transparence</span>
+        <input type="range" min="0.05" max="0.85" step="0.05" value="${st.filtreOpacite||0.30}"
+          oninput="setSlideStyle(${idx},'filtreOpacite',parseFloat(this.value));appliquerStylesSlide(${idx})"
+          class="cvp-slider"/>
+        <span class="cvp-val">${Math.round((st.filtreOpacite||0.30)*100)}%</span>
+      </div>` : ''}
+
+      ${st.photoMode==='blur' ? `
+      <div class="cvp-row" style="margin-top:.4rem;">
+        <span class="cvp-lbl">Intensité flou</span>
+        <input type="range" min="2" max="30" step="1" value="${st.fondPhotoFlou||8}"
+          oninput="setSlideStyle(${idx},'fondPhotoFlou',parseInt(this.value));appliquerStylesSlide(${idx})"
+          class="cvp-slider"/>
+        <span class="cvp-val">${st.fondPhotoFlou||8}px</span>
+      </div>` : ''}` : ''}
     </div>
 
     <!-- Section TEXTE -->
@@ -7581,12 +7687,31 @@ function chargerCompte(){
     const row = [...document.querySelectorAll('#ig-formats .format-ligne')].find(r=>r.dataset.fmt===fmt);
     if(row) row.querySelector('.cpt-val').textContent=n;
   });
+  // Calcul et affichage des indicateurs de complétion
+  setTimeout(majCompletionCompte, 50);
+  // Recalcul en temps réel à chaque frappe dans les champs
+  ['cfg-prenom','cfg-nom','cfg-entreprise','cfg-metier','cfg-cible','cfg-tonalite','cfg-references',
+   'cfg-couleur1','cfg-couleur2','cfg-police-titre','cfg-police-corps','cfg-logo-url',
+   'cfg-insta-user','cfg-linkedin-url'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener('input', majCompletionCompte);
+  });
+  chargerMailOptin();
 }
 
 function sauvegarderCompte(){
-  // Feedback visuel immédiat
   const btnSave = document.getElementById('btn-sauvegarder');
-  if(btnSave){ btnSave.disabled = true; btnSave.textContent = '⏳ Sauvegarde…'; }
+  const bar     = document.getElementById('btn-save-bar');
+
+  // Animation barre de gauche à droite
+  if(btnSave){ btnSave.disabled = true; btnSave.textContent = '⏳ Synchronisation…'; }
+  if(bar){ bar.style.width = '0%'; bar.style.transition = 'none'; }
+  // Démarrer la progression visuelle
+  let pct = 0;
+  const barInterval = setInterval(() => {
+    pct = Math.min(pct + 3, 88); // monte jusqu'à 88% max, attend la fin réelle
+    if(bar) { bar.style.transition = 'width .08s linear'; bar.style.width = pct + '%'; }
+  }, 80);
 
   try {
   // Univers + Catégorie précise (déjà sauvés via onchange)
@@ -7667,8 +7792,14 @@ function sauvegarderCompte(){
     console.error('sauvegarderCompte erreur :', err);
     toast('⚠️ Erreur lors de la sauvegarde : ' + err.message, 'err');
   } finally {
-    // Le bouton se débloque TOUJOURS — succès ou erreur
-    if(btnSave){ btnSave.disabled = false; btnSave.textContent = '💾 Sauvegarder Mon Compte'; }
+    // Barre à 100% puis reset
+    clearInterval(barInterval);
+    if(bar){ bar.style.transition = 'width .15s linear'; bar.style.width = '100%'; }
+    setTimeout(() => {
+      if(bar){ bar.style.transition = 'none'; bar.style.width = '0%'; }
+      if(btnSave){ btnSave.disabled = false; btnSave.textContent = '💾 Sauvegarder Mon Compte'; }
+    }, 250);
+    majCompletionCompte();
   }
 
   // Sync en fire-and-forget — n'attend pas la réponse, ne bloque JAMAIS le bouton
@@ -7963,6 +8094,77 @@ async function genStoryTexte(){
     if(btn){ btn.disabled = false; btn.textContent = '✨ Générer un script'; }
     toast('❌ ' + e.message,'err');
   }
+}
+
+// ══════════════════════════════════════════════════════
+// INDICATEURS DE COMPLÉTION MON COMPTE
+// ══════════════════════════════════════════════════════
+function majCompletionCompte(){
+  const gv = id => (document.getElementById(id)||{}).value?.trim()||'';
+
+  // Identité personnelle — 7 champs
+  const identiteChamps = [
+    gv('cfg-prenom'), gv('cfg-nom'), gv('cfg-entreprise'), gv('cfg-metier'),
+    gv('cfg-cible'), gv('cfg-tonalite'), gv('cfg-references')
+  ];
+  const pctIdentite = Math.round(identiteChamps.filter(Boolean).length / identiteChamps.length * 100);
+
+  // Identité visuelle — 5 champs (couleur1, couleur2, police titre, police corps, logo)
+  const charteChamps = [
+    gv('cfg-couleur1'), gv('cfg-couleur2'),
+    gv('cfg-police-titre'), gv('cfg-police-corps'),
+    gv('cfg-logo-url')
+  ];
+  const pctCharte = Math.round(charteChamps.filter(Boolean).length / charteChamps.length * 100);
+
+  // Mes réseaux sociaux — 2 champs
+  const reseauxChamps = [gv('cfg-insta-user'), gv('cfg-linkedin-url')];
+  const pctReseaux = Math.round(reseauxChamps.filter(Boolean).length / reseauxChamps.length * 100);
+
+  const majBadge = (id, pct) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.textContent = pct + '%';
+    el.className = 'duo-tab-pct ' + (pct >= 80 ? 'pct-ok' : pct >= 40 ? 'pct-mid' : 'pct-low');
+  };
+  majBadge('pct-identite', pctIdentite);
+  majBadge('pct-charte',   pctCharte);
+  majBadge('pct-reseaux',  pctReseaux);
+}
+
+// ══════════════════════════════════════════
+// MAIL OPTIN — RGPD
+// ══════════════════════════════════════════
+async function toggleMailOptin(){
+  const cb = document.getElementById('cb-mail-optin');
+  if(!cb) return;
+  const optin = cb.checked;
+  ss('roze_mail_optin', optin ? 'oui' : 'non');
+
+  if(!CFG.as){ toast(optin ? '📬 Rappel activé (local)' : '🔕 Rappel désactivé (local)', 'ok'); return; }
+
+  try {
+    const r = await fetch(CFG.as, {
+      method: 'POST',
+      body: JSON.stringify({
+        action:  'maj_mail_optin',
+        email:   localStorage.getItem('roze_user_email') || '',
+        optin:   optin ? 'oui' : 'non'
+      })
+    });
+    const j = await r.json();
+    if(j.succes) toast(optin ? '📬 Rappel hebdomadaire activé' : '🔕 Rappel désactivé — tu peux réactiver à tout moment', 'ok');
+    else toast('⚠️ Impossible de mettre à jour la préférence', 'err');
+  } catch(e) {
+    toast(optin ? '📬 Rappel activé' : '🔕 Rappel désactivé', 'ok');
+  }
+}
+
+function chargerMailOptin(){
+  const optin = localStorage.getItem('roze_mail_optin');
+  const cb = document.getElementById('cb-mail-optin');
+  // Par défaut : optin = 'oui' si jamais défini (consentement implicite existant)
+  if(cb) cb.checked = optin !== 'non';
 }
 
 function ls(k){ return localStorage.getItem(k); }

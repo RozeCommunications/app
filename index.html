@@ -687,6 +687,27 @@
     .creer-sujet-row .btn{margin-top:0;flex-shrink:0;width:auto;padding:10px 14px;font-size:.8rem;}
     .creer-result{display:none;background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:10px;padding:.8rem 1rem;font-size:.85rem;line-height:1.7;color:var(--blanc-doux);white-space:pre-wrap;margin-top:.7rem;}
     .creer-result.on{display:block;}
+
+    /* ── Tableaux script (Stories / Réel / Vidéo) ── */
+    .script-table{width:100%;border-collapse:collapse;font-size:.78rem;color:var(--blanc-doux);margin:0;}
+    .script-table th{background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;padding:.45rem .6rem;border-bottom:1px solid rgba(255,255,255,.1);text-align:left;white-space:nowrap;}
+    .script-table td{padding:.5rem .6rem;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;line-height:1.55;}
+    .script-table tr:last-child td{border-bottom:none;}
+    .script-table tr:hover td{background:rgba(255,255,255,.03);}
+    /* Largeurs des colonnes */
+    .script-col-temps{width:68px;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.45);font-size:.7rem;white-space:nowrap;flex-shrink:0;}
+    .script-col-texte{min-width:140px;font-size:.8rem;}
+    .script-col-visuel{min-width:110px;color:rgba(255,255,255,.65);font-size:.75rem;}
+    .script-col-ton{width:90px;color:rgba(255,255,255,.5);font-size:.72rem;font-style:italic;}
+    .script-col-audio{min-width:120px;font-size:.78rem;}
+    .script-col-emotion{width:90px;color:rgba(255,255,255,.5);font-size:.72rem;}
+
+    /* ── Légende / Conseil sous le tableau ── */
+    .script-legende-box{margin-top:.7rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-left:3px solid var(--rose);border-radius:8px;padding:.65rem .8rem;}
+    .script-legende-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--rose-clair);margin-bottom:.35rem;}
+    .script-legende-txt{font-size:.8rem;line-height:1.65;color:var(--blanc-doux);white-space:pre-wrap;}
+    .script-conseil{margin-top:.6rem;background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.15);border-left:3px solid #a78bfa;border-radius:8px;padding:.6rem .8rem;font-size:.8rem;line-height:1.6;color:rgba(255,255,255,.65);}
+    .script-conseil-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#a78bfa;margin-bottom:.3rem;}
     .creer-legende{display:none;margin-top:.6rem;}
     .creer-legende.on{display:block;}
     .creer-legende textarea{min-height:70px;font-size:16px;}
@@ -794,6 +815,12 @@
     .cvp-select{flex:1;font-size:.62rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:5px;padding:3px 5px;color:rgba(255,255,255,.7);cursor:pointer;}
     .cvp-textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:rgba(255,255,255,.85);font-family:'DM Sans',sans-serif;font-size:.72rem;line-height:1.5;padding:5px 7px;resize:vertical;outline:none;transition:border-color .15s;}
     .cvp-textarea:focus{border-color:rgba(232,24,109,.5);background:rgba(255,255,255,.08);}
+    .cvp-pill-color{width:20px;height:20px;border-radius:50%;cursor:pointer;flex-shrink:0;transition:transform .12s,box-shadow .12s;}
+    .cvp-pill-color:hover{transform:scale(1.2);box-shadow:0 0 0 2px rgba(255,255,255,.3);}
+    .cvp-pill-grad{border-radius:8px;height:44px;cursor:pointer;border:2px solid transparent;transition:border-color .12s,transform .1s;font-size:.6rem;color:rgba(255,255,255,.75);text-align:center;display:flex;align-items:center;justify-content:center;padding:0;}
+    .cvp-pill-grad span{background:rgba(0,0,0,.35);border-radius:4px;padding:2px 4px;line-height:1.3;}
+    .cvp-pill-grad.on{border-color:rgba(255,255,255,.6);}
+    .cvp-pill-grad:hover{transform:scale(1.03);}
     /* Toggle switch */
     .cvp-toggle{position:relative;display:inline-flex;align-items:center;cursor:pointer;}
     .cvp-toggle input{opacity:0;width:0;height:0;position:absolute;}
@@ -3006,7 +3033,7 @@ function sqpSauvegarder(){
 
 function sqpCopier(){
   const texte = document.getElementById('sqp-texte').value
-    || document.getElementById('sqp-result').textContent;
+    || (document.getElementById('sqp-result').innerText||'').trim();
   if(!texte){ toast('⚠️ Rien à copier','err'); return; }
   navigator.clipboard.writeText(texte).then(()=>toast('✅ Copié !','ok'));
 }
@@ -4569,13 +4596,28 @@ function nettoyerJsonNewlines(s){
 // RENDU TABLEAU SCRIPT (Réel / Vidéo LI / Stories)
 // ══════════════════════════════════════════════════════════
 function parseMarkdownTable(text) {
-  const lines = text.split('\n').filter(l => l.includes('|'));
-  const rows = lines.filter(l => !l.match(/^[\s|:-]+$/));
-  if (rows.length < 2) return null;
-  const data = rows.slice(1).map(row => {
-    const cleaned = row.split('|');
-    return cleaned.slice(1, cleaned.length - 1).map(c => c.trim());
-  });
+  if (!text) return null;
+  // Normaliser : s'assurer que chaque ligne | commence et finit proprement
+  const lines = text.split('\n')
+    .map(l => l.trim())
+    .filter(l => l.startsWith('|') && l.includes('|'));
+
+  // Séparer la ligne de séparateur (--- ou :-:) des vraies lignes de données
+  const dataLines = lines.filter(l => !l.match(/^\|[\s|:\-]+\|?$/));
+
+  if (dataLines.length < 1) return null;
+
+  // Si 1 seule ligne, c'est la ligne de headers sans données → pas de tableau
+  if (dataLines.length < 2) return null;
+
+  // Première ligne = headers (on la saute), reste = données
+  const data = dataLines.slice(1).map(row => {
+    const parts = row.split('|');
+    // slice(1, -1) pour enlever les | de début et fin
+    return parts.slice(1, parts.length - 1).map(c => c.trim());
+  }).filter(row => row.length >= 1 && row.some(c => c.length > 0));
+
+  if (data.length === 0) return null;
   return { data };
 }
 
@@ -5107,21 +5149,7 @@ function afficherCarrousel(slides, legende, reseau, containerId){
         <div class="cv-slide-add" onclick="toast('➕ Slide ajoutée — réédite le carrousel depuis le panneau.','ok')" style="flex-shrink:0;width:52px;height:auto;border-radius:10px;border:1.5px dashed rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.3);font-size:1.2rem;margin:1rem 0;">+</div>
       </div>
 
-      <!-- Toolbar contextuelle -->
-      <div class="cv-toolbar-ctx" id="cv-toolbar-ctx">
-        <div class="cv-tool-fonds-blk">
-          <span class="cv-tool-fonds-lbl">Fond</span>
-          <div class="cv-tool-fonds-row">
-            <div class="cv-fpill on" id="cvp-uni"  title="Uni" onclick="cvFondPill(this,'uni')" style="background:${c1};"></div>
-            <div class="cv-fpill" id="cvp-deg1"    title="Dégradé" onclick="cvFondPill(this,'degrade')" style="background:linear-gradient(135deg,${c2},${c1});"></div>
-            <div class="cv-fpill" id="cvp-deg2"    title="Dégradé 2" onclick="cvFondPill(this,'degrade2')" style="background:linear-gradient(155deg,${c2},${c1} 160%);"></div>
-            <div class="cv-fpill" id="cvp-mat"     title="Dégradé 3 (matière)" onclick="cvFondPill(this,'beton')" style="background:radial-gradient(ellipse at 20% 20%,${c1},${c2});"></div>
-            <label class="cv-fpill" id="cvp-photo" title="Photo" style="cursor:pointer;">🖼️<input type="file" accept="image/*" style="display:none;" onchange="setCvFondPhoto(this)"/></label>
-            <div class="cv-fpill" id="cvp-reset" title="Réinit." onclick="resetOverrides()" style="background:rgba(255,255,255,.08);font-size:.6rem;">↺</div>
-          </div>
-        </div>
-
-      </div>
+      <!-- Toolbar contextuelle supprimée — édition via plein écran uniquement -->
 
       <div class="cv-export-bar">
         <span style="display:flex;align-items:center;gap:.3rem;">
@@ -5158,19 +5186,20 @@ function cvSelectSlide(idx){
 function fermerCarrouselFullscreen(){
   const fs = document.getElementById('cv-fullscreen');
   if(fs) fs.classList.remove('on');
-  // Re-rendre les miniatures avec le texte modifié, puis réappliquer les styles
-  if(carrouselCourant){
-    const wrap = document.getElementById('cv-slides-wrap');
-    if(wrap){
-      const c1 = CFG.couleur1||'#E8186D', c2 = CFG.couleur2||'#111111';
-      const ptit = CFG.policeTitre||'Playfair Display', pcorp = CFG.policeCorps||'DM Sans';
-      wrap.innerHTML = carrouselCourant.slides.map((s,i) =>
-        renderCvSlide(s, i, carrouselCourant.slides.length, c1, c2, ptit, pcorp, {small:true, editable:false})
-      ).join('');
-      // Appliquer les styles après paint — miniatures sont des .cv-slide-sm donc cherchées par #cv-slide-X
-      requestAnimationFrame(() => requestAnimationFrame(() => majFondsSlides()));
-    }
-  }
+  if(!carrouselCourant) return;
+  // Mettre à jour le texte des miniatures IN-PLACE (ne pas re-rendre — ça efface les styles)
+  carrouselCourant.slides.forEach((s, i) => {
+    const el = document.getElementById('cv-slide-' + i);
+    if(!el) return;
+    const titreEl   = el.querySelector('.cv-slide-titre');
+    const corpsEl   = el.querySelector('.cv-slide-corps');
+    const sstitreEl = el.querySelector('.cv-slide-sstitre');
+    if(titreEl)   titreEl.textContent   = (s.titre||'').replace(/\[ACCENT\]|\[\/ACCENT\]/g,'');
+    if(corpsEl)   corpsEl.textContent   = s.corps||'';
+    if(sstitreEl) sstitreEl.textContent = s.sousTitre ? s.sousTitre.replace(/^\s*[-–—•*#]+\s*/,'').trim() : '';
+  });
+  // Réappliquer tous les styles (fond, texte, marges) sur TOUTES les miniatures
+  requestAnimationFrame(() => requestAnimationFrame(() => majFondsSlides()));
 }
 function cvFondPill(el, style){
   document.querySelectorAll('.cv-fpill').forEach(p=>p.classList.remove('on'));
@@ -5239,8 +5268,16 @@ function appliquerStylesSlide(idx){
   } else if(st.fondType === 'degrade' || st.fondType === 'degrade2'){
     const dir = st.degradeDir || 'dark';
     appliqueFondCSS(el, dir === 'light'
-      ? `background:linear-gradient(155deg,${c1},#ffffff);`
+      ? `background:linear-gradient(135deg,${c1},#ffffff);`
       : `background:linear-gradient(135deg,${c2},${c1});`);
+  } else if(st.fondType === 'degrade2'){
+    appliqueFondCSS(el, `background:linear-gradient(to bottom,${c1},${c2});`);
+  } else if(st.fondType === 'degrade3'){
+    appliqueFondCSS(el, `background:linear-gradient(to right,${c2},${c1});`);
+  } else if(st.fondType === 'degrade4'){
+    appliqueFondCSS(el, `background:radial-gradient(ellipse at 0% 100%,${c1},${c2} 70%);`);
+  } else if(st.fondType === 'degrade5'){
+    appliqueFondCSS(el, `background:conic-gradient(from 180deg at 50% 50%,${c2},${c1},${c2});`);
   } else if(st.fondType === 'beton'){
     appliqueFondCSS(el, `background:radial-gradient(ellipse at 20% 20%,${c1},${c2});`);
   } else {
@@ -5501,8 +5538,7 @@ function majPanneauEditeur(idx){
       <div class="cvp-row-pills">
         <button class="cvp-pill ${st.fondType==='auto'?'on':''}"  onclick="setSlideStyle(${idx},'fondType','auto');majPanneauEditeur(${idx})">Auto</button>
         <button class="cvp-pill ${st.fondType==='uni'?'on':''}"   onclick="cvpFondUniClick(${idx})">Uni</button>
-        <button class="cvp-pill ${'degrade'===st.fondType||'degrade2'===st.fondType?'on':''}" onclick="setSlideStyle(${idx},'fondType','degrade');majPanneauEditeur(${idx})">Dégradé</button>
-        <button class="cvp-pill ${st.fondType==='beton'?'on':''}" onclick="setSlideStyle(${idx},'fondType','beton');majPanneauEditeur(${idx})">Matière</button>
+        <button class="cvp-pill ${['degrade','degrade2','beton','degrade3','degrade4','degrade5'].includes(st.fondType)?'on':''}" onclick="setSlideStyle(${idx},'fondType','degrade');majPanneauEditeur(${idx})">Dégradé</button>
         <label class="cvp-pill ${st.fondType==='photo'?'on':''}">Photo
           <input type="file" accept="image/*" style="display:none" onchange="cvpFondPhoto(${idx},this)"/>
         </label>
@@ -5512,24 +5548,48 @@ function majPanneauEditeur(idx){
       ${st.fondType==='uni' ? `
       <div class="cvp-row">
         <span class="cvp-lbl">Couleur</span>
-        <input type="color" value="${st.fondColor||c2}" oninput="setSlideStyle(${idx},'fondColor',this.value)" style="width:36px;height:24px;border:none;background:none;cursor:pointer;border-radius:4px;"/>
+        <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;">
+          <button class="cvp-pill-color" style="background:${c1};" title="Couleur principale"
+            onclick="setSlideStyle(${idx},'fondColor','${c1}')"></button>
+          <button class="cvp-pill-color" style="background:${c2};" title="Couleur secondaire"
+            onclick="setSlideStyle(${idx},'fondColor','${c2}')"></button>
+          <input type="color" value="${st.fondColor||c2}" oninput="setSlideStyle(${idx},'fondColor',this.value)"
+            style="width:30px;height:24px;border:none;background:none;cursor:pointer;border-radius:4px;flex-shrink:0;"/>
+        </div>
       </div>` : ''}
 
-      <!-- Dégradé : choix foncé / clair -->
-      ${'degrade'===st.fondType||'degrade2'===st.fondType ? `
-      <div class="cvp-lbl" style="margin:.4rem 0 .25rem;">Direction du dégradé</div>
-      <div class="cvp-row-pills">
-        <button class="cvp-pill ${(st.degradeDir||'dark')==='dark'?'on':''}"
-          onclick="setSlideStyle(${idx},'degradeDir','dark');setSlideStyle(${idx},'fondType','degrade');appliquerStylesSlide(${idx})">
-          🌑 Foncé
-        </button>
-        <button class="cvp-pill ${st.degradeDir==='light'?'on':''}"
-          onclick="setSlideStyle(${idx},'degradeDir','light');setSlideStyle(${idx},'fondType','degrade2');appliquerStylesSlide(${idx})">
-          ☀️ Clair
-        </button>
-      </div>
-      <div class="cvp-note" style="font-size:.65rem;color:#888;margin-top:.25rem;">
-        Ta couleur principale → ${(st.degradeDir||'dark')==='dark' ? 'noir' : 'blanc'}
+      <!-- Dégradé : variantes -->
+      ${['degrade','degrade2','beton','degrade3','degrade4','degrade5'].includes(st.fondType) ? `
+      <div class="cvp-lbl" style="margin:.4rem 0 .3rem;">Variante</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-bottom:.5rem;">
+        <button class="cvp-pill-grad ${st.fondType==='degrade'&&(st.degradeDir||'dark')==='dark'?'on':''}"
+          style="background:linear-gradient(135deg,${c2},${c1});"
+          onclick="setSlideStyle(${idx},'fondType','degrade');setSlideStyle(${idx},'degradeDir','dark');appliquerStylesSlide(${idx})">
+          <span>Diagonal<br/>foncé</span></button>
+        <button class="cvp-pill-grad ${st.fondType==='degrade'&&st.degradeDir==='light'?'on':''}"
+          style="background:linear-gradient(135deg,${c1},#ffffff);"
+          onclick="setSlideStyle(${idx},'fondType','degrade');setSlideStyle(${idx},'degradeDir','light');appliquerStylesSlide(${idx})">
+          <span>Diagonal<br/>clair</span></button>
+        <button class="cvp-pill-grad ${st.fondType==='degrade2'?'on':''}"
+          style="background:linear-gradient(to bottom,${c1},${c2});"
+          onclick="setSlideStyle(${idx},'fondType','degrade2');appliquerStylesSlide(${idx})">
+          <span>Vertical<br/>couleur</span></button>
+        <button class="cvp-pill-grad ${st.fondType==='degrade3'?'on':''}"
+          style="background:linear-gradient(to right,${c2},${c1});"
+          onclick="setSlideStyle(${idx},'fondType','degrade3');appliquerStylesSlide(${idx})">
+          <span>Horizontal<br/>couleur</span></button>
+        <button class="cvp-pill-grad ${st.fondType==='beton'?'on':''}"
+          style="background:radial-gradient(ellipse at 30% 30%,${c1},${c2});"
+          onclick="setSlideStyle(${idx},'fondType','beton');appliquerStylesSlide(${idx})">
+          <span>Radial<br/>centre</span></button>
+        <button class="cvp-pill-grad ${st.fondType==='degrade4'?'on':''}"
+          style="background:radial-gradient(ellipse at 0% 100%,${c1},${c2} 70%);"
+          onclick="setSlideStyle(${idx},'fondType','degrade4');appliquerStylesSlide(${idx})">
+          <span>Radial<br/>coin</span></button>
+        <button class="cvp-pill-grad ${st.fondType==='degrade5'?'on':''}"
+          style="background:conic-gradient(from 180deg at 50% 50%,${c2},${c1},${c2});"
+          onclick="setSlideStyle(${idx},'fondType','degrade5');appliquerStylesSlide(${idx})">
+          <span>Conique</span></button>
       </div>` : ''}
 
       <!-- Photo : 3 modes -->
@@ -5598,11 +5658,19 @@ function majPanneauEditeur(idx){
       </div>
 
       <div class="cvp-sub-titre">Titre</div>
-      <div class="cvp-row">
+      <div class="cvp-row" style="align-items:center;gap:.4rem;flex-wrap:wrap;">
         <span class="cvp-lbl">Couleur</span>
+        <button class="cvp-pill-color" style="background:${c1};" title="Couleur principale"
+          onclick="setSlideStyle(${idx},'titreCouleur','${c1}')"></button>
+        <button class="cvp-pill-color" style="background:${c2};" title="Couleur secondaire"
+          onclick="setSlideStyle(${idx},'titreCouleur','${c2}')"></button>
+        <button class="cvp-pill-color" style="background:#ffffff;border:1px solid rgba(255,255,255,.2);" title="Blanc"
+          onclick="setSlideStyle(${idx},'titreCouleur','#ffffff')"></button>
+        <button class="cvp-pill-color" style="background:#111111;" title="Noir"
+          onclick="setSlideStyle(${idx},'titreCouleur','#111111')"></button>
         <input type="color" value="${st.titreCouleur||st.textColor||'#ffffff'}"
           oninput="setSlideStyle(${idx},'titreCouleur',this.value)"
-          style="width:28px;height:22px;border:none;background:none;cursor:pointer;border-radius:4px;flex-shrink:0;"/>
+          style="width:24px;height:22px;border:none;background:none;cursor:pointer;border-radius:4px;flex-shrink:0;"/>
       </div>
       <div class="cvp-row">
         <span class="cvp-lbl">Taille</span>
@@ -5627,11 +5695,19 @@ function majPanneauEditeur(idx){
 
       ${(carrouselCourant&&carrouselCourant.slides[idx]&&carrouselCourant.slides[idx].sousTitre) ? `
       <div class="cvp-sub-titre">Sous-titre</div>
-      <div class="cvp-row">
+      <div class="cvp-row" style="align-items:center;gap:.4rem;flex-wrap:wrap;">
         <span class="cvp-lbl">Couleur</span>
+        <button class="cvp-pill-color" style="background:${c1};" title="Couleur principale"
+          onclick="setSlideStyle(${idx},'sstitreCouleur','${c1}')"></button>
+        <button class="cvp-pill-color" style="background:${c2};" title="Couleur secondaire"
+          onclick="setSlideStyle(${idx},'sstitreCouleur','${c2}')"></button>
+        <button class="cvp-pill-color" style="background:#ffffff;border:1px solid rgba(255,255,255,.2);" title="Blanc"
+          onclick="setSlideStyle(${idx},'sstitreCouleur','#ffffff')"></button>
+        <button class="cvp-pill-color" style="background:#111111;" title="Noir"
+          onclick="setSlideStyle(${idx},'sstitreCouleur','#111111')"></button>
         <input type="color" value="${st.sstitreCouleur||st.textColor||'#ffffff'}"
           oninput="setSlideStyle(${idx},'sstitreCouleur',this.value)"
-          style="width:28px;height:22px;border:none;background:none;cursor:pointer;border-radius:4px;flex-shrink:0;"/>
+          style="width:24px;height:22px;border:none;background:none;cursor:pointer;border-radius:4px;flex-shrink:0;"/>
       </div>
       <div class="cvp-row">
         <span class="cvp-lbl">Taille</span>
@@ -5642,11 +5718,19 @@ function majPanneauEditeur(idx){
       </div>` : ''}
 
       <div class="cvp-sub-titre">Corps</div>
-      <div class="cvp-row">
+      <div class="cvp-row" style="align-items:center;gap:.4rem;flex-wrap:wrap;">
         <span class="cvp-lbl">Couleur</span>
+        <button class="cvp-pill-color" style="background:${c1};" title="Couleur principale"
+          onclick="setSlideStyle(${idx},'corpsCouleur','${c1}')"></button>
+        <button class="cvp-pill-color" style="background:${c2};" title="Couleur secondaire"
+          onclick="setSlideStyle(${idx},'corpsCouleur','${c2}')"></button>
+        <button class="cvp-pill-color" style="background:#ffffff;border:1px solid rgba(255,255,255,.2);" title="Blanc"
+          onclick="setSlideStyle(${idx},'corpsCouleur','#ffffff')"></button>
+        <button class="cvp-pill-color" style="background:#111111;" title="Noir"
+          onclick="setSlideStyle(${idx},'corpsCouleur','#111111')"></button>
         <input type="color" value="${st.corpsCouleur||st.textColor||'#ffffff'}"
           oninput="setSlideStyle(${idx},'corpsCouleur',this.value)"
-          style="width:28px;height:22px;border:none;background:none;cursor:pointer;border-radius:4px;flex-shrink:0;"/>
+          style="width:24px;height:22px;border:none;background:none;cursor:pointer;border-radius:4px;flex-shrink:0;"/>
       </div>
       <div class="cvp-row">
         <span class="cvp-lbl">Taille</span>

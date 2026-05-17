@@ -2716,7 +2716,7 @@ let CAL = { vue:'mois', annee:new Date().getFullYear(), mois:new Date().getMonth
 document.addEventListener('DOMContentLoaded',()=>{
   // Auth EN PREMIER — évite tout flash de l'app sans connexion
   initAuth();
-  initTheme(); initUI(); chargerCompte(); affDate(); construireStoriesUI(); majGenFormats(getGenReseau()); majRythme();
+  initTheme(); initUI(); chargerCompte(); affDate(); construireStoriesUI(); majGenFormats(getGenReseau()); majRythme(); chargerGoogleFonts();
   syncConfigDepuisSheets(); // Sync multi-appareils au démarrage
   majCompteurBrouillons(); // Init compteur idées
   majSemMini(); majKPIs();
@@ -4808,6 +4808,36 @@ let cvFondPhotoSrc    = null;
 const cvFondPhotoParSlide = {};
 // Styles par slide — panneau éditeur
 let slideStyles = {}; // { idx: {fondType, fondColor, fondPhotoVoile, fondPhotoFlou,
+
+// ══════════════════════════════════════════
+// POLICES DISPONIBLES — 30+ Google Fonts
+// ══════════════════════════════════════════
+const POLICES_TITRE = [
+  'Playfair Display','Cormorant Garamond','Libre Baskerville','Merriweather',
+  'Lora','Georgia','EB Garamond','Crimson Text','Bodoni Moda','GFS Didot',
+  'Abril Fatface','Cinzel','Josefin Slab','Unna','Spectral',
+  'Montserrat','Raleway','Oswald','Bebas Neue','Anton',
+  'Barlow','DM Serif Display','Fraunces','Syne','Big Shoulders Display',
+  'Unbounded','Nunito','Poppins','Inter','Work Sans'
+];
+const POLICES_CORPS = [
+  'DM Sans','Nunito','Lato','Open Sans','Raleway','Poppins',
+  'Inter','Work Sans','Barlow','Source Sans 3','Mulish','Outfit',
+  'Plus Jakarta Sans','Figtree','Manrope','Jost','Karla',
+  'Cabin','Hind','Quicksand','Exo 2','Titillium Web',
+  'Noto Sans','Ubuntu','Rubik','Fira Sans','Muli',
+  'Libre Franklin','Heebo','Overpass'
+];
+
+function chargerGoogleFonts(){
+  const toutes = [...new Set([...POLICES_TITRE, ...POLICES_CORPS])];
+  const families = toutes.map(p=>p.replace(/ /g,'+')+':ital,wght@0,400;0,700;1,400').join('&family=');
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?family=' + families + '&display=swap';
+  document.head.appendChild(link);
+}
+
                       //        fondDeg, titreSize, sstitreSize, corpsSize,
                       //        titreLH, corpsLH, policeTitre, policeCorps,
                       //        ombreActive, ombreOpacite, ombreBlur,
@@ -4818,11 +4848,14 @@ function getSlideStyle(idx){
     fondDeg:'135deg', degradeDir:'dark',
     photoMode:'filter', filtreColor:'noir', filtreOpacite:0.30,
     titreSize:1.0, sstitreSize:1.0, corpsSize:1.0,
-    titreLH:1.3, corpsLH:1.5, policeTitre:CFG.policeTitre||'Playfair Display',
+    titreLH:1.3, corpsLH:1.5,
+    policeTitre:CFG.policeTitre||'Playfair Display',
     policeCorps:CFG.policeCorps||'DM Sans',
+    titreCouleur:'', sstitreCouleur:'', corpsCouleur:'',
     ombreActive:false, ombreOpacite:0.6, ombreBlur:6,
-    align:'left', textColor:'', padding:'14px 12px', numVisible:false,
-    logoPos:'center'
+    align:'left', textColor:'',
+    margeH:12, margeV:14,
+    numVisible:false, logoPos:'center'
   };
   return Object.assign({}, defs, slideStyles[idx]||{});
 }
@@ -4845,7 +4878,7 @@ function setSlideStyle(idx, key, val){
 
   // Re-render le panneau UNIQUEMENT si la STRUCTURE change (apparition/disparition de contrôles)
   // Pour les sliders/couleurs/alignement : NE PAS re-render → préserve le focus du slider
-  const STRUCTURE_KEYS = ['fondType', 'ombreActive', 'logoPos'];
+  const STRUCTURE_KEYS = ['fondType', 'ombreActive', 'logoPos', 'photoMode', 'degradeDir'];
   if(idx === cvSlideActive && STRUCTURE_KEYS.indexOf(key) >= 0){
     majPanneauEditeur(idx);
   }
@@ -5140,11 +5173,12 @@ function appliquerStylesSlide(idx){
   const c2 = CFG.couleur2||'#111111';
   const st = getSlideStyle(idx);
   const inner = el.querySelector('.cv-slide-inner');
+  const isLg  = el.classList.contains('cv-slide-lg');
 
   // ─ FOND ─
-  let ov = el.querySelector('.cv-photo-overlay');
-  if(ov) ov.remove();
+  el.querySelectorAll('.cv-photo-overlay,.cv-blur-overlay').forEach(o=>o.remove());
   el.style.backgroundImage = '';
+  el.style.filter = ''; // reset systématique
 
   if(st.fondType === 'photo' && cvFondPhotoParSlide[idx]){
     const src = cvFondPhotoParSlide[idx];
@@ -5152,16 +5186,22 @@ function appliquerStylesSlide(idx){
     el.style.backgroundImage = `url('${src}')`;
     el.style.backgroundSize = 'cover';
     el.style.backgroundPosition = 'center';
-    el.style.filter = '';
-    // Supprimer les anciens overlays
-    el.querySelectorAll('.cv-photo-overlay').forEach(o=>o.remove());
     const mode = st.photoMode || 'filter';
 
     if(mode === 'raw'){
       // Photo brute — aucun traitement
     } else if(mode === 'blur'){
-      // Flou direct sur l'image via backdrop-filter sur un overlay
-      el.style.filter = `blur(${st.fondPhotoFlou||8}px)`;
+      // Flou UNIQUEMENT sur le fond via backdrop-filter sur overlay
+      // Le texte reste parfaitement lisible par-dessus
+      const blurOv = document.createElement('div');
+      blurOv.className = 'cv-blur-overlay';
+      blurOv.style.cssText = [
+        'position:absolute;inset:0;',
+        `backdrop-filter:blur(${st.fondPhotoFlou||8}px);`,
+        `-webkit-backdrop-filter:blur(${st.fondPhotoFlou||8}px);`,
+        'z-index:0;pointer-events:none;border-radius:inherit;'
+      ].join('');
+      el.insertBefore(blurOv, el.firstChild);
     } else {
       // Mode filtre couleur
       let filtreRgb = '0,0,0';
@@ -5178,71 +5218,63 @@ function appliquerStylesSlide(idx){
       el.insertBefore(ov2, el.firstChild);
     }
   } else if(st.fondType === 'uni' && st.fondColor){
-    el.style.backgroundImage = '';
-    el.style.filter = '';
     appliqueFondCSS(el, `background:${st.fondColor};`);
   } else if(st.fondType === 'degrade' || st.fondType === 'degrade2'){
-    el.style.backgroundImage = '';
-    el.style.filter = '';
     const dir = st.degradeDir || 'dark';
-    if(dir === 'light'){
-      // Couleur principale → blanc
-      appliqueFondCSS(el, `background:linear-gradient(155deg,${c1},#ffffff);`);
-    } else {
-      // Couleur principale → noir (défaut)
-      appliqueFondCSS(el, `background:linear-gradient(135deg,${c2},${c1});`);
-    }
+    appliqueFondCSS(el, dir === 'light'
+      ? `background:linear-gradient(155deg,${c1},#ffffff);`
+      : `background:linear-gradient(135deg,${c2},${c1});`);
   } else if(st.fondType === 'beton'){
-    el.style.backgroundImage = '';
-    el.style.filter = '';
     appliqueFondCSS(el, `background:radial-gradient(ellipse at 20% 20%,${c1},${c2});`);
   } else {
-    el.style.backgroundImage = '';
-    el.style.filter = '';
     const fondAuto = styleFondSlide(s.num||idx+1, slides.length, c1, c2);
-    const fondSafe = (fondAuto && fondAuto.indexOf('background') >= 0)
-      ? fondAuto
-      : `background:${c2||'#1a1a1a'};`;
-    appliqueFondCSS(el, fondSafe);
+    appliqueFondCSS(el, fondAuto && fondAuto.indexOf('background') >= 0
+      ? fondAuto : `background:${c2||'#1a1a1a'};`);
   }
 
   // ─ TEXTE ─
-  const isLg = el.classList.contains('cv-slide-lg');
   if(inner){
     inner.style.position = 'relative';
-    inner.style.zIndex = '1';
-    // Padding : ne pas écraser sur miniatures (le CSS les gère)
-    if(isLg) inner.style.padding = st.padding;
+    inner.style.zIndex   = '1';
     inner.style.textAlign = st.align;
-    const textCol = st.textColor || texteSlide(fondSlide(s.num||idx+1, slides.length, c1, c2));
-    inner.style.color = textCol;
+
+    // Marges via curseurs (margeH px / margeV px) — appliquées sur lg et sm
+    const mV = st.margeV ?? 14;
+    const mH = st.margeH ?? 12;
+    inner.style.padding = `${mV}px ${mH}px`;
+
+    // Couleur de base (fallback pour tous les éléments)
+    const baseCoul = st.textColor || texteSlide(fondSlide(s.num||idx+1, slides.length, c1, c2));
+    inner.style.color = baseCoul;
     inner.style.fontFamily = `'${st.policeCorps}',sans-serif`;
 
     const shadowVal = st.ombreActive
-      ? `0 2px ${st.ombreBlur}px rgba(0,0,0,${st.ombreOpacite})`
-      : '';
+      ? `0 2px ${st.ombreBlur}px rgba(0,0,0,${st.ombreOpacite})` : '';
 
     const titreEl   = inner.querySelector('.cv-slide-titre');
     const sstitreEl = inner.querySelector('.cv-slide-sstitre');
     const corpsEl   = inner.querySelector('.cv-slide-corps');
-    const numEl     = inner.parentElement.querySelector('.cv-slide-num');
+    const numEl     = el.querySelector('.cv-slide-num');
 
     if(titreEl){
       const base = isLg ? 1.12 : 0.78;
-      titreEl.style.fontSize    = (base * st.titreSize) + 'rem';
-      titreEl.style.lineHeight  = st.titreLH;
-      titreEl.style.fontFamily  = `'${st.policeTitre}',serif`;
-      titreEl.style.textShadow  = shadowVal;
+      titreEl.style.fontSize   = (base * (st.titreSize||1)) + 'rem';
+      titreEl.style.lineHeight = st.titreLH || 1.3;
+      titreEl.style.fontFamily = `'${st.policeTitre}',serif`;
+      titreEl.style.color      = st.titreCouleur || baseCoul;
+      titreEl.style.textShadow = shadowVal;
     }
     if(sstitreEl){
       const base = isLg ? 0.72 : 0.58;
-      sstitreEl.style.fontSize  = (base * st.sstitreSize) + 'rem';
+      sstitreEl.style.fontSize   = (base * (st.sstitreSize||1)) + 'rem';
+      sstitreEl.style.color      = st.sstitreCouleur || baseCoul;
       sstitreEl.style.textShadow = shadowVal;
     }
     if(corpsEl){
       const base = isLg ? 0.86 : 0.65;
-      corpsEl.style.fontSize   = (base * st.corpsSize) + 'rem';
-      corpsEl.style.lineHeight = st.corpsLH;
+      corpsEl.style.fontSize   = (base * (st.corpsSize||1)) + 'rem';
+      corpsEl.style.lineHeight = st.corpsLH || 1.5;
+      corpsEl.style.color      = st.corpsCouleur || baseCoul;
       corpsEl.style.textShadow = shadowVal;
     }
     if(numEl) numEl.style.display = st.numVisible ? '' : 'none';
@@ -5414,8 +5446,6 @@ function majPanneauEditeur(idx){
   const st = getSlideStyle(idx);
   const c1 = CFG.couleur1||'#E8186D';
   const c2 = CFG.couleur2||'#111111';
-  const policesTitre = ['Playfair Display','Georgia','Cormorant Garamond','Libre Baskerville','Merriweather','Lora'];
-  const policesCorps = ['DM Sans','Nunito','Lato','Open Sans','Raleway','Poppins'];
 
   const slide = carrouselCourant && carrouselCourant.slides[idx];
   const titreCourant  = (slide && slide.titre)  || '';
@@ -5542,15 +5572,6 @@ function majPanneauEditeur(idx){
       <div class="cvp-section-titre">Texte</div>
 
       <div class="cvp-row">
-        <span class="cvp-lbl">Couleur</span>
-        <div class="cvp-row-pills" style="flex-wrap:nowrap;">
-          <button class="cvp-pill ${!st.textColor||st.textColor==='#ffffff'?'on':''}" onclick="setSlideStyle(${idx},'textColor','#ffffff')">Blanc</button>
-          <button class="cvp-pill ${st.textColor==='#000000'?'on':''}" onclick="setSlideStyle(${idx},'textColor','#000000')">Noir</button>
-          <input type="color" value="${st.textColor||'#ffffff'}" oninput="setSlideStyle(${idx},'textColor',this.value)" style="width:28px;height:24px;border:none;background:none;cursor:pointer;border-radius:4px;"/>
-        </div>
-      </div>
-
-      <div class="cvp-row">
         <span class="cvp-lbl">Alignement</span>
         <div class="cvp-row-pills" style="flex-wrap:nowrap;">
           <button class="cvp-pill ${st.align==='left'?'on':''}"   onclick="setSlideStyle(${idx},'align','left')">◀</button>
@@ -5561,45 +5582,73 @@ function majPanneauEditeur(idx){
 
       <div class="cvp-sub-titre">Titre</div>
       <div class="cvp-row">
+        <span class="cvp-lbl">Couleur</span>
+        <input type="color" value="${st.titreCouleur||st.textColor||'#ffffff'}"
+          oninput="setSlideStyle(${idx},'titreCouleur',this.value)"
+          style="width:28px;height:22px;border:none;background:none;cursor:pointer;border-radius:4px;flex-shrink:0;"/>
+      </div>
+      <div class="cvp-row">
         <span class="cvp-lbl">Taille</span>
-        <input type="range" min="0.6" max="1.8" step="0.05" value="${st.titreSize}"
-          oninput="setSlideStyle(${idx},'titreSize',parseFloat(this.value))"
+        <input type="range" min="0.6" max="2.0" step="0.05" value="${st.titreSize||1}"
+          oninput="setSlideStyle(${idx},'titreSize',parseFloat(this.value));this.nextElementSibling.textContent=Math.round(this.value*100)+'%'"
           class="cvp-slider"/>
-        <span class="cvp-val">${Math.round(st.titreSize*100)}%</span>
+        <span class="cvp-val">${Math.round((st.titreSize||1)*100)}%</span>
       </div>
       <div class="cvp-row">
         <span class="cvp-lbl">Interligne</span>
-        <input type="range" min="1.0" max="2.0" step="0.05" value="${st.titreLH}"
-          oninput="setSlideStyle(${idx},'titreLH',parseFloat(this.value))"
+        <input type="range" min="1.0" max="2.0" step="0.05" value="${st.titreLH||1.3}"
+          oninput="setSlideStyle(${idx},'titreLH',parseFloat(this.value));this.nextElementSibling.textContent=parseFloat(this.value).toFixed(1)"
           class="cvp-slider"/>
-        <span class="cvp-val">${st.titreLH}</span>
+        <span class="cvp-val">${(st.titreLH||1.3).toFixed ? (st.titreLH||1.3).toFixed(1) : st.titreLH||1.3}</span>
       </div>
       <div class="cvp-row">
         <span class="cvp-lbl">Police</span>
         <select class="cvp-select" onchange="setSlideStyle(${idx},'policeTitre',this.value)">
-          ${policesTitre.map(p=>`<option value="${p}" ${st.policeTitre===p?'selected':''}>${p}</option>`).join('')}
+          ${(typeof POLICES_TITRE!=='undefined'?POLICES_TITRE:['Playfair Display','Georgia','Cormorant Garamond','Libre Baskerville','Merriweather','Lora']).map(p=>`<option value="${p}" ${st.policeTitre===p?'selected':''}>${p}</option>`).join('')}
         </select>
       </div>
 
-      <div class="cvp-sub-titre">Corps</div>
+      ${(carrouselCourant&&carrouselCourant.slides[idx]&&carrouselCourant.slides[idx].sousTitre) ? `
+      <div class="cvp-sub-titre">Sous-titre</div>
+      <div class="cvp-row">
+        <span class="cvp-lbl">Couleur</span>
+        <input type="color" value="${st.sstitreCouleur||st.textColor||'#ffffff'}"
+          oninput="setSlideStyle(${idx},'sstitreCouleur',this.value)"
+          style="width:28px;height:22px;border:none;background:none;cursor:pointer;border-radius:4px;flex-shrink:0;"/>
+      </div>
       <div class="cvp-row">
         <span class="cvp-lbl">Taille</span>
-        <input type="range" min="0.6" max="1.8" step="0.05" value="${st.corpsSize}"
-          oninput="setSlideStyle(${idx},'corpsSize',parseFloat(this.value))"
+        <input type="range" min="0.6" max="1.6" step="0.05" value="${st.sstitreSize||1}"
+          oninput="setSlideStyle(${idx},'sstitreSize',parseFloat(this.value));this.nextElementSibling.textContent=Math.round(this.value*100)+'%'"
           class="cvp-slider"/>
-        <span class="cvp-val">${Math.round(st.corpsSize*100)}%</span>
+        <span class="cvp-val">${Math.round((st.sstitreSize||1)*100)}%</span>
+      </div>` : ''}
+
+      <div class="cvp-sub-titre">Corps</div>
+      <div class="cvp-row">
+        <span class="cvp-lbl">Couleur</span>
+        <input type="color" value="${st.corpsCouleur||st.textColor||'#ffffff'}"
+          oninput="setSlideStyle(${idx},'corpsCouleur',this.value)"
+          style="width:28px;height:22px;border:none;background:none;cursor:pointer;border-radius:4px;flex-shrink:0;"/>
+      </div>
+      <div class="cvp-row">
+        <span class="cvp-lbl">Taille</span>
+        <input type="range" min="0.6" max="1.8" step="0.05" value="${st.corpsSize||1}"
+          oninput="setSlideStyle(${idx},'corpsSize',parseFloat(this.value));this.nextElementSibling.textContent=Math.round(this.value*100)+'%'"
+          class="cvp-slider"/>
+        <span class="cvp-val">${Math.round((st.corpsSize||1)*100)}%</span>
       </div>
       <div class="cvp-row">
         <span class="cvp-lbl">Interligne</span>
-        <input type="range" min="1.0" max="2.2" step="0.05" value="${st.corpsLH}"
-          oninput="setSlideStyle(${idx},'corpsLH',parseFloat(this.value))"
+        <input type="range" min="1.0" max="2.2" step="0.05" value="${st.corpsLH||1.5}"
+          oninput="setSlideStyle(${idx},'corpsLH',parseFloat(this.value));this.nextElementSibling.textContent=parseFloat(this.value).toFixed(1)"
           class="cvp-slider"/>
-        <span class="cvp-val">${st.corpsLH}</span>
+        <span class="cvp-val">${(st.corpsLH||1.5).toFixed ? (st.corpsLH||1.5).toFixed(1) : st.corpsLH||1.5}</span>
       </div>
       <div class="cvp-row">
         <span class="cvp-lbl">Police</span>
         <select class="cvp-select" onchange="setSlideStyle(${idx},'policeCorps',this.value)">
-          ${policesCorps.map(p=>`<option value="${p}" ${st.policeCorps===p?'selected':''}>${p}</option>`).join('')}
+          ${(typeof POLICES_CORPS!=='undefined'?POLICES_CORPS:['DM Sans','Nunito','Lato','Open Sans','Raleway','Poppins']).map(p=>`<option value="${p}" ${st.policeCorps===p?'selected':''}>${p}</option>`).join('')}
         </select>
       </div>
     </div>
@@ -5634,12 +5683,18 @@ function majPanneauEditeur(idx){
     <div class="cvp-section">
       <div class="cvp-section-titre">Mise en page</div>
       <div class="cvp-row">
-        <span class="cvp-lbl">Marges</span>
-        <div class="cvp-row-pills" style="flex-wrap:nowrap;">
-          <button class="cvp-pill ${st.padding==='8px 8px'?'on':''}"    onclick="setSlideStyle(${idx},'padding','8px 8px')">Serrée</button>
-          <button class="cvp-pill ${st.padding==='14px 12px'?'on':''}"  onclick="setSlideStyle(${idx},'padding','14px 12px')">Normal</button>
-          <button class="cvp-pill ${st.padding==='22px 18px'?'on':''}"  onclick="setSlideStyle(${idx},'padding','22px 18px')">Aérée</button>
-        </div>
+        <span class="cvp-lbl">Marge H</span>
+        <input type="range" min="4" max="60" step="2" value="${st.margeH??12}"
+          oninput="setSlideStyle(${idx},'margeH',parseInt(this.value));this.nextElementSibling.textContent=this.value+'px'"
+          class="cvp-slider"/>
+        <span class="cvp-val">${st.margeH??12}px</span>
+      </div>
+      <div class="cvp-row">
+        <span class="cvp-lbl">Marge V</span>
+        <input type="range" min="4" max="80" step="2" value="${st.margeV??14}"
+          oninput="setSlideStyle(${idx},'margeV',parseInt(this.value));this.nextElementSibling.textContent=this.value+'px'"
+          class="cvp-slider"/>
+        <span class="cvp-val">${st.margeV??14}px</span>
       </div>
       <div class="cvp-row" style="justify-content:space-between;">
         <span class="cvp-lbl">Numéro slide</span>

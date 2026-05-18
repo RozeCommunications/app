@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- v=2026-05-14-fix-ecran-noir-editeur-panneau -->
+<!-- v=2026-05-18-ambiance-variete-visuelle-carrousel -->
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/>
@@ -3631,8 +3631,9 @@ async function exporterPNG(){
   for(let i = 0; i < slides.length; i++){
     const s  = slides[i];
     const st = getSlideStyle(i);
-    const fond = fondSlide(s.num||i+1, slides.length, c1, c2);
-    const tcoul= st.textColor || '#ffffff';
+    const amb = s.ambiance || 'sombre';
+    const fond = fondSlide(s.num||i+1, slides.length, c1, c2, i);
+    const tcoul= st.textColor || (amb === 'clair' ? '#1A1A1A' : '#ffffff');
 
     // Fond CSS résolu depuis slideStyles — identique à ce que voit l'utilisateur
     let bgCss = '';
@@ -3646,10 +3647,13 @@ async function exporterPNG(){
       bgCss = `radial-gradient(ellipse at 20% 20%,${c1},${c2})`;
     } else if(st.fondType === 'photo' && cvFondPhotoParSlide[i]){
       bgCss = fond; // photo traitée séparément via img tag
+    } else if(amb === 'clair'){
+      bgCss = AMBIANCE_CLAIR_BG;
     } else {
       bgCss = fond; // 'auto' → DA par défaut
     }
 
+    const isRespiration = (amb === 'respiration');
     const pad = Math.round(H * 0.055) + 'px ' + Math.round(W * 0.065) + 'px';
     const titreFs = s.type==='hook' ? Math.round(H*0.048) : Math.round(H*0.038);
     const corpsFs = Math.round(H * 0.022);
@@ -3660,21 +3664,30 @@ async function exporterPNG(){
         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:block;"/>
       <div style="position:absolute;inset:0;background:rgba(0,0,0,${st.fondPhotoVoile||0.45});backdrop-filter:blur(${st.fondPhotoFlou||0}px);z-index:1;"></div>` : '';
 
+    // Grille subtile pour ambiance clair dans l'export
+    const gridHtml = (amb === 'clair') ? `<div style="position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);background-size:100px 100px;"></div>` : '';
+
     const sstitreHtml = s.sousTitre ? `<div style="font-size:${ssFs}px;font-weight:600;opacity:.85;margin-bottom:${Math.round(H*0.012)}px;line-height:1.3;">${s.sousTitre.replace(/^\s*[-–—•]+\s*/,'')}</div>` : '';
     const logoHtml = (s.type==='conclusion' && CFG.logoUrl)
       ? `<img src="${CFG.logoUrl}" crossOrigin="anonymous" style="max-width:${Math.round(W*0.22)}px;max-height:${Math.round(H*0.045)}px;object-fit:contain;opacity:.85;margin-bottom:${Math.round(H*0.02)}px;display:block;"/>`
       : '';
 
+    // Respiration : titre en italique accent, centré, pas de corps
+    const titreStyle = isRespiration
+      ? `font-family:'${ptit}',serif;font-size:${Math.round(titreFs*(st.titreSize||1))}px;font-weight:700;line-height:${st.titreLH||1.25};color:${c1};font-style:italic;`
+      : `font-family:'${ptit}',serif;font-size:${Math.round(titreFs*(st.titreSize||1))}px;font-weight:700;line-height:${st.titreLH||1.25};margin-bottom:${Math.round(H*0.018)}px;`;
+    const corpsHtml = isRespiration ? '' : `<div style="font-size:${Math.round(corpsFs*(st.corpsSize||1))}px;line-height:${st.corpsLH||1.6};flex:1;white-space:pre-line;">${s.corps||''}</div>`;
+
     const div = document.createElement('div');
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:${W}px;height:${H}px;overflow:hidden;background:${bgCss};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:${pad};box-sizing:border-box;display:flex;flex-direction:column;text-align:${st.align||'left'};`;
+    div.style.cssText = `position:fixed;left:-9999px;top:0;width:${W}px;height:${H}px;overflow:hidden;background:${bgCss};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:${pad};box-sizing:border-box;display:flex;flex-direction:column;${isRespiration?'justify-content:center;align-items:center;':''}text-align:${isRespiration?'center':(st.align||'left')};`;
     div.innerHTML = `
       ${photoHtml}
-      <div style="position:relative;z-index:2;display:flex;flex-direction:column;height:100%;width:100%;text-align:${st.align||'left'};">
+      ${gridHtml}
+      <div style="position:relative;z-index:2;display:flex;flex-direction:column;${isRespiration?'justify-content:center;align-items:center;':''}height:100%;width:100%;text-align:${isRespiration?'center':(st.align||'left')};">
         ${logoHtml}
         ${sstitreHtml}
-        <div style="font-family:'${ptit}',serif;font-size:${Math.round(titreFs*(st.titreSize||1))}px;font-weight:700;line-height:${st.titreLH||1.25};margin-bottom:${Math.round(H*0.018)}px;">${s.titre||''}</div>
-        <div style="font-size:${Math.round(corpsFs*(st.corpsSize||1))}px;line-height:${st.corpsLH||1.6};flex:1;white-space:pre-line;">${s.corps||''}</div>
-        <div style="position:absolute;top:0;right:0;font-size:${Math.round(H*0.016)}px;opacity:.3;">${i+1}/${slides.length}</div>
+        <div style="${titreStyle}">${s.titre||''}</div>
+        ${corpsHtml}
       </div>`;
 
     document.body.appendChild(div);
@@ -4967,7 +4980,24 @@ function estCouleurClaire(hex){
   return (r*299+g*587+b*114)/1000 > 128;
 }
 
-function fondSlide(num, total, c1, c2){
+// ══════════════════════════════════════════════════════
+// AMBIANCE VISUELLE (nouveau champ JSON de l'IA)
+// ══════════════════════════════════════════════════════
+const AMBIANCE_CLAIR_BG = '#F5F0EB'; // beige papier pour slides "clair"
+
+function getAmbianceSlide(idx){
+  // Lire l'ambiance depuis le JSON de l'IA si disponible
+  if(carrouselCourant && carrouselCourant.slides && carrouselCourant.slides[idx]){
+    return carrouselCourant.slides[idx].ambiance || 'sombre';
+  }
+  return 'sombre';
+}
+
+function fondSlide(num, total, c1, c2, idx){
+  // Si l'IA a fourni une ambiance, l'utiliser en priorité
+  const amb = (idx !== undefined) ? getAmbianceSlide(idx) : null;
+  if(amb === 'clair' || amb === 'respiration-clair') return AMBIANCE_CLAIR_BG;
+
   // DA "Editorial Noir" : fonds sombres, couleur principale en accent
   const dark1 = c2 || '#0d0d0d';
   const dark2 = ajusterLum(c2||'#111111', -8);
@@ -4978,7 +5008,10 @@ function fondSlide(num, total, c1, c2){
   return (num % 2 === 0) ? dark3 : dark1;
 }
 
-function texteSlide(fond){
+function texteSlide(fond, idx){
+  // Si ambiance clair → texte sombre
+  const amb = (idx !== undefined) ? getAmbianceSlide(idx) : null;
+  if(amb === 'clair' || amb === 'respiration-clair') return '#1A1A1A';
   // DA Editorial Noir : fonds toujours sombres → texte toujours blanc
   return '#FFFFFF';
 }
@@ -4988,21 +5021,34 @@ function accentSlide(c1, fond){
   return c1;
 }
 
-function styleFondSlide(num, total, c1, c2){
+function styleFondSlide(num, total, c1, c2, idx){
+  // Si ambiance clair définie par l'IA et pas d'override utilisateur → fond clair
+  const amb = (idx !== undefined) ? getAmbianceSlide(idx) : null;
+  const ov = overridesSlide[num-1];
+
+  // Si l'utilisateur a manuellement overridé le fond, respecter son choix
+  if(ov && ov !== '__custom__'){
+    const sombre = c2 || '#0d0d0d';
+    const dark = ajusterLum(c2||'#0d0d0d', -8);
+    if(ov==='uni')     return 'background:'+sombre+';';
+    if(ov==='uni2')    return 'background:'+ajusterLum(sombre, 8)+';';
+    if(ov==='degrade') return 'background:linear-gradient(135deg,'+dark+','+ajusterLum(c1,-25)+' 160%);';
+    if(ov==='degrade2') return 'background:linear-gradient(160deg,'+sombre+','+ajusterLum(c1,-15)+' 200%);';
+    if(ov==='beton')   return 'background:radial-gradient(ellipse at 25% 15%,'+ajusterLum(c1,-20)+','+dark+' 70%);';
+  }
+  if(ov === '__custom__'){
+    const ovCss = overridesSlide['__css__'];
+    if(ovCss && ovCss[num-1]) return ovCss[num-1];
+  }
+
+  // En mode auto + ambiance clair/respiration → fond clair
+  if(styleFondActif === 'uni' && (amb === 'clair' || amb === 'respiration-clair')){
+    return 'background:' + AMBIANCE_CLAIR_BG + ';';
+  }
+
   // DA "Editorial Noir" — palette sombre systématique
   const dark = ajusterLum(c2||'#0d0d0d', -8);
   const sombre = c2 || '#0d0d0d';
-  const ov = overridesSlide[num-1];
-  const ovCss = overridesSlide['__css__'];
-  if(ov === '__custom__' && ovCss && ovCss[num-1]) return ovCss[num-1];
-  if(ov && ov !== '__custom__'){
-    const style = ov;
-    if(style==='uni')     return 'background:'+sombre+';';
-    if(style==='uni2')    return 'background:'+ajusterLum(sombre, 8)+';';
-    if(style==='degrade') return 'background:linear-gradient(135deg,'+dark+','+ajusterLum(c1,-25)+' 160%);';
-    if(style==='degrade2') return 'background:linear-gradient(160deg,'+sombre+','+ajusterLum(c1,-15)+' 200%);';
-    if(style==='beton')   return 'background:radial-gradient(ellipse at 25% 15%,'+ajusterLum(c1,-20)+','+dark+' 70%);';
-  }
   // Défaut selon styleFondActif
   if(styleFondActif==='uni')      return 'background:'+fondSlide(num,total,c1,c2)+';';
   if(styleFondActif==='uni2')     return 'background:'+ajusterLum(sombre, 8)+';';
@@ -5077,34 +5123,45 @@ function renderCvSlide(s, idx, total, c1, c2, ptit, pcorp, opts){
   opts = opts || {};
   const small    = !!opts.small;
   const editable = !!opts.editable;
-  const fond     = fondSlide(s.num||idx+1, total, c1, c2);
-  const tcoul    = texteSlide(fond);
+  const fond     = fondSlide(s.num||idx+1, total, c1, c2, idx);
+  const tcoul    = texteSlide(fond, idx);
   const accent   = accentSlide(c1, fond);
   const sstitre  = s.sousTitre ? nettoyerSousTitre(s.sousTitre) : '';
+  const amb      = getAmbianceSlide(idx);
 
   const editAttr = editable ? 'contenteditable="true" spellcheck="false"' : '';
   const slideClass = 'cv-slide' + (small ? ' cv-slide-sm' : ' cv-slide-lg') + (editable ? ' cv-slide-editable' : '');
 
   const idPrefix = opts.idPrefix || 'cv-slide';
+
+  // Ambiance "respiration" : titre seul, pas de corps
+  const isRespiration = (amb === 'respiration');
+  const corpsHtml = isRespiration ? '' : `<div class="cv-slide-corps"
+        ${editAttr}
+        data-idx="${idx}" data-field="corps"
+        oninput="cvUpdateSlide(${idx},'corps',this.innerText)">${(s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>')}</div>`;
+
+  // Grille subtile pour ambiance "clair"
+  const gridOverlay = (amb === 'clair') ? `<div style="position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);background-size:${small?'14px 14px':'40px 40px'};"></div>` : '';
+
   return `<div class="${slideClass}" id="${idPrefix}-${idx}"
-    style="${styleFondSlide(s.num||idx+1,total,c1,c2)}"
+    style="${styleFondSlide(s.num||idx+1,total,c1,c2,idx)}"
+    data-ambiance="${amb}"
     ${!editable ? `onclick="cvSelectSlide(${idx})"` : ''}>
+    ${gridOverlay}
     <div class="cv-slide-num">${idx+1}/${total}</div>
-    <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};">
+    <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};${isRespiration ? 'justify-content:center;align-items:center;text-align:center;' : ''}">
       ${(s.type==='conclusion' && CFG.logoUrl) ? renderLogoSlide(idx) : ''}
       <!-- type masqué — ne s'affiche pas sur les slides -->
       ${sstitre ? `<div class="cv-slide-sstitre" ${editAttr}
         data-idx="${idx}" data-field="sousTitre"
         oninput="cvUpdateSlide(${idx},'sousTitre',this.innerText)">${escapeHtml(sstitre)}</div>` : ''}
       <div class="cv-slide-titre"
-        style="font-family:'${ptit}',serif;"
+        style="font-family:'${ptit}',serif;${isRespiration ? 'color:'+accent+';font-style:italic;' : ''}"
         ${editAttr}
         data-idx="${idx}" data-field="titre"
         oninput="cvUpdateSlide(${idx},'titre',this.innerText)">${rendreTitreAccent(s.titre||'', accent, fond)}</div>
-      <div class="cv-slide-corps"
-        ${editAttr}
-        data-idx="${idx}" data-field="corps"
-        oninput="cvUpdateSlide(${idx},'corps',this.innerText)">${(s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>')}</div>
+      ${corpsHtml}
     </div>
   </div>`;
 }
@@ -5281,7 +5338,7 @@ function appliquerStylesSlide(idx){
   } else if(st.fondType === 'beton'){
     appliqueFondCSS(el, `background:radial-gradient(ellipse at 20% 20%,${c1},${c2});`);
   } else {
-    const fondAuto = styleFondSlide(s.num||idx+1, slides.length, c1, c2);
+    const fondAuto = styleFondSlide(s.num||idx+1, slides.length, c1, c2, idx);
     appliqueFondCSS(el, fondAuto && fondAuto.indexOf('background') >= 0
       ? fondAuto : `background:${c2||'#1a1a1a'};`);
   }

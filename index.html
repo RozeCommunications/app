@@ -4613,7 +4613,7 @@ function parseMarkdownTable(text) {
   // Normaliser : s'assurer que chaque ligne | commence et finit proprement
   const lines = text.split('\n')
     .map(l => l.trim())
-    .filter(l => l.startsWith('|') && l.includes('|'));
+    .filter(l => l.includes('|'));
 
   // Séparer la ligne de séparateur (--- ou :-:) des vraies lignes de données
   const dataLines = lines.filter(l => !l.match(/^\|[\s|:\-]+\|?$/));
@@ -4625,13 +4625,23 @@ function parseMarkdownTable(text) {
 
   // Première ligne = headers (on la saute), reste = données
   const data = dataLines.slice(1).map(row => {
-    const parts = row.split('|');
+    // Nettoyer la ligne : ajouter | final si manquant (tableau tronqué)
+    let r = row;
+    if(!r.endsWith('|')) r += ' |';
+    if(!r.startsWith('|')) r = '| ' + r;
+    const parts = r.split('|');
     // slice(1, -1) pour enlever les | de début et fin
     return parts.slice(1, parts.length - 1).map(c => c.trim());
   }).filter(row => row.length >= 1 && row.some(c => c.length > 0));
 
   if (data.length === 0) return null;
-  return { data };
+
+  // Détecter si la dernière ligne semble tronquée (moins de colonnes que la première)
+  const expectedCols = data[0].length;
+  const lastRow = data[data.length - 1];
+  const truncated = lastRow.length < expectedCols || (lastRow[lastRow.length-1]||'').length < 3;
+
+  return { data, truncated };
 }
 
 function renderScriptReel(texte) {
@@ -4643,7 +4653,7 @@ function renderScriptReel(texte) {
     const tableData = parseMarkdownTable(scriptMatch[1]);
     if (tableData && tableData.data.length > 0) {
       html += '<div style="overflow-x:auto"><table class="script-table"><thead><tr>';
-      html += '<th>Temps</th><th>Visuel & texte à l\'écran</th><th>Audio / Voix off</th><th>Émotion</th>';
+      html += '<th>Temps</th><th>Visuel et texte</th><th>Audio et Voix off</th><th>Émotion</th>';
       html += '</tr></thead><tbody>';
       tableData.data.forEach(row => {
         if (row.length < 2) return;
@@ -4655,6 +4665,10 @@ function renderScriptReel(texte) {
           + '</tr>';
       });
       html += '</tbody></table></div>';
+      if (tableData.truncated) {
+        html += '<div style="margin-top:.5rem;padding:.5rem .7rem;background:rgba(232,24,109,.08);border-left:3px solid var(--rose);border-radius:4px;font-size:.75rem;color:var(--rose);line-height:1.5;">'
+          + '⚠️ Script tronqué — clique sur <strong>Régénérer</strong> pour un script complet.</div>';
+      }
     } else {
       html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">' + escapeHtml(scriptMatch[1]) + '</div>';
     }
@@ -4682,7 +4696,7 @@ function renderScriptVideoLI(texte) {
     const tableData = parseMarkdownTable(scriptMatch[1]);
     if (tableData && tableData.data.length > 0) {
       html += '<div style="overflow-x:auto"><table class="script-table"><thead><tr>';
-      html += '<th>Temps</th><th>Visuel & sous-titres écran</th><th>Audio / Voix off</th><th>Émotion</th>';
+      html += '<th>Temps</th><th>Visuel et sous-titres</th><th>Audio et Voix off</th><th>Émotion</th>';
       html += '</tr></thead><tbody>';
       tableData.data.forEach(row => {
         if (row.length < 2) return;
@@ -4694,6 +4708,10 @@ function renderScriptVideoLI(texte) {
           + '</tr>';
       });
       html += '</tbody></table></div>';
+      if (tableData.truncated) {
+        html += '<div style="margin-top:.5rem;padding:.5rem .7rem;background:rgba(232,24,109,.08);border-left:3px solid var(--rose);border-radius:4px;font-size:.75rem;color:var(--rose);line-height:1.5;">'
+          + '⚠️ Script tronqué — clique sur <strong>Régénérer</strong> pour un script complet.</div>';
+      }
     } else {
       html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">' + escapeHtml(scriptMatch[1]) + '</div>';
     }
@@ -4728,7 +4746,7 @@ function renderScriptStory(texte) {
     if (tableData && tableData.data.length > 0) {
       html += '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">';
       html += '<table class="script-table"><thead><tr>';
-      html += '<th>Durée</th><th>Texte à l\'écran</th><th>Format & décor</th><th>Ton</th>';
+      html += '<th>Durée</th><th>Texte à l\'écran</th><th>Format et décor</th><th>Ton</th>';
       html += '</tr></thead><tbody>';
       tableData.data.forEach(row => {
         if (!row || row.every(c => !c)) return;
@@ -4740,6 +4758,10 @@ function renderScriptStory(texte) {
           + '</tr>';
       });
       html += '</tbody></table></div>';
+      if (tableData.truncated) {
+        html += '<div style="margin-top:.5rem;padding:.5rem .7rem;background:rgba(232,24,109,.08);border-left:3px solid var(--rose);border-radius:4px;font-size:.75rem;color:var(--rose);line-height:1.5;">'
+          + '⚠️ Script tronqué — la dernière slide est peut-être incomplète. Clique sur <strong>Régénérer</strong> pour obtenir un script complet.</div>';
+      }
     } else {
       // Tableau non parseable — afficher le texte brut proprement
       html += '<div style="white-space:pre-wrap;font-size:.82rem;line-height:1.7;color:var(--blanc-doux);">'

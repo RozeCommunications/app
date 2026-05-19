@@ -783,7 +783,7 @@
     /* Layout 2 colonnes */
     .cv-fs-layout{display:flex;width:100%;height:100%;overflow:hidden;}
     /* Colonne slide */
-    .cv-fs-col-slide{flex:1;display:flex;flex-direction:column;min-width:0;padding:.75rem .75rem .75rem 1rem;}
+    .cv-fs-col-slide{flex:1;display:flex;flex-direction:column;min-width:0;padding:calc(.75rem + var(--safe-top, 0px)) .75rem .75rem 1rem;}
     .cv-fs-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;}
     .cv-fs-counter-lbl{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.6);}
     .cv-fs-edit-hint{font-size:.6rem;color:rgba(255,255,255,.3);font-style:italic;}
@@ -832,7 +832,7 @@
     @media(max-width:600px){
       .cv-fs-layout{flex-direction:column;}
       .cv-fs-panel{width:100%;min-width:0;border-left:none;border-top:1px solid rgba(255,255,255,.07);max-height:38vh;}
-      .cv-fs-col-slide{padding:.5rem;}
+      .cv-fs-col-slide{padding:calc(.5rem + var(--safe-top, 0px)) .5rem .5rem;}
     }
     .cv-fullscreen.on{display:flex;}
     .cv-fs-slide{width:min(360px,85vw);height:min(480px,85vw * 1.333);border-radius:14px;overflow:hidden;position:relative;}
@@ -842,7 +842,7 @@
     .cv-fs-nav{display:flex;align-items:center;gap:1rem;}
     .cv-fs-btn{background:rgba(255,255,255,.12);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;}
     .cv-fs-counter{font-size:.82rem;color:#ccc;}
-    .cv-fs-close{position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;}
+    .cv-fs-close{position:absolute;top:calc(1rem + var(--safe-top, 0px));right:1rem;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;z-index:620;}
     .cv-export-bar{display:flex;gap:.6rem;padding:.7rem 1rem;border-top:1px solid var(--gris-border);flex-wrap:wrap;}
     .cv-export-bar .btn{margin-top:0;width:auto;flex:1;min-width:120px;font-size:.78rem;padding:9px 14px;}
 
@@ -1798,7 +1798,7 @@
       <!-- Type de story = pilier -->
       <span class="creer-lbl">Type de story</span>
       <div class="piliers-row" id="gsp-types" style="flex-direction:column;gap:.8rem;">
-        <div class="pilier-chip on" data-type="vente" onclick="setGspType(this,'vente')">
+        <div class="pilier-chip on-vente" data-type="vente" onclick="setGspType(this,'vente')">
           <span class="pi">💰</span><span class="pn">Vente</span>
           <div class="pilier-detail">Contextualisation → douleur client → appel à action vers ton offre</div>
         </div>
@@ -5324,19 +5324,35 @@ function appliquerStylesSlide(idx){
     appliqueFondCSS(el, `background:${st.fondColor};`);
   } else if(st.fondType === 'degrade' || st.fondType === 'degrade2'){
     const dir = st.degradeDir || 'dark';
-    appliqueFondCSS(el, dir === 'light'
-      ? `background:linear-gradient(135deg,${c1},#ffffff);`
-      : `background:linear-gradient(135deg,${c2},${c1});`);
-  } else if(st.fondType === 'degrade2'){
-    appliqueFondCSS(el, `background:linear-gradient(to bottom,${c1},${c2});`);
+    const gc1 = st.gradColor1 || c1;
+    const gc2 = st.gradColor2 || c2;
+    const gc3 = st.gradColor3 || '';
+    const stops = gc3 ? `${gc2},${gc1},${gc3}` : `${gc2},${gc1}`;
+    if(st.fondType === 'degrade2'){
+      appliqueFondCSS(el, `background:linear-gradient(to bottom,${stops});`);
+    } else {
+      appliqueFondCSS(el, dir === 'light'
+        ? `background:linear-gradient(135deg,${gc1},${gc3||'#ffffff'});`
+        : `background:linear-gradient(135deg,${stops});`);
+    }
   } else if(st.fondType === 'degrade3'){
-    appliqueFondCSS(el, `background:linear-gradient(to right,${c2},${c1});`);
+    const gc1 = st.gradColor1 || c1;
+    const gc2 = st.gradColor2 || c2;
+    const gc3 = st.gradColor3 || '';
+    const stops = gc3 ? `${gc2},${gc1},${gc3}` : `${gc2},${gc1}`;
+    appliqueFondCSS(el, `background:linear-gradient(to right,${stops});`);
   } else if(st.fondType === 'degrade4'){
-    appliqueFondCSS(el, `background:radial-gradient(ellipse at 0% 100%,${c1},${c2} 70%);`);
-  } else if(st.fondType === 'degrade5'){
-    appliqueFondCSS(el, `background:conic-gradient(from 180deg at 50% 50%,${c2},${c1},${c2});`);
+    const gc1 = st.gradColor1 || c1;
+    const gc2 = st.gradColor2 || c2;
+    const gc3 = st.gradColor3 || '';
+    const stops = gc3 ? `${gc1},${gc2},${gc3}` : `${gc1},${gc2} 70%`;
+    appliqueFondCSS(el, `background:radial-gradient(ellipse at 0% 100%,${stops});`);
   } else if(st.fondType === 'beton'){
-    appliqueFondCSS(el, `background:radial-gradient(ellipse at 20% 20%,${c1},${c2});`);
+    const gc1 = st.gradColor1 || c1;
+    const gc2 = st.gradColor2 || c2;
+    const gc3 = st.gradColor3 || '';
+    const stops = gc3 ? `${gc1},${gc2},${gc3}` : `${gc1},${gc2}`;
+    appliqueFondCSS(el, `background:radial-gradient(ellipse at 20% 20%,${stops});`);
   } else {
     const fondAuto = styleFondSlide(s.num||idx+1, slides.length, c1, c2, idx);
     appliqueFondCSS(el, fondAuto && fondAuto.indexOf('background') >= 0
@@ -5595,7 +5611,7 @@ function majPanneauEditeur(idx){
       <div class="cvp-row-pills">
         <button class="cvp-pill ${st.fondType==='auto'?'on':''}"  onclick="setSlideStyle(${idx},'fondType','auto');majPanneauEditeur(${idx})">Auto</button>
         <button class="cvp-pill ${st.fondType==='uni'?'on':''}"   onclick="cvpFondUniClick(${idx})">Uni</button>
-        <button class="cvp-pill ${['degrade','degrade2','beton','degrade3','degrade4','degrade5'].includes(st.fondType)?'on':''}" onclick="setSlideStyle(${idx},'fondType','degrade');majPanneauEditeur(${idx})">Dégradé</button>
+        <button class="cvp-pill ${['degrade','degrade2','beton','degrade3','degrade4'].includes(st.fondType)?'on':''}" onclick="setSlideStyle(${idx},'fondType','degrade');majPanneauEditeur(${idx})">Dégradé</button>
         <label class="cvp-pill ${st.fondType==='photo'?'on':''}">Photo
           <input type="file" accept="image/*" style="display:none" onchange="cvpFondPhoto(${idx},this)"/>
         </label>
@@ -5616,7 +5632,7 @@ function majPanneauEditeur(idx){
       </div>` : ''}
 
       <!-- Dégradé : variantes -->
-      ${['degrade','degrade2','beton','degrade3','degrade4','degrade5'].includes(st.fondType) ? `
+      ${['degrade','degrade2','beton','degrade3','degrade4'].includes(st.fondType) ? `
       <div class="cvp-lbl" style="margin:.4rem 0 .3rem;">Variante</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-bottom:.5rem;">
         <button class="cvp-pill-grad ${st.fondType==='degrade'&&(st.degradeDir||'dark')==='dark'?'on':''}"
@@ -5643,10 +5659,26 @@ function majPanneauEditeur(idx){
           style="background:radial-gradient(ellipse at 0% 100%,${c1},${c2} 70%);"
           onclick="setSlideStyle(${idx},'fondType','degrade4');appliquerStylesSlide(${idx})">
           <span>Radial<br/>coin</span></button>
-        <button class="cvp-pill-grad ${st.fondType==='degrade5'?'on':''}"
-          style="background:conic-gradient(from 180deg at 50% 50%,${c2},${c1},${c2});"
-          onclick="setSlideStyle(${idx},'fondType','degrade5');appliquerStylesSlide(${idx})">
-          <span>Conique</span></button>
+      </div>
+
+      <!-- Couleurs du dégradé — personnalisables -->
+      <div class="cvp-lbl" style="margin:.4rem 0 .3rem;">Couleurs du dégradé</div>
+      <div class="cvp-row" style="gap:.4rem;flex-wrap:wrap;">
+        <span class="cvp-lbl" style="min-width:auto;">C1</span>
+        <input type="color" value="${st.gradColor1||c1}"
+          oninput="setSlideStyle(${idx},'gradColor1',this.value);appliquerStylesSlide(${idx})"
+          style="width:28px;height:24px;border:none;background:none;cursor:pointer;border-radius:4px;"/>
+        <span class="cvp-lbl" style="min-width:auto;">C2</span>
+        <input type="color" value="${st.gradColor2||c2}"
+          oninput="setSlideStyle(${idx},'gradColor2',this.value);appliquerStylesSlide(${idx})"
+          style="width:28px;height:24px;border:none;background:none;cursor:pointer;border-radius:4px;"/>
+        <span class="cvp-lbl" style="min-width:auto;">C3</span>
+        <input type="color" value="${st.gradColor3||''}"
+          oninput="setSlideStyle(${idx},'gradColor3',this.value);appliquerStylesSlide(${idx})"
+          style="width:28px;height:24px;border:none;background:none;cursor:pointer;border-radius:4px;opacity:${st.gradColor3?1:0.4};"/>
+        <button class="cvp-pill" style="font-size:.55rem;padding:2px 5px;"
+          onclick="setSlideStyle(${idx},'gradColor1','${c1}');setSlideStyle(${idx},'gradColor2','${c2}');setSlideStyle(${idx},'gradColor3','');appliquerStylesSlide(${idx});majPanneauEditeur(${idx})">
+          Reset</button>
       </div>` : ''}
 
       <!-- Photo : 3 modes -->
@@ -6734,6 +6766,7 @@ function gspToggleActu(event){
 
 async function genererStoryPanel(){
   if(!verifierCleIA()) return;
+  if(!CFG.as){ toast('⚙️ URL Apps Script manquante — va dans Mon Compte → Connexions','err'); return; }
 
   const loader = document.getElementById('gsp-loader');
   const btnGen = document.getElementById('gsp-btn-gen');
@@ -8262,7 +8295,8 @@ function toggleStoryPubliee(){
 
 async function genStoryTexte(){
   if(!verifierCleIA()) return;
-  if(storyModalIndex === null) return;
+  if(storyModalIndex === null){ toast('⚠️ Aucune story sélectionnée','err'); return; }
+  if(!CFG.as){ toast('⚙️ URL Apps Script manquante — va dans Mon Compte → Connexions','err'); return; }
 
   const s    = STORIES_CFG[storyModalIndex];
   const zone = document.getElementById('story-modal-exemple-txt');

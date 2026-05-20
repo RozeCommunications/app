@@ -1756,7 +1756,7 @@
       <div class="creer-legende" id="gen-legende-zone">
         <span class="creer-lbl" style="margin-top:.5rem;">Légende & hashtags</span>
         <textarea id="gen-legende" placeholder="Légende + hashtags…"></textarea>
-        <button class="btn btn-ghost btn-sm btn-full" style="margin-top:.4rem;" onclick="regenLegendePaneau()">🔄 Régénérer la légende</button>
+        <button class="btn btn-ghost btn-sm btn-full" style="margin-top:.4rem;" onclick="regenLegendePaneau()">🔄 Regénérer la légende</button>
         <div id="gen-source-chip" style="display:none;margin-top:.5rem;">
           <button onclick="toggleSourceDetail()" style="background:rgba(0,119,181,.12);border:1px solid rgba(0,119,181,.3);border-radius:20px;padding:.25rem .75rem;font-size:.72rem;color:#5bb8ff;cursor:pointer;font-weight:600;">🌐 Source</button>
           <div id="gen-source-detail" style="display:none;background:rgba(0,119,181,.08);border:1px solid rgba(0,119,181,.2);border-radius:8px;padding:.6rem .8rem;margin-top:.4rem;font-size:.72rem;color:var(--blanc-doux);line-height:1.5;"></div>
@@ -1778,7 +1778,7 @@
       <!-- Actions post généré -->
       <div class="edit-actions" id="gen-post-actions" style="display:none;">
         <button class="btn btn-rose" onclick="sauvegarderGenPanel()">💾 Sauvegarder</button>
-        <button class="btn btn-ghost" id="btn-regen-style" onclick="regenStylePhoto()" style="display:none;">🎨 Régénérer le style</button>
+        <button class="btn btn-ghost" id="btn-regen-style" onclick="regenStylePhoto()" style="display:none;">🎨 Regénérer le style</button>
         <button class="btn btn-outline" onclick="copierGenPanel()">📋 Copier</button>
         <button class="btn btn-ghost" id="btn-publier-gen" onclick="publierSurReseau()" style="font-size:.78rem;">🚀 Publier →</button>
         <button class="btn btn-ghost" onclick="supprimerGenPanel()" style="font-size:.78rem;color:rgba(255,100,100,.7);">🗑️ Supprimer</button>
@@ -1844,7 +1844,7 @@
         <div class="res-body" id="gsp-result" style="font-size:.82rem;line-height:1.7;padding:1rem;background:var(--gris-input);border-radius:10px;border:1px solid var(--gris-border);min-height:80px;"></div>
         <div class="gen-post-actions" id="gsp-actions" style="margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap;">
           <button class="btn btn-ghost btn-sm" onclick="gspCopier()">📋 Copier</button>
-          <button class="btn btn-ghost btn-sm" onclick="gspRegenerer()">🔄 Régénérer</button>
+          <button class="btn btn-ghost btn-sm" onclick="gspRegenerer()">🔄 Regénérer</button>
           <button class="btn btn-ghost btn-sm" onclick="gspSauvegarder()">💾 Sauvegarder</button>
         </div>
       </div>
@@ -2453,7 +2453,7 @@
         <div class="ac-desc" style="line-height:2;">
           — Plus tu remplis les 8 questions avec des détails précis et vrais, plus l'IA génère dans ta voix.<br/>
           — Relis toujours le post généré à voix haute : si tu ne te reconnais pas dans ce que tu entends, reformule.<br/>
-          — Utilise le bouton Régénérer si le premier résultat ne te convient pas — chaque génération est différente.<br/>
+          — Utilise le bouton Regénérer si le premier résultat ne te convient pas — chaque génération est différente.<br/>
           — Varie les 4 piliers chaque semaine pour une présence équilibrée.<br/>
           — Pour les stories vente, le plus important est d'avoir un mot-clé clair (ex : "COACHING", "DEVIS") que tes abonnés peuvent t'envoyer en DM.
         </div>
@@ -2519,17 +2519,22 @@
       <div style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Aperçu carrousel</div>
       <div id="edit-carrousel-wrap"></div>
     </div>
+    <!-- Zone script visuel (Stories, Réel, Vidéo — tableau) -->
+    <div id="edit-script-zone" style="display:none;">
+      <div style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Script</div>
+      <div id="edit-script-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;"></div>
+    </div>
     <div class="regen-row">
-      <button class="btn btn-ghost btn-sm" onclick="regenPost()">🔄 Régénérer le sujet</button>
+      <button class="btn btn-ghost btn-sm" onclick="regenPost()">🔄 Regénérer le sujet</button>
       <button class="btn btn-ghost btn-sm" onclick="regenManuel()">✏️ Saisir un sujet</button>
     </div>
-    <div class="mini-loader" id="loader-regen"><div class="mini-ring"></div><span>Régénération en cours…</span></div>
+    <div class="mini-loader" id="loader-regen"><div class="mini-ring"></div><span>Regénération en cours…</span></div>
 
     <!-- Légende (masquée pour les carrousels — déjà dans le viewer) -->
     <div id="edit-legende-hd" style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Légende & hashtags</div>
     <textarea class="legende-zone" id="edit-legende" placeholder="Légende + hashtags…"></textarea>
     <div class="regen-row">
-      <button class="btn btn-ghost btn-sm" onclick="regenLegende()">🔄 Régénérer la légende</button>
+      <button class="btn btn-ghost btn-sm" onclick="regenLegende()">🔄 Regénérer la légende</button>
     </div>
 
     <!-- Sujet manuel (caché par défaut) -->
@@ -2636,7 +2641,7 @@
     <div class="creer-legende" id="creer-legende-zone">
       <span class="creer-lbl" style="margin-top:.5rem;">Légende & hashtags</span>
       <textarea id="creer-legende" placeholder="Légende + hashtags…"></textarea>
-      <button class="btn btn-ghost btn-sm btn-full" style="margin-top:.4rem;" onclick="genCreerLegende()">🔄 Régénérer la légende</button>
+      <button class="btn btn-ghost btn-sm btn-full" style="margin-top:.4rem;" onclick="genCreerLegende()">🔄 Regénérer la légende</button>
     </div>
 
     <!-- Actions -->
@@ -2987,10 +2992,10 @@ async function sqpGenerer(){
     result.classList.add('on');
     localStorage.setItem('roze_story_script_' + sqpDate, texte);
 
-    // Mettre à jour les boutons : Régénérer + Corbeille
+    // Mettre à jour les boutons : Regénérer + Corbeille
     const actions = document.querySelector('.sqp-actions');
     if(actions) actions.innerHTML = `
-      <button class="btn btn-rose" onclick="sqpGenerer()">🔄 Régénérer</button>
+      <button class="btn btn-rose" onclick="sqpGenerer()">🔄 Regénérer</button>
       <button class="btn btn-ghost" onclick="sqpSauvegarder()">💾 Sauvegarder</button>
       <button class="btn btn-outline" onclick="sqpCopier()">Copier</button>
       <button class="btn btn-ghost" onclick="sqpSupprimer()" style="color:#e05555;border-color:rgba(224,85,85,.3);">🗑️</button>`;
@@ -4678,7 +4683,7 @@ function renderScriptReel(texte) {
       html += '</tbody></table></div>';
       if (tableData.truncated) {
         html += '<div style="margin-top:.5rem;padding:.5rem .7rem;background:rgba(232,24,109,.08);border-left:3px solid var(--rose);border-radius:4px;font-size:.75rem;color:var(--rose);line-height:1.5;">'
-          + '⚠️ Script tronqué — clique sur <strong>Régénérer</strong> pour un script complet.</div>';
+          + '⚠️ Script tronqué — clique sur <strong>Regénérer</strong> pour un script complet.</div>';
       }
     } else {
       html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">' + escapeHtml(scriptMatch[1]) + '</div>';
@@ -4731,7 +4736,7 @@ function renderScriptVideoLI(texte) {
       html += '</tbody></table></div>';
       if (tableData.truncated) {
         html += '<div style="margin-top:.5rem;padding:.5rem .7rem;background:rgba(232,24,109,.08);border-left:3px solid var(--rose);border-radius:4px;font-size:.75rem;color:var(--rose);line-height:1.5;">'
-          + '⚠️ Script tronqué — clique sur <strong>Régénérer</strong> pour un script complet.</div>';
+          + '⚠️ Script tronqué — clique sur <strong>Regénérer</strong> pour un script complet.</div>';
       }
     } else {
       html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">' + escapeHtml(scriptMatch[1]) + '</div>';
@@ -4797,7 +4802,7 @@ function renderScriptStory(texte) {
       html += '</tbody></table></div>';
       if (tableData.truncated) {
         html += '<div style="margin-top:.5rem;padding:.5rem .7rem;background:rgba(232,24,109,.08);border-left:3px solid var(--rose);border-radius:4px;font-size:.75rem;color:var(--rose);line-height:1.5;">'
-          + '⚠️ Script tronqué — la dernière slide est peut-être incomplète. Clique sur <strong>Régénérer</strong> pour obtenir un script complet.</div>';
+          + '⚠️ Script tronqué — la dernière slide est peut-être incomplète. Clique sur <strong>Regénérer</strong> pour obtenir un script complet.</div>';
       }
     } else {
       // Tableau non parseable — afficher le texte brut proprement
@@ -6482,7 +6487,7 @@ async function regenLegendePaneau(){
   if(!texte){ toast('\u26a0\ufe0f G\u00e9n\u00e8re d\u2019abord le post','err'); return; }
   const loader = document.getElementById('gen-inline-loader');
   const loaderTxt = document.getElementById('gen-inline-loader-txt');
-  loader.classList.add('on'); loaderTxt.textContent='Régénération de la légende…';
+  loader.classList.add('on'); loaderTxt.textContent='Regénération de la légende…';
   try{
     const prompt = `Voici un post ${reseau} :\n\n${texte}\n\nGénère uniquement la légende optimisée pour ${reseau} avec les hashtags les plus pertinents. Réponds uniquement avec la légende, sans préambule.`;
     const leg = await appelIA(prompt);
@@ -6676,13 +6681,26 @@ function afficherRes(resultats){
 
       const item = document.createElement('div');
       item.className = 'res-item';
+
+      // Scripts (Stories, Réel, Vidéo) → rendu tableau visuel
+      const isScript = ['Stories','Réel','Vidéo'].includes(r.typeContenu);
+      let texteHtml = '';
+      if(isScript){
+        if(r.typeContenu === 'Stories')     texteHtml = renderScriptStory(r.texte||'');
+        else if(r.typeContenu === 'Réel')   texteHtml = renderScriptReel(r.texte||'');
+        else if(r.typeContenu === 'Vidéo')  texteHtml = renderScriptVideoLI(r.texte||'');
+      } else {
+        texteHtml = escapeHtml(r.texte||'').replace(/\n/g,'<br/>');
+        if(r.legende) texteHtml += `<br/><br/><span class="res-item-legende">${escapeHtml(r.legende)}</span>`;
+      }
+
       item.innerHTML = `
         <div class="res-item-meta">
           <span class="res-item-type">${r.typeContenu}</span>
           ${dateAff ? `<span class="res-item-date">📅 ${dateAff}</span>` : ''}
           <button class="btn btn-sm btn-ghost" onclick="ouvrirEdit(${r.id})" style="margin:0;padding:.25rem .6rem;font-size:.72rem;">✏️ Éditer</button>
         </div>
-        <div class="res-item-texte">${escapeHtml(r.texte||'').replace(/\n/g,'<br/>')}${r.legende?`<br/><br/><span class="res-item-legende">${escapeHtml(r.legende)}</span>`:''}</div>`;
+        <div class="res-item-texte">${texteHtml}</div>`;
       body.appendChild(item);
     });
   });
@@ -6887,8 +6905,8 @@ async function genererStoryPanel(){
     });
     toast('✅ Story générée et sauvegardée !','ok');
 
-    // Bouton passe en Régénérer + corbeille
-    btnGen.textContent = '🔄 Régénérer';
+    // Bouton passe en Regénérer + corbeille
+    btnGen.textContent = '🔄 Regénérer';
     const gspActions = document.getElementById('gsp-actions');
     if(gspActions && !gspActions.querySelector('.gsp-trash')){
       const btn = document.createElement('button');
@@ -7297,9 +7315,11 @@ function ouvrirEdit(id){
   document.getElementById('opt-ig').className='reseau-opt'+(it.reseau==='Instagram'?' on-ig':'');
   // Date
   document.getElementById('edit-date').value=it.date||dateAujourdhui();
-  // Texte — carrousel ou post standard
+  // Texte — carrousel, script (Stories/Réel/Vidéo), ou post standard
   const editCarrousel = it.typeContenu === 'Carrousel';
+  const editScript    = ['Stories','Réel','Vidéo'].includes(it.typeContenu);
   const editZoneWrap  = document.getElementById('edit-carrousel-zone');
+  const editScriptZone = document.getElementById('edit-script-zone');
   const editTextArea  = document.getElementById('edit-texte');
   const editTexteHd   = document.getElementById('edit-texte-hd');
 
@@ -7311,22 +7331,42 @@ function ouvrirEdit(id){
       if(editZoneWrap) editZoneWrap.style.display = 'block';
       if(editTextArea) editTextArea.style.display = 'none';
       if(editTexteHd)  editTexteHd.style.display  = 'none';
+      if(editScriptZone) editScriptZone.style.display = 'none';
       afficherCarrousel(slides, it.legende||'', it.reseau||'Instagram', 'edit-carrousel-wrap');
     } else {
       // JSON mal formé — afficher en texte brut
       if(editZoneWrap) editZoneWrap.style.display = 'none';
+      if(editScriptZone) editScriptZone.style.display = 'none';
       if(editTextArea){ editTextArea.style.display='block'; editTextArea.value = it.texte||''; }
     }
+  } else if(editScript){
+    // Stories, Réel, Vidéo → afficher en tableau visuel
+    if(editZoneWrap) editZoneWrap.style.display = 'none';
+    if(editScriptZone) editScriptZone.style.display = 'block';
+    if(editTextArea) editTextArea.style.display = 'none';
+    if(editTexteHd) editTexteHd.style.display = 'none';
+    const scriptWrap = document.getElementById('edit-script-wrap');
+    if(scriptWrap){
+      const format = it.typeContenu;
+      if(format === 'Stories')     scriptWrap.innerHTML = renderScriptStory(it.texte||'');
+      else if(format === 'Réel')   scriptWrap.innerHTML = renderScriptReel(it.texte||'');
+      else if(format === 'Vidéo')  scriptWrap.innerHTML = renderScriptVideoLI(it.texte||'');
+      else scriptWrap.innerHTML = '<div style="white-space:pre-wrap;font-size:.82rem;">' + escapeHtml(it.texte||'') + '</div>';
+    }
+    // Garder aussi le textarea caché avec le texte brut pour la sauvegarde
+    if(editTextArea) editTextArea.value = it.texte||'';
   } else {
     if(editZoneWrap) editZoneWrap.style.display = 'none';
+    if(editScriptZone) editScriptZone.style.display = 'none';
     if(editTextArea){ editTextArea.style.display = 'block'; editTextArea.value = it.texte||''; }
     if(editTexteHd)  editTexteHd.style.display   = 'block';
   }
   document.getElementById('edit-legende').value=it.legende||'';
-  // Masquer le textarea légende pour les carrousels (légende déjà dans le viewer)
+  // Masquer le textarea légende pour les carrousels et scripts (légende déjà dans le rendu ou pas applicable)
   const legHd = document.getElementById('edit-legende-hd');
   const legTa = document.getElementById('edit-legende');
-  if(editCarrousel){
+  const regenRow = editTextArea ? editTextArea.closest('.sheet')?.querySelector('.regen-row') : null;
+  if(editCarrousel || editScript){
     if(legHd) legHd.style.display = 'none';
     if(legTa) legTa.style.display = 'none';
   } else {
@@ -7386,7 +7426,7 @@ function toggleStModale(){
   else{ btn.textContent='✓ Marquer publié'; btn.style.background='rgba(46,204,113,.12)'; btn.style.color='var(--succes)'; }
 }
 
-// Régénérer le post depuis la modale
+// Regénérer le post depuis la modale
 async function regenPost(){
   if(!verifierCleIA()) return;
   if(!editId) return;
@@ -7747,7 +7787,7 @@ async function genCreerLegende(){
   const loader = document.getElementById('creer-loader');
   const loaderTxt = document.getElementById('creer-loader-txt');
   loader.classList.add('on');
-  loaderTxt.textContent = 'Régénération de la légende…';
+  loaderTxt.textContent = 'Regénération de la légende…';
   try{
     const prompt = `Voici un post ${reseau} :\n\n${texte}\n\nGénère uniquement la légende optimisée pour ${reseau} avec les hashtags les plus pertinents. Réponds uniquement avec la légende, sans préambule.`;
     const leg = await appelIA(prompt);
@@ -8394,7 +8434,7 @@ async function genStoryTexte(){
     zone.style.cssText = 'overflow-x:auto;';
     const html = renderScriptStory(texte);
     zone.innerHTML = html || '<div style="white-space:pre-wrap;font-size:.82rem;">' + escapeHtml(texte) + '</div>';
-    if(btn){ btn.disabled = false; btn.textContent = '🔄 Régénérer'; }
+    if(btn){ btn.disabled = false; btn.textContent = '🔄 Regénérer'; }
     toast('✅ Script généré !','ok');
   } catch(e){
     zone.textContent = 'Erreur de génération.';

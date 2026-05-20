@@ -2954,10 +2954,11 @@ async function sqpGenerer(){
   result.innerHTML = '';
   if(btnGen){ btnGen.disabled = true; btnGen.textContent = '⏳ Génération…'; }
 
-  // Utiliser la suggestion IA comme sujet si disponible
+  // Utiliser le sujet configuré du jour (prioritaire), sinon la suggestion IA, sinon le défaut
   const cleSujet = 'roze_story_sujet_ia_' + sqpDate + '_' + sqpIdx;
-  const suggestionIA = localStorage.getItem(cleSujet) || STORY_SUJET_DEFAUT[s.typo] || '';
-  const sujetFinal = saisie || suggestionIA;
+  const suggestionIA = localStorage.getItem(cleSujet) || '';
+  const sujetConfig = (s.sujet && s.sujet.trim()) ? s.sujet.trim() : '';
+  const sujetFinal = saisie || sujetConfig || suggestionIA || STORY_SUJET_DEFAUT[s.typo] || '';
 
   const matiere  = matiereSemaine();
 
@@ -4645,7 +4646,17 @@ function parseMarkdownTable(text) {
 }
 
 function renderScriptReel(texte) {
-  const scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
+  let scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
+  // Fallback : si pas de SCRIPT: mais contient un tableau
+  if (!scriptMatch && texte.includes('|')) {
+    const lignes = texte.split('\n');
+    const idxT = lignes.findIndex(l => l.trim().startsWith('|'));
+    if (idxT >= 0) {
+      const apres = lignes.slice(idxT).join('\n');
+      const cut = apres.match(/([\s\S]*?)(?=LÉGENDE\s*:|CONSEIL\s*:|$)/i);
+      scriptMatch = cut ? [null, cut[1]] : [null, apres];
+    }
+  }
   const legendeMatch = texte.match(/LÉGENDE:\s*([\s\S]*?)(?=CONSEIL:|$)/i);
   const conseilMatch = texte.match(/CONSEIL:\s*([\s\S]*?)$/i);
   let html = '';
@@ -4689,7 +4700,17 @@ function renderScriptReel(texte) {
 }
 
 function renderScriptVideoLI(texte) {
-  const scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
+  let scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
+  // Fallback : si pas de SCRIPT: mais contient un tableau
+  if (!scriptMatch && texte.includes('|')) {
+    const lignes = texte.split('\n');
+    const idxT = lignes.findIndex(l => l.trim().startsWith('|'));
+    if (idxT >= 0) {
+      const apres = lignes.slice(idxT).join('\n');
+      const cut = apres.match(/([\s\S]*?)(?=LÉGENDE\s*:|$)/i);
+      scriptMatch = cut ? [null, cut[1]] : [null, apres];
+    }
+  }
   const legendeMatch = texte.match(/LÉGENDE:\s*([\s\S]*?)$/i);
   let html = '';
   if (scriptMatch) {
@@ -4730,10 +4751,26 @@ function renderScriptVideoLI(texte) {
 function renderScriptStory(texte) {
   // Nettoyer : supprimer toute phrase d'intro avant SCRIPT:
   const idxScript = texte.search(/SCRIPT\s*:/i);
-  const texteNet  = idxScript >= 0 ? texte.slice(idxScript) : texte;
+  let texteNet = idxScript >= 0 ? texte.slice(idxScript) : texte;
 
   // Extraire bloc SCRIPT (s'arrête à LÉGENDE: ou CONSEIL: ou fin)
-  const scriptMatch  = texteNet.match(/SCRIPT\s*:\s*([\s\S]*?)(?=LÉGENDE\s*:|CONSEIL\s*:|$)/i);
+  let scriptMatch = texteNet.match(/SCRIPT\s*:\s*([\s\S]*?)(?=LÉGENDE\s*:|CONSEIL\s*:|$)/i);
+
+  // Si pas de marqueur SCRIPT: mais le texte contient un tableau markdown → l'utiliser directement
+  if (!scriptMatch && texteNet.includes('|')) {
+    // Le tableau commence à la première ligne contenant |
+    const lignes = texteNet.split('\n');
+    const idxTable = lignes.findIndex(l => l.trim().startsWith('|'));
+    if (idxTable >= 0) {
+      // Tout ce qui est avant le tableau = intro (ignorée)
+      // Tout ce qui est le tableau et après = scriptMatch[1]
+      const apresTable = lignes.slice(idxTable).join('\n');
+      // Séparer le tableau de la légende/conseil éventuels
+      const cut = apresTable.match(/([\s\S]*?)(?=LÉGENDE\s*:|CONSEIL\s*:|$)/i);
+      scriptMatch = cut ? [null, cut[1]] : [null, apresTable];
+    }
+  }
+
   // Extraire LÉGENDE si présente
   const legendeMatch = texteNet.match(/LÉGENDE\s*:\s*([\s\S]*?)(?=CONSEIL\s*:|$)/i);
   // Extraire CONSEIL si présent
@@ -4741,7 +4778,7 @@ function renderScriptStory(texte) {
 
   let html = '';
 
-  if (scriptMatch && scriptMatch[1].trim()) {
+  if (scriptMatch && scriptMatch[1] && scriptMatch[1].trim()) {
     const tableData = parseMarkdownTable(scriptMatch[1]);
     if (tableData && tableData.data.length > 0) {
       html += '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">';
@@ -8329,10 +8366,11 @@ async function genStoryTexte(){
   const matiere = matiereSemaine();
   const joursNoms = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
 
-  // Utiliser la suggestion IA du jour si disponible
+  // Utiliser le sujet configuré du jour (prioritaire), sinon la suggestion IA, sinon le défaut
   const aujStr = dateAujourdhui();
   const cleSujet = 'roze_story_sujet_ia_' + aujStr + '_' + storyModalIndex;
-  const suggestionIA = localStorage.getItem(cleSujet) || STORY_SUJET_DEFAUT[s.typo] || '';
+  const suggestionIA = localStorage.getItem(cleSujet) || '';
+  const sujetDuJour = (s.sujet && s.sujet.trim()) ? s.sujet.trim() : (suggestionIA || STORY_SUJET_DEFAUT[s.typo] || '');
 
   const body = {
     action:     'generer_post',
@@ -8341,7 +8379,7 @@ async function genStoryTexte(){
     reseau:     'Instagram',
     format:     'Stories',
     pilier:     s.typo === 'vente' ? 'autorite' : s.typo === 'valeur' ? 'expertise' : 'visibilite',
-    sujet:      '[STORY ' + s.typo.toUpperCase() + '] ' + suggestionIA,
+    sujet:      '[STORY ' + s.typo.toUpperCase() + '] ' + sujetDuJour,
     matiere:    matiere,
     story_type: s.typo
   };

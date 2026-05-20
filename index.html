@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#E8186D"/>
   <link rel="manifest" href="manifest.json"/>
   <link rel="apple-touch-icon" href="icon-192.png"/>
-  <title>Roze — Assistante Réseaux Sociaux</title>
+  <title>Roze — Assistant Réseaux Sociaux</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
     :root{
@@ -1454,7 +1454,7 @@
   <div class="login-wrap">
     <div class="login-logo">
       <div class="login-badge">✦ Roze Communications</div>
-      <h1 class="login-titre">Ton assistante<br/><em>réseaux sociaux</em></h1>
+      <h1 class="login-titre">Ton assistant<br/><em>réseaux sociaux</em></h1>
       <p class="login-sous">Connecte-toi avec ton compte Google pour accéder à ton espace.</p>
     </div>
     <div class="login-card">
@@ -1504,7 +1504,7 @@
   <section id="p-accueil" class="page on">
     <div class="hero">
       <div class="hero-badge">✦ Roze Communications</div>
-      <h1>Ton assistante<br/><em>réseaux sociaux</em></h1>
+      <h1>Ton assistant<br/><em>réseaux sociaux</em></h1>
       <p>Pour devenir régulier, cohérent et impactant en moins de 2h par semaine.</p>
     </div>
     <!-- ① MA SEMAINE — en premier -->
@@ -2070,9 +2070,39 @@
           <input type="text" id="cfg-police-titre" placeholder="Ex : Playfair Display…" style="font-size:16px;"/>
           <label class="lbl">Police corps</label>
           <input type="text" id="cfg-police-corps" placeholder="Ex : DM Sans…" style="font-size:16px;"/>
-          <label class="lbl">URL logo (Drive)</label>
-          <input type="url" id="cfg-logo-url" placeholder="https://drive.google.com/uc?id=…" style="font-size:16px;"/>
-          <div class="opt" style="margin-top:.3rem;">Logo sur la dernière slide uniquement</div>
+          <label class="lbl">Logo (upload depuis ton téléphone)</label>
+          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+            <input type="file" id="cfg-logo-file" accept="image/*"
+              onchange="uploadLogoLocal(this)"
+              style="font-size:14px;flex:1;min-width:0;"/>
+            <img id="cfg-logo-preview" src="" alt=""
+              style="max-height:36px;max-width:100px;object-fit:contain;border-radius:4px;display:none;"/>
+            <button class="btn btn-ghost btn-sm" id="cfg-logo-clear" onclick="clearLogoLocal()" style="display:none;font-size:.7rem;">✕</button>
+          </div>
+          <input type="url" id="cfg-logo-url" placeholder="Ou colle une URL directe (https://...)" style="font-size:16px;margin-top:.4rem;"/>
+          <div class="opt" style="margin-top:.3rem;">Logo sur la dernière slide (upload recommandé — les liens Google Drive sont souvent bloqués par le navigateur)</div>
+          <label class="lbl" style="margin-top:.8rem;">Fonds personnalisés (carrousels)</label>
+          <div class="opt" style="margin-bottom:.4rem;">Importe jusqu'à 3 images de fond. Elles apparaîtront comme option dans l'éditeur de carrousel.</div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;">
+            <div style="display:flex;gap:.5rem;align-items:center;">
+              <span style="font-size:.7rem;color:var(--gris-clair);min-width:36px;">Fond 1</span>
+              <input type="file" id="fond-perso-file-0" accept="image/*" onchange="uploadFondPerso(this,0)" style="font-size:13px;flex:1;min-width:0;"/>
+              <img id="fond-perso-preview-0" src="" alt="" style="max-height:32px;max-width:56px;object-fit:cover;border-radius:4px;display:none;"/>
+              <button class="btn btn-ghost btn-sm" id="fond-perso-clear-0" onclick="clearFondPerso(0)" style="display:none;font-size:.65rem;padding:2px 6px;">✕</button>
+            </div>
+            <div style="display:flex;gap:.5rem;align-items:center;">
+              <span style="font-size:.7rem;color:var(--gris-clair);min-width:36px;">Fond 2</span>
+              <input type="file" id="fond-perso-file-1" accept="image/*" onchange="uploadFondPerso(this,1)" style="font-size:13px;flex:1;min-width:0;"/>
+              <img id="fond-perso-preview-1" src="" alt="" style="max-height:32px;max-width:56px;object-fit:cover;border-radius:4px;display:none;"/>
+              <button class="btn btn-ghost btn-sm" id="fond-perso-clear-1" onclick="clearFondPerso(1)" style="display:none;font-size:.65rem;padding:2px 6px;">✕</button>
+            </div>
+            <div style="display:flex;gap:.5rem;align-items:center;">
+              <span style="font-size:.7rem;color:var(--gris-clair);min-width:36px;">Fond 3</span>
+              <input type="file" id="fond-perso-file-2" accept="image/*" onchange="uploadFondPerso(this,2)" style="font-size:13px;flex:1;min-width:0;"/>
+              <img id="fond-perso-preview-2" src="" alt="" style="max-height:32px;max-width:56px;object-fit:cover;border-radius:4px;display:none;"/>
+              <button class="btn btn-ghost btn-sm" id="fond-perso-clear-2" onclick="clearFondPerso(2)" style="display:none;font-size:.65rem;padding:2px 6px;">✕</button>
+            </div>
+          </div>
         </div>
       </div><div class="duo-tab" id="tab-reseaux">
         <div class="duo-tab-hd" onclick="toggleDuoTab('tab-reseaux')">
@@ -2687,7 +2717,7 @@ let CFG = {
   couleurTexte: ls('roze_couleur_texte') || '#111111',
   policeTitre:  ls('roze_police_titre')  || 'Playfair Display',
   policeCorps:  ls('roze_police_corps')  || 'DM Sans',
-  logoUrl:      ls('roze_logo_url')      || '',
+  logoUrl:      ls('roze_logo_base64') || ls('roze_logo_url') || '',
   nom:          ls('roze_nom')           || '',
   entreprise:   ls('roze_entreprise')    || '',
   metier:       ls('roze_metier')        || '',
@@ -2750,6 +2780,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   initAuth();
   initTheme(); initUI(); chargerCompte(); affDate(); construireStoriesUI(); majGenFormats(getGenReseau()); majRythme(); chargerGoogleFonts();
   syncConfigDepuisSheets(); // Sync multi-appareils au démarrage
+  initLogoPreview(); initFondsPersoPreview(); // Init logo + fonds perso
   majCompteurBrouillons(); // Init compteur idées
   majSemMini(); majKPIs();
   // Afficher le badge sync si posts en attente
@@ -3177,6 +3208,128 @@ function toggleDuoTab(id){
   const clicked = document.getElementById(id);
   if(!clicked) return;
   clicked.classList.toggle('open');
+}
+
+// ══════════════════════════════════════════════════════
+// LOGO — upload local en base64 (fiable, pas de CORS)
+// ══════════════════════════════════════════════════════
+function uploadLogoLocal(input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  if(file.size > 500000){ toast('⚠️ Logo trop lourd (max 500 Ko)','err'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const b64 = e.target.result; // data:image/png;base64,...
+    localStorage.setItem('roze_logo_base64', b64);
+    CFG.logoUrl = b64;
+    const preview = document.getElementById('cfg-logo-preview');
+    const clearBtn = document.getElementById('cfg-logo-clear');
+    if(preview){ preview.src = b64; preview.style.display = 'inline-block'; }
+    if(clearBtn) clearBtn.style.display = 'inline-block';
+    toast('✅ Logo enregistré','ok');
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearLogoLocal(){
+  localStorage.removeItem('roze_logo_base64');
+  CFG.logoUrl = document.getElementById('cfg-logo-url')?.value || '';
+  const preview = document.getElementById('cfg-logo-preview');
+  const clearBtn = document.getElementById('cfg-logo-clear');
+  if(preview){ preview.src = ''; preview.style.display = 'none'; }
+  if(clearBtn) clearBtn.style.display = 'none';
+  document.getElementById('cfg-logo-file').value = '';
+  toast('Logo supprimé','ok');
+}
+
+function initLogoPreview(){
+  const b64 = localStorage.getItem('roze_logo_base64');
+  if(b64){
+    CFG.logoUrl = b64;
+    const preview = document.getElementById('cfg-logo-preview');
+    const clearBtn = document.getElementById('cfg-logo-clear');
+    if(preview){ preview.src = b64; preview.style.display = 'inline-block'; }
+    if(clearBtn) clearBtn.style.display = 'inline-block';
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// FONDS PERSONNALISÉS — upload 1 à 3 images de fond
+// ══════════════════════════════════════════════════════
+const MAX_FONDS = 3;
+
+function uploadFondPerso(input, index){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  if(file.size > 2000000){ toast('⚠️ Image trop lourde (max 2 Mo)','err'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const b64 = e.target.result;
+    localStorage.setItem('roze_fond_perso_' + index, b64);
+    const preview = document.getElementById('fond-perso-preview-' + index);
+    const clearBtn = document.getElementById('fond-perso-clear-' + index);
+    if(preview){ preview.src = b64; preview.style.display = 'inline-block'; }
+    if(clearBtn) clearBtn.style.display = 'inline-block';
+    toast('✅ Fond ' + (index+1) + ' enregistré','ok');
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearFondPerso(index){
+  localStorage.removeItem('roze_fond_perso_' + index);
+  const preview = document.getElementById('fond-perso-preview-' + index);
+  const clearBtn = document.getElementById('fond-perso-clear-' + index);
+  if(preview){ preview.src = ''; preview.style.display = 'none'; }
+  if(clearBtn) clearBtn.style.display = 'none';
+  const input = document.getElementById('fond-perso-file-' + index);
+  if(input) input.value = '';
+  toast('Fond ' + (index+1) + ' supprimé','ok');
+}
+
+function getFondsPerso(){
+  const fonds = [];
+  for(let i = 0; i < MAX_FONDS; i++){
+    const b64 = localStorage.getItem('roze_fond_perso_' + i);
+    if(b64) fonds.push(b64);
+  }
+  return fonds;
+}
+
+function initFondsPersoPreview(){
+  for(let i = 0; i < MAX_FONDS; i++){
+    const b64 = localStorage.getItem('roze_fond_perso_' + i);
+    if(b64){
+      const preview = document.getElementById('fond-perso-preview-' + i);
+      const clearBtn = document.getElementById('fond-perso-clear-' + i);
+      if(preview){ preview.src = b64; preview.style.display = 'inline-block'; }
+      if(clearBtn) clearBtn.style.display = 'inline-block';
+    }
+  }
+}
+
+function renderFondsPersoPanel(idx){
+  const fp = getFondsPerso();
+  if(fp.length === 0) return '';
+  let html = '<div class="cvp-lbl" style="margin:.4rem 0 .3rem;">Mes fonds</div>'
+    + '<div style="display:flex;gap:.4rem;flex-wrap:wrap;">';
+  fp.forEach((b64, fi) => {
+    const selected = cvFondPhotoParSlide[idx] === b64;
+    html += '<img src="' + b64 + '" '
+      + 'style="width:48px;height:64px;object-fit:cover;border-radius:6px;cursor:pointer;border:2px solid '
+      + (selected ? 'var(--rose)' : 'transparent') + ';" '
+      + 'onclick="applyFondPerso(' + idx + ',' + fi + ')"/>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function applyFondPerso(idx, fondIndex){
+  const fonds = getFondsPerso();
+  if(!fonds[fondIndex]) return;
+  cvFondPhotoParSlide[idx] = fonds[fondIndex];
+  setSlideStyle(idx, 'fondType', 'photo');
+  appliquerStylesSlide(idx);
+  majPanneauEditeur(idx);
 }
 
 function toggleAcc(id){
@@ -3674,8 +3827,8 @@ async function exporterPNG(){
     const gridHtml = (amb === 'clair') ? `<div style="position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);background-size:100px 100px;"></div>` : '';
 
     const sstitreHtml = s.sousTitre ? `<div style="font-size:${ssFs}px;font-weight:600;opacity:.85;margin-bottom:${Math.round(H*0.012)}px;line-height:1.3;">${s.sousTitre.replace(/^\s*[-–—•]+\s*/,'')}</div>` : '';
-    const logoHtml = (s.type==='conclusion' && CFG.logoUrl)
-      ? `<img src="${CFG.logoUrl}" crossOrigin="anonymous" style="max-width:${Math.round(W*0.22)}px;max-height:${Math.round(H*0.045)}px;object-fit:contain;opacity:.85;margin-bottom:${Math.round(H*0.02)}px;display:block;"/>`
+    const logoHtml = (s.type==='conclusion' && CFG.logoUrl && !st.hideLogo)
+      ? `<img src="${CFG.logoUrl}" crossOrigin="anonymous" style="max-width:${Math.round(W*0.22)}px;max-height:${Math.round(H*0.045)}px;object-fit:contain;opacity:.85;margin-bottom:${Math.round(H*0.02)}px;display:block;" onerror="this.style.display='none'"/>`
       : '';
 
     // Respiration : titre en italique accent, centré, pas de corps
@@ -3748,8 +3901,8 @@ async function exporterPDF(){
     const corpsFs = Math.round(H*0.022);
     const ssFs    = Math.round(H*0.018);
     const sstitreHtml = s.sousTitre ? `<div style="font-size:${ssFs}px;font-weight:600;opacity:.85;margin-bottom:${Math.round(H*0.012)}px;">${s.sousTitre.replace(/^\s*[-–—•]+\s*/,'')}</div>` : '';
-    const logoHtml = (s.type==='conclusion' && CFG.logoUrl)
-      ? `<img src="${CFG.logoUrl}" crossOrigin="anonymous" style="max-width:${Math.round(W*0.22)}px;max-height:${Math.round(H*0.045)}px;object-fit:contain;opacity:.85;margin-bottom:${Math.round(H*0.02)}px;display:block;"/>` : '';
+    const logoHtml = (s.type==='conclusion' && CFG.logoUrl && !st.hideLogo)
+      ? `<img src="${CFG.logoUrl}" crossOrigin="anonymous" style="max-width:${Math.round(W*0.22)}px;max-height:${Math.round(H*0.045)}px;object-fit:contain;opacity:.85;margin-bottom:${Math.round(H*0.02)}px;display:block;" onerror="this.style.display='none'"/>` : '';
 
     const div = document.createElement('div');
     div.style.cssText = `position:fixed;left:-9999px;top:0;width:${W}px;height:${H}px;overflow:hidden;background:${bgCss};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:${pad};box-sizing:border-box;display:flex;flex-direction:column;text-align:${st.align||'left'};`;
@@ -5175,10 +5328,12 @@ function appliqueFondCSS(el, cssString){
 function renderLogoSlide(idx){
   if(!CFG.logoUrl) return '';
   const st = getSlideStyle(idx);
+  if(st.hideLogo) return ''; // Toggle désactivé par l'utilisateur
   const pos = st.logoPos || 'center'; // 'left' | 'center' | 'right'
   const justify = pos === 'left' ? 'flex-start' : (pos === 'right' ? 'flex-end' : 'center');
   return `<div style="display:flex;justify-content:${justify};margin:0 0 1.2rem 0;padding:0 .4rem;">
-    <img src="${CFG.logoUrl}" alt="logo" style="max-width:120px;max-height:48px;object-fit:contain;opacity:.85;"/>
+    <img src="${CFG.logoUrl}" alt="logo" style="max-width:120px;max-height:48px;object-fit:contain;opacity:.85;"
+      onerror="this.style.display='none'"/>
   </div>`;
 }
 
@@ -5308,19 +5463,27 @@ function fermerCarrouselFullscreen(){
   const fs = document.getElementById('cv-fullscreen');
   if(fs) fs.classList.remove('on');
   if(!carrouselCourant) return;
-  // Mettre à jour le texte des miniatures IN-PLACE (ne pas re-rendre — ça efface les styles)
-  carrouselCourant.slides.forEach((s, i) => {
-    const el = document.getElementById('cv-slide-' + i);
-    if(!el) return;
-    const titreEl   = el.querySelector('.cv-slide-titre');
-    const corpsEl   = el.querySelector('.cv-slide-corps');
-    const sstitreEl = el.querySelector('.cv-slide-sstitre');
-    if(titreEl)   titreEl.textContent   = (s.titre||'').replace(/\[ACCENT\]|\[\/ACCENT\]/g,'');
-    if(corpsEl)   corpsEl.textContent   = s.corps||'';
-    if(sstitreEl) sstitreEl.textContent = s.sousTitre ? s.sousTitre.replace(/^\s*[-–—•*#]+\s*/,'').trim() : '';
-  });
-  // Réappliquer tous les styles (fond, texte, marges) sur TOUTES les miniatures
-  requestAnimationFrame(() => requestAnimationFrame(() => majFondsSlides()));
+  // Re-rendre toutes les miniatures avec les styles à jour
+  const wrap = document.getElementById('cv-slides-wrap');
+  if(wrap){
+    const c1 = CFG.couleur1 || '#E8186D';
+    const c2 = CFG.couleur2 || '#111111';
+    const ptit = CFG.policeTitre || 'Playfair Display';
+    const pcorp = CFG.policeCorps || 'DM Sans';
+    const slides = carrouselCourant.slides;
+    // Conserver le bouton + à la fin
+    const addBtn = wrap.querySelector('.cv-slide-add');
+    wrap.innerHTML = slides.map((s,i) =>
+      renderCvSlide(s, i, slides.length, c1, c2, ptit, pcorp, {small:true, editable:false})
+    ).join('');
+    if(addBtn) wrap.appendChild(addBtn);
+    // Réappliquer les styles individuels sur chaque miniature
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        slides.forEach((_, i) => appliquerStylesSlide(i));
+      });
+    });
+  }
 }
 function cvFondPill(el, style){
   document.querySelectorAll('.cv-fpill').forEach(p=>p.classList.remove('on'));
@@ -5665,6 +5828,16 @@ function majPanneauEditeur(idx){
         <textarea class="cvp-textarea" rows="4"
           oninput="cvpMajTexte(${idx},'corps',this.value)">${corpsCourant.replace(/`/g,"'")}</textarea>
       </div>
+      ${(slide && slide.type === 'conclusion') ? `
+      <div style="margin-top:.5rem;display:flex;align-items:center;gap:.5rem;">
+        <label style="font-size:.72rem;color:var(--gris-clair);display:flex;align-items:center;gap:.4rem;cursor:pointer;">
+          <input type="checkbox" id="cvp-logo-toggle" ${CFG.logoUrl && !st.hideLogo ? 'checked' : ''}
+            onchange="setSlideStyle(${idx},'hideLogo',!this.checked);appliquerStylesSlide(${idx})"
+            style="accent-color:var(--rose);"/>
+          Afficher le logo
+        </label>
+        ${CFG.logoUrl ? '<img src="'+CFG.logoUrl+'" style="max-height:20px;max-width:60px;object-fit:contain;opacity:.6;"/>' : '<span style="font-size:.65rem;color:#666;">Aucun logo — va dans Mon Compte</span>'}
+      </div>` : ''}
     </div>
 
     <!-- Section FOND -->
@@ -5680,6 +5853,9 @@ function majPanneauEditeur(idx){
           <input type="file" accept="image/*" style="display:none" onchange="cvpFondPhoto(${idx},this)"/>
         </label>
       </div>
+
+      <!-- Fonds perso (si uploadés dans Mon Compte) -->
+      ${renderFondsPersoPanel(idx)}
 
       <!-- Couleur fond uni -->
       ${st.fondType==='uni' ? `
@@ -8108,6 +8284,10 @@ function sauvegarderCompte(){
   localStorage.setItem('roze_police_titre', CFG.policeTitre);
   localStorage.setItem('roze_police_corps', CFG.policeCorps);
   localStorage.setItem('roze_logo_url',     CFG.logoUrl);
+  // Logo : prioriser le base64 uploadé sur l'URL manuelle
+  const logoB64 = localStorage.getItem('roze_logo_base64') || '';
+  if(logoB64) CFG.logoUrl = logoB64;
+  else CFG.logoUrl = gv('cfg-logo-url') || CFG.logoUrl;
   localStorage.setItem('roze_nom',          CFG.nom);
   localStorage.setItem('roze_entreprise',   CFG.entreprise);
   localStorage.setItem('roze_metier',       CFG.metier);

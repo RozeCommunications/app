@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- v=2026-05-14-fix-ecran-noir-editeur-panneau -->
+<!-- v=2026-05-18-ambiance-variete-visuelle-carrousel -->
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/>
@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#E8186D"/>
   <link rel="manifest" href="manifest.json"/>
   <link rel="apple-touch-icon" href="icon-192.png"/>
-  <title>Roze — Assistante Réseaux Sociaux</title>
+  <title>Roze — Assistant Réseaux Sociaux</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
     :root{
@@ -783,7 +783,7 @@
     /* Layout 2 colonnes */
     .cv-fs-layout{display:flex;width:100%;height:100%;overflow:hidden;}
     /* Colonne slide */
-    .cv-fs-col-slide{flex:1;display:flex;flex-direction:column;min-width:0;padding:.75rem .75rem .75rem 1rem;}
+    .cv-fs-col-slide{flex:1;display:flex;flex-direction:column;min-width:0;padding:calc(.75rem + var(--safe-top, 0px)) .75rem .75rem 1rem;}
     .cv-fs-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;}
     .cv-fs-counter-lbl{font-size:.72rem;font-weight:700;color:rgba(255,255,255,.6);}
     .cv-fs-edit-hint{font-size:.6rem;color:rgba(255,255,255,.3);font-style:italic;}
@@ -832,7 +832,7 @@
     @media(max-width:600px){
       .cv-fs-layout{flex-direction:column;}
       .cv-fs-panel{width:100%;min-width:0;border-left:none;border-top:1px solid rgba(255,255,255,.07);max-height:38vh;}
-      .cv-fs-col-slide{padding:.5rem;}
+      .cv-fs-col-slide{padding:calc(.5rem + var(--safe-top, 0px)) .5rem .5rem;}
     }
     .cv-fullscreen.on{display:flex;}
     .cv-fs-slide{width:min(360px,85vw);height:min(480px,85vw * 1.333);border-radius:14px;overflow:hidden;position:relative;}
@@ -842,7 +842,7 @@
     .cv-fs-nav{display:flex;align-items:center;gap:1rem;}
     .cv-fs-btn{background:rgba(255,255,255,.12);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;}
     .cv-fs-counter{font-size:.82rem;color:#ccc;}
-    .cv-fs-close{position:absolute;top:1rem;right:1rem;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;}
+    .cv-fs-close{position:absolute;top:calc(1rem + var(--safe-top, 0px));right:1rem;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;z-index:620;}
     .cv-export-bar{display:flex;gap:.6rem;padding:.7rem 1rem;border-top:1px solid var(--gris-border);flex-wrap:wrap;}
     .cv-export-bar .btn{margin-top:0;width:auto;flex:1;min-width:120px;font-size:.78rem;padding:9px 14px;}
 
@@ -1454,7 +1454,7 @@
   <div class="login-wrap">
     <div class="login-logo">
       <div class="login-badge">✦ Roze Communications</div>
-      <h1 class="login-titre">Ton assistante<br/><em>réseaux sociaux</em></h1>
+      <h1 class="login-titre">Ton assistant<br/><em>réseaux sociaux</em></h1>
       <p class="login-sous">Connecte-toi avec ton compte Google pour accéder à ton espace.</p>
     </div>
     <div class="login-card">
@@ -1504,7 +1504,7 @@
   <section id="p-accueil" class="page on">
     <div class="hero">
       <div class="hero-badge">✦ Roze Communications</div>
-      <h1>Ton assistante<br/><em>réseaux sociaux</em></h1>
+      <h1>Ton assistant<br/><em>réseaux sociaux</em></h1>
       <p>Pour devenir régulier, cohérent et impactant en moins de 2h par semaine.</p>
     </div>
     <!-- ① MA SEMAINE — en premier -->
@@ -1756,7 +1756,7 @@
       <div class="creer-legende" id="gen-legende-zone">
         <span class="creer-lbl" style="margin-top:.5rem;">Légende & hashtags</span>
         <textarea id="gen-legende" placeholder="Légende + hashtags…"></textarea>
-        <button class="btn btn-ghost btn-sm btn-full" style="margin-top:.4rem;" onclick="regenLegendePaneau()">🔄 Régénérer la légende</button>
+        <button class="btn btn-ghost btn-sm btn-full" style="margin-top:.4rem;" onclick="regenLegendePaneau()">🔄 Regénérer la légende</button>
         <div id="gen-source-chip" style="display:none;margin-top:.5rem;">
           <button onclick="toggleSourceDetail()" style="background:rgba(0,119,181,.12);border:1px solid rgba(0,119,181,.3);border-radius:20px;padding:.25rem .75rem;font-size:.72rem;color:#5bb8ff;cursor:pointer;font-weight:600;">🌐 Source</button>
           <div id="gen-source-detail" style="display:none;background:rgba(0,119,181,.08);border:1px solid rgba(0,119,181,.2);border-radius:8px;padding:.6rem .8rem;margin-top:.4rem;font-size:.72rem;color:var(--blanc-doux);line-height:1.5;"></div>
@@ -1778,7 +1778,7 @@
       <!-- Actions post généré -->
       <div class="edit-actions" id="gen-post-actions" style="display:none;">
         <button class="btn btn-rose" onclick="sauvegarderGenPanel()">💾 Sauvegarder</button>
-        <button class="btn btn-ghost" id="btn-regen-style" onclick="regenStylePhoto()" style="display:none;">🎨 Régénérer le style</button>
+        <button class="btn btn-ghost" id="btn-regen-style" onclick="regenStylePhoto()" style="display:none;">🎨 Regénérer le style</button>
         <button class="btn btn-outline" onclick="copierGenPanel()">📋 Copier</button>
         <button class="btn btn-ghost" id="btn-publier-gen" onclick="publierSurReseau()" style="font-size:.78rem;">🚀 Publier →</button>
         <button class="btn btn-ghost" onclick="supprimerGenPanel()" style="font-size:.78rem;color:rgba(255,100,100,.7);">🗑️ Supprimer</button>
@@ -1798,7 +1798,7 @@
       <!-- Type de story = pilier -->
       <span class="creer-lbl">Type de story</span>
       <div class="piliers-row" id="gsp-types" style="flex-direction:column;gap:.8rem;">
-        <div class="pilier-chip on" data-type="vente" onclick="setGspType(this,'vente')">
+        <div class="pilier-chip on-vente" data-type="vente" onclick="setGspType(this,'vente')">
           <span class="pi">💰</span><span class="pn">Vente</span>
           <div class="pilier-detail">Contextualisation → douleur client → appel à action vers ton offre</div>
         </div>
@@ -1844,7 +1844,7 @@
         <div class="res-body" id="gsp-result" style="font-size:.82rem;line-height:1.7;padding:1rem;background:var(--gris-input);border-radius:10px;border:1px solid var(--gris-border);min-height:80px;"></div>
         <div class="gen-post-actions" id="gsp-actions" style="margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap;">
           <button class="btn btn-ghost btn-sm" onclick="gspCopier()">📋 Copier</button>
-          <button class="btn btn-ghost btn-sm" onclick="gspRegenerer()">🔄 Régénérer</button>
+          <button class="btn btn-ghost btn-sm" onclick="gspRegenerer()">🔄 Regénérer</button>
           <button class="btn btn-ghost btn-sm" onclick="gspSauvegarder()">💾 Sauvegarder</button>
         </div>
       </div>
@@ -2070,9 +2070,39 @@
           <input type="text" id="cfg-police-titre" placeholder="Ex : Playfair Display…" style="font-size:16px;"/>
           <label class="lbl">Police corps</label>
           <input type="text" id="cfg-police-corps" placeholder="Ex : DM Sans…" style="font-size:16px;"/>
-          <label class="lbl">URL logo (Drive)</label>
-          <input type="url" id="cfg-logo-url" placeholder="https://drive.google.com/uc?id=…" style="font-size:16px;"/>
-          <div class="opt" style="margin-top:.3rem;">Logo sur la dernière slide uniquement</div>
+          <label class="lbl">Logo (upload depuis ton téléphone)</label>
+          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+            <input type="file" id="cfg-logo-file" accept="image/*"
+              onchange="uploadLogoLocal(this)"
+              style="font-size:14px;flex:1;min-width:0;"/>
+            <img id="cfg-logo-preview" src="" alt=""
+              style="max-height:36px;max-width:100px;object-fit:contain;border-radius:4px;display:none;"/>
+            <button class="btn btn-ghost btn-sm" id="cfg-logo-clear" onclick="clearLogoLocal()" style="display:none;font-size:.7rem;">✕</button>
+          </div>
+          <input type="url" id="cfg-logo-url" placeholder="Ou colle une URL directe (https://...)" style="font-size:16px;margin-top:.4rem;"/>
+          <div class="opt" style="margin-top:.3rem;">Logo sur la dernière slide (upload recommandé — les liens Google Drive sont souvent bloqués par le navigateur)</div>
+          <label class="lbl" style="margin-top:.8rem;">Fonds personnalisés (carrousels)</label>
+          <div class="opt" style="margin-bottom:.4rem;">Importe jusqu'à 3 images de fond. Elles apparaîtront comme option dans l'éditeur de carrousel.</div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;">
+            <div style="display:flex;gap:.5rem;align-items:center;">
+              <span style="font-size:.7rem;color:var(--gris-clair);min-width:36px;">Fond 1</span>
+              <input type="file" id="fond-perso-file-0" accept="image/*" onchange="uploadFondPerso(this,0)" style="font-size:13px;flex:1;min-width:0;"/>
+              <img id="fond-perso-preview-0" src="" alt="" style="max-height:32px;max-width:56px;object-fit:cover;border-radius:4px;display:none;"/>
+              <button class="btn btn-ghost btn-sm" id="fond-perso-clear-0" onclick="clearFondPerso(0)" style="display:none;font-size:.65rem;padding:2px 6px;">✕</button>
+            </div>
+            <div style="display:flex;gap:.5rem;align-items:center;">
+              <span style="font-size:.7rem;color:var(--gris-clair);min-width:36px;">Fond 2</span>
+              <input type="file" id="fond-perso-file-1" accept="image/*" onchange="uploadFondPerso(this,1)" style="font-size:13px;flex:1;min-width:0;"/>
+              <img id="fond-perso-preview-1" src="" alt="" style="max-height:32px;max-width:56px;object-fit:cover;border-radius:4px;display:none;"/>
+              <button class="btn btn-ghost btn-sm" id="fond-perso-clear-1" onclick="clearFondPerso(1)" style="display:none;font-size:.65rem;padding:2px 6px;">✕</button>
+            </div>
+            <div style="display:flex;gap:.5rem;align-items:center;">
+              <span style="font-size:.7rem;color:var(--gris-clair);min-width:36px;">Fond 3</span>
+              <input type="file" id="fond-perso-file-2" accept="image/*" onchange="uploadFondPerso(this,2)" style="font-size:13px;flex:1;min-width:0;"/>
+              <img id="fond-perso-preview-2" src="" alt="" style="max-height:32px;max-width:56px;object-fit:cover;border-radius:4px;display:none;"/>
+              <button class="btn btn-ghost btn-sm" id="fond-perso-clear-2" onclick="clearFondPerso(2)" style="display:none;font-size:.65rem;padding:2px 6px;">✕</button>
+            </div>
+          </div>
         </div>
       </div><div class="duo-tab" id="tab-reseaux">
         <div class="duo-tab-hd" onclick="toggleDuoTab('tab-reseaux')">
@@ -2453,7 +2483,7 @@
         <div class="ac-desc" style="line-height:2;">
           — Plus tu remplis les 8 questions avec des détails précis et vrais, plus l'IA génère dans ta voix.<br/>
           — Relis toujours le post généré à voix haute : si tu ne te reconnais pas dans ce que tu entends, reformule.<br/>
-          — Utilise le bouton Régénérer si le premier résultat ne te convient pas — chaque génération est différente.<br/>
+          — Utilise le bouton Regénérer si le premier résultat ne te convient pas — chaque génération est différente.<br/>
           — Varie les 4 piliers chaque semaine pour une présence équilibrée.<br/>
           — Pour les stories vente, le plus important est d'avoir un mot-clé clair (ex : "COACHING", "DEVIS") que tes abonnés peuvent t'envoyer en DM.
         </div>
@@ -2519,17 +2549,22 @@
       <div style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Aperçu carrousel</div>
       <div id="edit-carrousel-wrap"></div>
     </div>
+    <!-- Zone script visuel (Stories, Réel, Vidéo — tableau) -->
+    <div id="edit-script-zone" style="display:none;">
+      <div style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Script</div>
+      <div id="edit-script-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;"></div>
+    </div>
     <div class="regen-row">
-      <button class="btn btn-ghost btn-sm" onclick="regenPost()">🔄 Régénérer le sujet</button>
+      <button class="btn btn-ghost btn-sm" onclick="regenPost()">🔄 Regénérer le sujet</button>
       <button class="btn btn-ghost btn-sm" onclick="regenManuel()">✏️ Saisir un sujet</button>
     </div>
-    <div class="mini-loader" id="loader-regen"><div class="mini-ring"></div><span>Régénération en cours…</span></div>
+    <div class="mini-loader" id="loader-regen"><div class="mini-ring"></div><span>Regénération en cours…</span></div>
 
     <!-- Légende (masquée pour les carrousels — déjà dans le viewer) -->
     <div id="edit-legende-hd" style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Légende & hashtags</div>
     <textarea class="legende-zone" id="edit-legende" placeholder="Légende + hashtags…"></textarea>
     <div class="regen-row">
-      <button class="btn btn-ghost btn-sm" onclick="regenLegende()">🔄 Régénérer la légende</button>
+      <button class="btn btn-ghost btn-sm" onclick="regenLegende()">🔄 Regénérer la légende</button>
     </div>
 
     <!-- Sujet manuel (caché par défaut) -->
@@ -2636,7 +2671,7 @@
     <div class="creer-legende" id="creer-legende-zone">
       <span class="creer-lbl" style="margin-top:.5rem;">Légende & hashtags</span>
       <textarea id="creer-legende" placeholder="Légende + hashtags…"></textarea>
-      <button class="btn btn-ghost btn-sm btn-full" style="margin-top:.4rem;" onclick="genCreerLegende()">🔄 Régénérer la légende</button>
+      <button class="btn btn-ghost btn-sm btn-full" style="margin-top:.4rem;" onclick="genCreerLegende()">🔄 Regénérer la légende</button>
     </div>
 
     <!-- Actions -->
@@ -2682,7 +2717,7 @@ let CFG = {
   couleurTexte: ls('roze_couleur_texte') || '#111111',
   policeTitre:  ls('roze_police_titre')  || 'Playfair Display',
   policeCorps:  ls('roze_police_corps')  || 'DM Sans',
-  logoUrl:      ls('roze_logo_url')      || '',
+  logoUrl:      ls('roze_logo_base64') || ls('roze_logo_url') || '',
   nom:          ls('roze_nom')           || '',
   entreprise:   ls('roze_entreprise')    || '',
   metier:       ls('roze_metier')        || '',
@@ -2745,6 +2780,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   initAuth();
   initTheme(); initUI(); chargerCompte(); affDate(); construireStoriesUI(); majGenFormats(getGenReseau()); majRythme(); chargerGoogleFonts();
   syncConfigDepuisSheets(); // Sync multi-appareils au démarrage
+  initLogoPreview(); initFondsPersoPreview(); // Init logo + fonds perso
   majCompteurBrouillons(); // Init compteur idées
   majSemMini(); majKPIs();
   // Afficher le badge sync si posts en attente
@@ -2954,10 +2990,11 @@ async function sqpGenerer(){
   result.innerHTML = '';
   if(btnGen){ btnGen.disabled = true; btnGen.textContent = '⏳ Génération…'; }
 
-  // Utiliser la suggestion IA comme sujet si disponible
+  // Utiliser le sujet configuré du jour (prioritaire), sinon la suggestion IA, sinon le défaut
   const cleSujet = 'roze_story_sujet_ia_' + sqpDate + '_' + sqpIdx;
-  const suggestionIA = localStorage.getItem(cleSujet) || STORY_SUJET_DEFAUT[s.typo] || '';
-  const sujetFinal = saisie || suggestionIA;
+  const suggestionIA = localStorage.getItem(cleSujet) || '';
+  const sujetConfig = (s.sujet && s.sujet.trim()) ? s.sujet.trim() : '';
+  const sujetFinal = saisie || sujetConfig || suggestionIA || STORY_SUJET_DEFAUT[s.typo] || '';
 
   const matiere  = matiereSemaine();
 
@@ -2986,10 +3023,10 @@ async function sqpGenerer(){
     result.classList.add('on');
     localStorage.setItem('roze_story_script_' + sqpDate, texte);
 
-    // Mettre à jour les boutons : Régénérer + Corbeille
+    // Mettre à jour les boutons : Regénérer + Corbeille
     const actions = document.querySelector('.sqp-actions');
     if(actions) actions.innerHTML = `
-      <button class="btn btn-rose" onclick="sqpGenerer()">🔄 Régénérer</button>
+      <button class="btn btn-rose" onclick="sqpGenerer()">🔄 Regénérer</button>
       <button class="btn btn-ghost" onclick="sqpSauvegarder()">💾 Sauvegarder</button>
       <button class="btn btn-outline" onclick="sqpCopier()">Copier</button>
       <button class="btn btn-ghost" onclick="sqpSupprimer()" style="color:#e05555;border-color:rgba(224,85,85,.3);">🗑️</button>`;
@@ -3171,6 +3208,128 @@ function toggleDuoTab(id){
   const clicked = document.getElementById(id);
   if(!clicked) return;
   clicked.classList.toggle('open');
+}
+
+// ══════════════════════════════════════════════════════
+// LOGO — upload local en base64 (fiable, pas de CORS)
+// ══════════════════════════════════════════════════════
+function uploadLogoLocal(input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  if(file.size > 500000){ toast('⚠️ Logo trop lourd (max 500 Ko)','err'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const b64 = e.target.result; // data:image/png;base64,...
+    localStorage.setItem('roze_logo_base64', b64);
+    CFG.logoUrl = b64;
+    const preview = document.getElementById('cfg-logo-preview');
+    const clearBtn = document.getElementById('cfg-logo-clear');
+    if(preview){ preview.src = b64; preview.style.display = 'inline-block'; }
+    if(clearBtn) clearBtn.style.display = 'inline-block';
+    toast('✅ Logo enregistré','ok');
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearLogoLocal(){
+  localStorage.removeItem('roze_logo_base64');
+  CFG.logoUrl = document.getElementById('cfg-logo-url')?.value || '';
+  const preview = document.getElementById('cfg-logo-preview');
+  const clearBtn = document.getElementById('cfg-logo-clear');
+  if(preview){ preview.src = ''; preview.style.display = 'none'; }
+  if(clearBtn) clearBtn.style.display = 'none';
+  document.getElementById('cfg-logo-file').value = '';
+  toast('Logo supprimé','ok');
+}
+
+function initLogoPreview(){
+  const b64 = localStorage.getItem('roze_logo_base64');
+  if(b64){
+    CFG.logoUrl = b64;
+    const preview = document.getElementById('cfg-logo-preview');
+    const clearBtn = document.getElementById('cfg-logo-clear');
+    if(preview){ preview.src = b64; preview.style.display = 'inline-block'; }
+    if(clearBtn) clearBtn.style.display = 'inline-block';
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// FONDS PERSONNALISÉS — upload 1 à 3 images de fond
+// ══════════════════════════════════════════════════════
+const MAX_FONDS = 3;
+
+function uploadFondPerso(input, index){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  if(file.size > 2000000){ toast('⚠️ Image trop lourde (max 2 Mo)','err'); return; }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const b64 = e.target.result;
+    localStorage.setItem('roze_fond_perso_' + index, b64);
+    const preview = document.getElementById('fond-perso-preview-' + index);
+    const clearBtn = document.getElementById('fond-perso-clear-' + index);
+    if(preview){ preview.src = b64; preview.style.display = 'inline-block'; }
+    if(clearBtn) clearBtn.style.display = 'inline-block';
+    toast('✅ Fond ' + (index+1) + ' enregistré','ok');
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearFondPerso(index){
+  localStorage.removeItem('roze_fond_perso_' + index);
+  const preview = document.getElementById('fond-perso-preview-' + index);
+  const clearBtn = document.getElementById('fond-perso-clear-' + index);
+  if(preview){ preview.src = ''; preview.style.display = 'none'; }
+  if(clearBtn) clearBtn.style.display = 'none';
+  const input = document.getElementById('fond-perso-file-' + index);
+  if(input) input.value = '';
+  toast('Fond ' + (index+1) + ' supprimé','ok');
+}
+
+function getFondsPerso(){
+  const fonds = [];
+  for(let i = 0; i < MAX_FONDS; i++){
+    const b64 = localStorage.getItem('roze_fond_perso_' + i);
+    if(b64) fonds.push(b64);
+  }
+  return fonds;
+}
+
+function initFondsPersoPreview(){
+  for(let i = 0; i < MAX_FONDS; i++){
+    const b64 = localStorage.getItem('roze_fond_perso_' + i);
+    if(b64){
+      const preview = document.getElementById('fond-perso-preview-' + i);
+      const clearBtn = document.getElementById('fond-perso-clear-' + i);
+      if(preview){ preview.src = b64; preview.style.display = 'inline-block'; }
+      if(clearBtn) clearBtn.style.display = 'inline-block';
+    }
+  }
+}
+
+function renderFondsPersoPanel(idx){
+  const fp = getFondsPerso();
+  if(fp.length === 0) return '';
+  let html = '<div class="cvp-lbl" style="margin:.4rem 0 .3rem;">Mes fonds</div>'
+    + '<div style="display:flex;gap:.4rem;flex-wrap:wrap;">';
+  fp.forEach((b64, fi) => {
+    const selected = cvFondPhotoParSlide[idx] === b64;
+    html += '<img src="' + b64 + '" '
+      + 'style="width:48px;height:64px;object-fit:cover;border-radius:6px;cursor:pointer;border:2px solid '
+      + (selected ? 'var(--rose)' : 'transparent') + ';" '
+      + 'onclick="applyFondPerso(' + idx + ',' + fi + ')"/>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function applyFondPerso(idx, fondIndex){
+  const fonds = getFondsPerso();
+  if(!fonds[fondIndex]) return;
+  cvFondPhotoParSlide[idx] = fonds[fondIndex];
+  setSlideStyle(idx, 'fondType', 'photo');
+  appliquerStylesSlide(idx);
+  majPanneauEditeur(idx);
 }
 
 function toggleAcc(id){
@@ -3631,8 +3790,9 @@ async function exporterPNG(){
   for(let i = 0; i < slides.length; i++){
     const s  = slides[i];
     const st = getSlideStyle(i);
-    const fond = fondSlide(s.num||i+1, slides.length, c1, c2);
-    const tcoul= st.textColor || '#ffffff';
+    const amb = s.ambiance || 'sombre';
+    const fond = fondSlide(s.num||i+1, slides.length, c1, c2, i);
+    const tcoul= st.textColor || (amb === 'clair' ? '#1A1A1A' : '#ffffff');
 
     // Fond CSS résolu depuis slideStyles — identique à ce que voit l'utilisateur
     let bgCss = '';
@@ -3646,10 +3806,13 @@ async function exporterPNG(){
       bgCss = `radial-gradient(ellipse at 20% 20%,${c1},${c2})`;
     } else if(st.fondType === 'photo' && cvFondPhotoParSlide[i]){
       bgCss = fond; // photo traitée séparément via img tag
+    } else if(amb === 'clair'){
+      bgCss = AMBIANCE_CLAIR_BG;
     } else {
       bgCss = fond; // 'auto' → DA par défaut
     }
 
+    const isRespiration = (amb === 'respiration');
     const pad = Math.round(H * 0.055) + 'px ' + Math.round(W * 0.065) + 'px';
     const titreFs = s.type==='hook' ? Math.round(H*0.048) : Math.round(H*0.038);
     const corpsFs = Math.round(H * 0.022);
@@ -3660,21 +3823,30 @@ async function exporterPNG(){
         style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:block;"/>
       <div style="position:absolute;inset:0;background:rgba(0,0,0,${st.fondPhotoVoile||0.45});backdrop-filter:blur(${st.fondPhotoFlou||0}px);z-index:1;"></div>` : '';
 
+    // Grille subtile pour ambiance clair dans l'export
+    const gridHtml = (amb === 'clair') ? `<div style="position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);background-size:100px 100px;"></div>` : '';
+
     const sstitreHtml = s.sousTitre ? `<div style="font-size:${ssFs}px;font-weight:600;opacity:.85;margin-bottom:${Math.round(H*0.012)}px;line-height:1.3;">${s.sousTitre.replace(/^\s*[-–—•]+\s*/,'')}</div>` : '';
-    const logoHtml = (s.type==='conclusion' && CFG.logoUrl)
-      ? `<img src="${CFG.logoUrl}" crossOrigin="anonymous" style="max-width:${Math.round(W*0.22)}px;max-height:${Math.round(H*0.045)}px;object-fit:contain;opacity:.85;margin-bottom:${Math.round(H*0.02)}px;display:block;"/>`
+    const logoHtml = (s.type==='conclusion' && CFG.logoUrl && !st.hideLogo)
+      ? `<img src="${CFG.logoUrl}" crossOrigin="anonymous" style="max-width:${Math.round(W*0.22)}px;max-height:${Math.round(H*0.045)}px;object-fit:contain;opacity:.85;margin-bottom:${Math.round(H*0.02)}px;display:block;" onerror="this.style.display='none'"/>`
       : '';
 
+    // Respiration : titre en italique accent, centré, pas de corps
+    const titreStyle = isRespiration
+      ? `font-family:'${ptit}',serif;font-size:${Math.round(titreFs*(st.titreSize||1))}px;font-weight:700;line-height:${st.titreLH||1.25};color:${c1};font-style:italic;`
+      : `font-family:'${ptit}',serif;font-size:${Math.round(titreFs*(st.titreSize||1))}px;font-weight:700;line-height:${st.titreLH||1.25};margin-bottom:${Math.round(H*0.018)}px;`;
+    const corpsHtml = isRespiration ? '' : `<div style="font-size:${Math.round(corpsFs*(st.corpsSize||1))}px;line-height:${st.corpsLH||1.6};flex:1;white-space:pre-line;">${s.corps||''}</div>`;
+
     const div = document.createElement('div');
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:${W}px;height:${H}px;overflow:hidden;background:${bgCss};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:${pad};box-sizing:border-box;display:flex;flex-direction:column;text-align:${st.align||'left'};`;
+    div.style.cssText = `position:fixed;left:-9999px;top:0;width:${W}px;height:${H}px;overflow:hidden;background:${bgCss};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:${pad};box-sizing:border-box;display:flex;flex-direction:column;${isRespiration?'justify-content:center;align-items:center;':''}text-align:${isRespiration?'center':(st.align||'left')};`;
     div.innerHTML = `
       ${photoHtml}
-      <div style="position:relative;z-index:2;display:flex;flex-direction:column;height:100%;width:100%;text-align:${st.align||'left'};">
+      ${gridHtml}
+      <div style="position:relative;z-index:2;display:flex;flex-direction:column;${isRespiration?'justify-content:center;align-items:center;':''}height:100%;width:100%;text-align:${isRespiration?'center':(st.align||'left')};">
         ${logoHtml}
         ${sstitreHtml}
-        <div style="font-family:'${ptit}',serif;font-size:${Math.round(titreFs*(st.titreSize||1))}px;font-weight:700;line-height:${st.titreLH||1.25};margin-bottom:${Math.round(H*0.018)}px;">${s.titre||''}</div>
-        <div style="font-size:${Math.round(corpsFs*(st.corpsSize||1))}px;line-height:${st.corpsLH||1.6};flex:1;white-space:pre-line;">${s.corps||''}</div>
-        <div style="position:absolute;top:0;right:0;font-size:${Math.round(H*0.016)}px;opacity:.3;">${i+1}/${slides.length}</div>
+        <div style="${titreStyle}">${s.titre||''}</div>
+        ${corpsHtml}
       </div>`;
 
     document.body.appendChild(div);
@@ -3729,8 +3901,8 @@ async function exporterPDF(){
     const corpsFs = Math.round(H*0.022);
     const ssFs    = Math.round(H*0.018);
     const sstitreHtml = s.sousTitre ? `<div style="font-size:${ssFs}px;font-weight:600;opacity:.85;margin-bottom:${Math.round(H*0.012)}px;">${s.sousTitre.replace(/^\s*[-–—•]+\s*/,'')}</div>` : '';
-    const logoHtml = (s.type==='conclusion' && CFG.logoUrl)
-      ? `<img src="${CFG.logoUrl}" crossOrigin="anonymous" style="max-width:${Math.round(W*0.22)}px;max-height:${Math.round(H*0.045)}px;object-fit:contain;opacity:.85;margin-bottom:${Math.round(H*0.02)}px;display:block;"/>` : '';
+    const logoHtml = (s.type==='conclusion' && CFG.logoUrl && !st.hideLogo)
+      ? `<img src="${CFG.logoUrl}" crossOrigin="anonymous" style="max-width:${Math.round(W*0.22)}px;max-height:${Math.round(H*0.045)}px;object-fit:contain;opacity:.85;margin-bottom:${Math.round(H*0.02)}px;display:block;" onerror="this.style.display='none'"/>` : '';
 
     const div = document.createElement('div');
     div.style.cssText = `position:fixed;left:-9999px;top:0;width:${W}px;height:${H}px;overflow:hidden;background:${bgCss};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:${pad};box-sizing:border-box;display:flex;flex-direction:column;text-align:${st.align||'left'};`;
@@ -4597,45 +4769,52 @@ function nettoyerJsonNewlines(s){
 // ══════════════════════════════════════════════════════════
 function parseMarkdownTable(text) {
   if (!text) return null;
-
-  // CAS FRÉQUENT : l'IA retourne tout le tableau sur une seule longue ligne
-  // Ex : "| Durée | Texte | ... | |-------|---| | 10s | blah | ..."
-  // → on re-découpe en insérant des \n avant chaque | qui précède un pattern de ligne
-  let normalised = text;
-  // Si le texte contient peu de \n mais beaucoup de |, c'est une ligne aplatie
-  const countPipes  = (text.match(/\|/g) || []).length;
-  const countLines  = (text.match(/\n/g) || []).length;
-  if (countPipes > 6 && countLines < 3) {
-    // Insérer un \n avant chaque "| xxx |" qui n'est pas au début
-    normalised = text
-      .replace(/\s*\|\s*(\|[-: ]+)+\s*\|/g, '\n|$&'.replace('|$&', '\n|$&').slice(1))  // ligne séparateur
-      .replace(/([^|])\s*\|\s*(?=[^|])/g, (m, p1) => p1 + '\n| ')                       // début de nouvelles lignes
-      ;
-    // Approche plus directe : split sur " | " précédé d'une fermeture |
-    normalised = text.replace(/\|\s*\|/g, '|\n|');
-  }
-
-  const lines = normalised.split('\n')
+  // Normaliser : s'assurer que chaque ligne | commence et finit proprement
+  const lines = text.split('\n')
     .map(l => l.trim())
-    .filter(l => l.startsWith('|') && l.includes('|'));
+    .filter(l => l.includes('|'));
 
   // Séparer la ligne de séparateur (--- ou :-:) des vraies lignes de données
   const dataLines = lines.filter(l => !l.match(/^\|[\s|:\-]+\|?$/));
 
+  if (dataLines.length < 1) return null;
+
+  // Si 1 seule ligne, c'est la ligne de headers sans données → pas de tableau
   if (dataLines.length < 2) return null;
 
   // Première ligne = headers (on la saute), reste = données
   const data = dataLines.slice(1).map(row => {
-    const parts = row.split('|');
+    // Nettoyer la ligne : ajouter | final si manquant (tableau tronqué)
+    let r = row;
+    if(!r.endsWith('|')) r += ' |';
+    if(!r.startsWith('|')) r = '| ' + r;
+    const parts = r.split('|');
+    // slice(1, -1) pour enlever les | de début et fin
     return parts.slice(1, parts.length - 1).map(c => c.trim());
   }).filter(row => row.length >= 1 && row.some(c => c.length > 0));
 
   if (data.length === 0) return null;
-  return { data };
+
+  // Détecter si la dernière ligne semble tronquée (moins de colonnes que la première)
+  const expectedCols = data[0].length;
+  const lastRow = data[data.length - 1];
+  const truncated = lastRow.length < expectedCols || (lastRow[lastRow.length-1]||'').length < 3;
+
+  return { data, truncated };
 }
 
 function renderScriptReel(texte) {
-  const scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
+  let scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
+  // Fallback : si pas de SCRIPT: mais contient un tableau
+  if (!scriptMatch && texte.includes('|')) {
+    const lignes = texte.split('\n');
+    const idxT = lignes.findIndex(l => l.trim().startsWith('|'));
+    if (idxT >= 0) {
+      const apres = lignes.slice(idxT).join('\n');
+      const cut = apres.match(/([\s\S]*?)(?=LÉGENDE\s*:|CONSEIL\s*:|$)/i);
+      scriptMatch = cut ? [null, cut[1]] : [null, apres];
+    }
+  }
   const legendeMatch = texte.match(/LÉGENDE:\s*([\s\S]*?)(?=CONSEIL:|$)/i);
   const conseilMatch = texte.match(/CONSEIL:\s*([\s\S]*?)$/i);
   let html = '';
@@ -4643,7 +4822,7 @@ function renderScriptReel(texte) {
     const tableData = parseMarkdownTable(scriptMatch[1]);
     if (tableData && tableData.data.length > 0) {
       html += '<div style="overflow-x:auto"><table class="script-table"><thead><tr>';
-      html += '<th>Temps</th><th>Visuel & texte à l\'écran</th><th>Audio / Voix off</th><th>Émotion</th>';
+      html += '<th>Temps</th><th>Visuel et texte</th><th>Audio et Voix off</th><th>Émotion</th>';
       html += '</tr></thead><tbody>';
       tableData.data.forEach(row => {
         if (row.length < 2) return;
@@ -4655,6 +4834,10 @@ function renderScriptReel(texte) {
           + '</tr>';
       });
       html += '</tbody></table></div>';
+      if (tableData.truncated) {
+        html += '<div style="margin-top:.5rem;padding:.5rem .7rem;background:rgba(232,24,109,.08);border-left:3px solid var(--rose);border-radius:4px;font-size:.75rem;color:var(--rose);line-height:1.5;">'
+          + '⚠️ Script tronqué — clique sur <strong>Regénérer</strong> pour un script complet.</div>';
+      }
     } else {
       html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">' + escapeHtml(scriptMatch[1]) + '</div>';
     }
@@ -4675,14 +4858,24 @@ function renderScriptReel(texte) {
 }
 
 function renderScriptVideoLI(texte) {
-  const scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
+  let scriptMatch  = texte.match(/SCRIPT:\s*([\s\S]*?)(?=LÉGENDE:|$)/i);
+  // Fallback : si pas de SCRIPT: mais contient un tableau
+  if (!scriptMatch && texte.includes('|')) {
+    const lignes = texte.split('\n');
+    const idxT = lignes.findIndex(l => l.trim().startsWith('|'));
+    if (idxT >= 0) {
+      const apres = lignes.slice(idxT).join('\n');
+      const cut = apres.match(/([\s\S]*?)(?=LÉGENDE\s*:|$)/i);
+      scriptMatch = cut ? [null, cut[1]] : [null, apres];
+    }
+  }
   const legendeMatch = texte.match(/LÉGENDE:\s*([\s\S]*?)$/i);
   let html = '';
   if (scriptMatch) {
     const tableData = parseMarkdownTable(scriptMatch[1]);
     if (tableData && tableData.data.length > 0) {
       html += '<div style="overflow-x:auto"><table class="script-table"><thead><tr>';
-      html += '<th>Temps</th><th>Visuel & sous-titres écran</th><th>Audio / Voix off</th><th>Émotion</th>';
+      html += '<th>Temps</th><th>Visuel et sous-titres</th><th>Audio et Voix off</th><th>Émotion</th>';
       html += '</tr></thead><tbody>';
       tableData.data.forEach(row => {
         if (row.length < 2) return;
@@ -4694,6 +4887,10 @@ function renderScriptVideoLI(texte) {
           + '</tr>';
       });
       html += '</tbody></table></div>';
+      if (tableData.truncated) {
+        html += '<div style="margin-top:.5rem;padding:.5rem .7rem;background:rgba(232,24,109,.08);border-left:3px solid var(--rose);border-radius:4px;font-size:.75rem;color:var(--rose);line-height:1.5;">'
+          + '⚠️ Script tronqué — clique sur <strong>Regénérer</strong> pour un script complet.</div>';
+      }
     } else {
       html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">' + escapeHtml(scriptMatch[1]) + '</div>';
     }
@@ -4712,10 +4909,26 @@ function renderScriptVideoLI(texte) {
 function renderScriptStory(texte) {
   // Nettoyer : supprimer toute phrase d'intro avant SCRIPT:
   const idxScript = texte.search(/SCRIPT\s*:/i);
-  const texteNet  = idxScript >= 0 ? texte.slice(idxScript) : texte;
+  let texteNet = idxScript >= 0 ? texte.slice(idxScript) : texte;
 
   // Extraire bloc SCRIPT (s'arrête à LÉGENDE: ou CONSEIL: ou fin)
-  const scriptMatch  = texteNet.match(/SCRIPT\s*:\s*([\s\S]*?)(?=LÉGENDE\s*:|CONSEIL\s*:|$)/i);
+  let scriptMatch = texteNet.match(/SCRIPT\s*:\s*([\s\S]*?)(?=LÉGENDE\s*:|CONSEIL\s*:|$)/i);
+
+  // Si pas de marqueur SCRIPT: mais le texte contient un tableau markdown → l'utiliser directement
+  if (!scriptMatch && texteNet.includes('|')) {
+    // Le tableau commence à la première ligne contenant |
+    const lignes = texteNet.split('\n');
+    const idxTable = lignes.findIndex(l => l.trim().startsWith('|'));
+    if (idxTable >= 0) {
+      // Tout ce qui est avant le tableau = intro (ignorée)
+      // Tout ce qui est le tableau et après = scriptMatch[1]
+      const apresTable = lignes.slice(idxTable).join('\n');
+      // Séparer le tableau de la légende/conseil éventuels
+      const cut = apresTable.match(/([\s\S]*?)(?=LÉGENDE\s*:|CONSEIL\s*:|$)/i);
+      scriptMatch = cut ? [null, cut[1]] : [null, apresTable];
+    }
+  }
+
   // Extraire LÉGENDE si présente
   const legendeMatch = texteNet.match(/LÉGENDE\s*:\s*([\s\S]*?)(?=CONSEIL\s*:|$)/i);
   // Extraire CONSEIL si présent
@@ -4723,12 +4936,12 @@ function renderScriptStory(texte) {
 
   let html = '';
 
-  if (scriptMatch && scriptMatch[1].trim()) {
+  if (scriptMatch && scriptMatch[1] && scriptMatch[1].trim()) {
     const tableData = parseMarkdownTable(scriptMatch[1]);
     if (tableData && tableData.data.length > 0) {
       html += '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">';
       html += '<table class="script-table"><thead><tr>';
-      html += '<th>Durée</th><th>Texte à l\'écran</th><th>Format & décor</th><th>Ton</th>';
+      html += '<th>Durée</th><th>Texte à l\'écran</th><th>Format et décor</th><th>Ton</th>';
       html += '</tr></thead><tbody>';
       tableData.data.forEach(row => {
         if (!row || row.every(c => !c)) return;
@@ -4740,6 +4953,10 @@ function renderScriptStory(texte) {
           + '</tr>';
       });
       html += '</tbody></table></div>';
+      if (tableData.truncated) {
+        html += '<div style="margin-top:.5rem;padding:.5rem .7rem;background:rgba(232,24,109,.08);border-left:3px solid var(--rose);border-radius:4px;font-size:.75rem;color:var(--rose);line-height:1.5;">'
+          + '⚠️ Script tronqué — la dernière slide est peut-être incomplète. Clique sur <strong>Regénérer</strong> pour obtenir un script complet.</div>';
+      }
     } else {
       // Tableau non parseable — afficher le texte brut proprement
       html += '<div style="white-space:pre-wrap;font-size:.82rem;line-height:1.7;color:var(--blanc-doux);">'
@@ -4980,7 +5197,24 @@ function estCouleurClaire(hex){
   return (r*299+g*587+b*114)/1000 > 128;
 }
 
-function fondSlide(num, total, c1, c2){
+// ══════════════════════════════════════════════════════
+// AMBIANCE VISUELLE (nouveau champ JSON de l'IA)
+// ══════════════════════════════════════════════════════
+const AMBIANCE_CLAIR_BG = '#F5F0EB'; // beige papier pour slides "clair"
+
+function getAmbianceSlide(idx){
+  // Lire l'ambiance depuis le JSON de l'IA si disponible
+  if(carrouselCourant && carrouselCourant.slides && carrouselCourant.slides[idx]){
+    return carrouselCourant.slides[idx].ambiance || 'sombre';
+  }
+  return 'sombre';
+}
+
+function fondSlide(num, total, c1, c2, idx){
+  // Si l'IA a fourni une ambiance, l'utiliser en priorité
+  const amb = (idx !== undefined) ? getAmbianceSlide(idx) : null;
+  if(amb === 'clair' || amb === 'respiration-clair') return AMBIANCE_CLAIR_BG;
+
   // DA "Editorial Noir" : fonds sombres, couleur principale en accent
   const dark1 = c2 || '#0d0d0d';
   const dark2 = ajusterLum(c2||'#111111', -8);
@@ -4991,7 +5225,10 @@ function fondSlide(num, total, c1, c2){
   return (num % 2 === 0) ? dark3 : dark1;
 }
 
-function texteSlide(fond){
+function texteSlide(fond, idx){
+  // Si ambiance clair → texte sombre
+  const amb = (idx !== undefined) ? getAmbianceSlide(idx) : null;
+  if(amb === 'clair' || amb === 'respiration-clair') return '#1A1A1A';
   // DA Editorial Noir : fonds toujours sombres → texte toujours blanc
   return '#FFFFFF';
 }
@@ -5001,21 +5238,34 @@ function accentSlide(c1, fond){
   return c1;
 }
 
-function styleFondSlide(num, total, c1, c2){
+function styleFondSlide(num, total, c1, c2, idx){
+  // Si ambiance clair définie par l'IA et pas d'override utilisateur → fond clair
+  const amb = (idx !== undefined) ? getAmbianceSlide(idx) : null;
+  const ov = overridesSlide[num-1];
+
+  // Si l'utilisateur a manuellement overridé le fond, respecter son choix
+  if(ov && ov !== '__custom__'){
+    const sombre = c2 || '#0d0d0d';
+    const dark = ajusterLum(c2||'#0d0d0d', -8);
+    if(ov==='uni')     return 'background:'+sombre+';';
+    if(ov==='uni2')    return 'background:'+ajusterLum(sombre, 8)+';';
+    if(ov==='degrade') return 'background:linear-gradient(135deg,'+dark+','+ajusterLum(c1,-25)+' 160%);';
+    if(ov==='degrade2') return 'background:linear-gradient(160deg,'+sombre+','+ajusterLum(c1,-15)+' 200%);';
+    if(ov==='beton')   return 'background:radial-gradient(ellipse at 25% 15%,'+ajusterLum(c1,-20)+','+dark+' 70%);';
+  }
+  if(ov === '__custom__'){
+    const ovCss = overridesSlide['__css__'];
+    if(ovCss && ovCss[num-1]) return ovCss[num-1];
+  }
+
+  // En mode auto + ambiance clair/respiration → fond clair
+  if(styleFondActif === 'uni' && (amb === 'clair' || amb === 'respiration-clair')){
+    return 'background:' + AMBIANCE_CLAIR_BG + ';';
+  }
+
   // DA "Editorial Noir" — palette sombre systématique
   const dark = ajusterLum(c2||'#0d0d0d', -8);
   const sombre = c2 || '#0d0d0d';
-  const ov = overridesSlide[num-1];
-  const ovCss = overridesSlide['__css__'];
-  if(ov === '__custom__' && ovCss && ovCss[num-1]) return ovCss[num-1];
-  if(ov && ov !== '__custom__'){
-    const style = ov;
-    if(style==='uni')     return 'background:'+sombre+';';
-    if(style==='uni2')    return 'background:'+ajusterLum(sombre, 8)+';';
-    if(style==='degrade') return 'background:linear-gradient(135deg,'+dark+','+ajusterLum(c1,-25)+' 160%);';
-    if(style==='degrade2') return 'background:linear-gradient(160deg,'+sombre+','+ajusterLum(c1,-15)+' 200%);';
-    if(style==='beton')   return 'background:radial-gradient(ellipse at 25% 15%,'+ajusterLum(c1,-20)+','+dark+' 70%);';
-  }
   // Défaut selon styleFondActif
   if(styleFondActif==='uni')      return 'background:'+fondSlide(num,total,c1,c2)+';';
   if(styleFondActif==='uni2')     return 'background:'+ajusterLum(sombre, 8)+';';
@@ -5078,10 +5328,12 @@ function appliqueFondCSS(el, cssString){
 function renderLogoSlide(idx){
   if(!CFG.logoUrl) return '';
   const st = getSlideStyle(idx);
+  if(st.hideLogo) return ''; // Toggle désactivé par l'utilisateur
   const pos = st.logoPos || 'center'; // 'left' | 'center' | 'right'
   const justify = pos === 'left' ? 'flex-start' : (pos === 'right' ? 'flex-end' : 'center');
   return `<div style="display:flex;justify-content:${justify};margin:0 0 1.2rem 0;padding:0 .4rem;">
-    <img src="${CFG.logoUrl}" alt="logo" style="max-width:120px;max-height:48px;object-fit:contain;opacity:.85;"/>
+    <img src="${CFG.logoUrl}" alt="logo" style="max-width:120px;max-height:48px;object-fit:contain;opacity:.85;"
+      onerror="this.style.display='none'"/>
   </div>`;
 }
 
@@ -5090,34 +5342,45 @@ function renderCvSlide(s, idx, total, c1, c2, ptit, pcorp, opts){
   opts = opts || {};
   const small    = !!opts.small;
   const editable = !!opts.editable;
-  const fond     = fondSlide(s.num||idx+1, total, c1, c2);
-  const tcoul    = texteSlide(fond);
+  const fond     = fondSlide(s.num||idx+1, total, c1, c2, idx);
+  const tcoul    = texteSlide(fond, idx);
   const accent   = accentSlide(c1, fond);
   const sstitre  = s.sousTitre ? nettoyerSousTitre(s.sousTitre) : '';
+  const amb      = getAmbianceSlide(idx);
 
   const editAttr = editable ? 'contenteditable="true" spellcheck="false"' : '';
   const slideClass = 'cv-slide' + (small ? ' cv-slide-sm' : ' cv-slide-lg') + (editable ? ' cv-slide-editable' : '');
 
   const idPrefix = opts.idPrefix || 'cv-slide';
+
+  // Ambiance "respiration" : titre seul, pas de corps
+  const isRespiration = (amb === 'respiration');
+  const corpsHtml = isRespiration ? '' : `<div class="cv-slide-corps"
+        ${editAttr}
+        data-idx="${idx}" data-field="corps"
+        oninput="cvUpdateSlide(${idx},'corps',this.innerText)">${(s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>')}</div>`;
+
+  // Grille subtile pour ambiance "clair"
+  const gridOverlay = (amb === 'clair') ? `<div style="position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);background-size:${small?'14px 14px':'40px 40px'};"></div>` : '';
+
   return `<div class="${slideClass}" id="${idPrefix}-${idx}"
-    style="${styleFondSlide(s.num||idx+1,total,c1,c2)}"
+    style="${styleFondSlide(s.num||idx+1,total,c1,c2,idx)}"
+    data-ambiance="${amb}"
     ${!editable ? `onclick="cvSelectSlide(${idx})"` : ''}>
+    ${gridOverlay}
     <div class="cv-slide-num">${idx+1}/${total}</div>
-    <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};">
+    <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};${isRespiration ? 'justify-content:center;align-items:center;text-align:center;' : ''}">
       ${(s.type==='conclusion' && CFG.logoUrl) ? renderLogoSlide(idx) : ''}
       <!-- type masqué — ne s'affiche pas sur les slides -->
       ${sstitre ? `<div class="cv-slide-sstitre" ${editAttr}
         data-idx="${idx}" data-field="sousTitre"
         oninput="cvUpdateSlide(${idx},'sousTitre',this.innerText)">${escapeHtml(sstitre)}</div>` : ''}
       <div class="cv-slide-titre"
-        style="font-family:'${ptit}',serif;"
+        style="font-family:'${ptit}',serif;${isRespiration ? 'color:'+accent+';font-style:italic;' : ''}"
         ${editAttr}
         data-idx="${idx}" data-field="titre"
         oninput="cvUpdateSlide(${idx},'titre',this.innerText)">${rendreTitreAccent(s.titre||'', accent, fond)}</div>
-      <div class="cv-slide-corps"
-        ${editAttr}
-        data-idx="${idx}" data-field="corps"
-        oninput="cvUpdateSlide(${idx},'corps',this.innerText)">${(s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>')}</div>
+      ${corpsHtml}
     </div>
   </div>`;
 }
@@ -5200,19 +5463,27 @@ function fermerCarrouselFullscreen(){
   const fs = document.getElementById('cv-fullscreen');
   if(fs) fs.classList.remove('on');
   if(!carrouselCourant) return;
-  // Mettre à jour le texte des miniatures IN-PLACE (ne pas re-rendre — ça efface les styles)
-  carrouselCourant.slides.forEach((s, i) => {
-    const el = document.getElementById('cv-slide-' + i);
-    if(!el) return;
-    const titreEl   = el.querySelector('.cv-slide-titre');
-    const corpsEl   = el.querySelector('.cv-slide-corps');
-    const sstitreEl = el.querySelector('.cv-slide-sstitre');
-    if(titreEl)   titreEl.textContent   = (s.titre||'').replace(/\[ACCENT\]|\[\/ACCENT\]/g,'');
-    if(corpsEl)   corpsEl.textContent   = s.corps||'';
-    if(sstitreEl) sstitreEl.textContent = s.sousTitre ? s.sousTitre.replace(/^\s*[-–—•*#]+\s*/,'').trim() : '';
-  });
-  // Réappliquer tous les styles (fond, texte, marges) sur TOUTES les miniatures
-  requestAnimationFrame(() => requestAnimationFrame(() => majFondsSlides()));
+  // Re-rendre toutes les miniatures avec les styles à jour
+  const wrap = document.getElementById('cv-slides-wrap');
+  if(wrap){
+    const c1 = CFG.couleur1 || '#E8186D';
+    const c2 = CFG.couleur2 || '#111111';
+    const ptit = CFG.policeTitre || 'Playfair Display';
+    const pcorp = CFG.policeCorps || 'DM Sans';
+    const slides = carrouselCourant.slides;
+    // Conserver le bouton + à la fin
+    const addBtn = wrap.querySelector('.cv-slide-add');
+    wrap.innerHTML = slides.map((s,i) =>
+      renderCvSlide(s, i, slides.length, c1, c2, ptit, pcorp, {small:true, editable:false})
+    ).join('');
+    if(addBtn) wrap.appendChild(addBtn);
+    // Réappliquer les styles individuels sur chaque miniature
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        slides.forEach((_, i) => appliquerStylesSlide(i));
+      });
+    });
+  }
 }
 function cvFondPill(el, style){
   document.querySelectorAll('.cv-fpill').forEach(p=>p.classList.remove('on'));
@@ -5280,21 +5551,37 @@ function appliquerStylesSlide(idx){
     appliqueFondCSS(el, `background:${st.fondColor};`);
   } else if(st.fondType === 'degrade' || st.fondType === 'degrade2'){
     const dir = st.degradeDir || 'dark';
-    appliqueFondCSS(el, dir === 'light'
-      ? `background:linear-gradient(135deg,${c1},#ffffff);`
-      : `background:linear-gradient(135deg,${c2},${c1});`);
-  } else if(st.fondType === 'degrade2'){
-    appliqueFondCSS(el, `background:linear-gradient(to bottom,${c1},${c2});`);
+    const gc1 = st.gradColor1 || c1;
+    const gc2 = st.gradColor2 || c2;
+    const gc3 = st.gradColor3 || '';
+    const stops = gc3 ? `${gc2},${gc1},${gc3}` : `${gc2},${gc1}`;
+    if(st.fondType === 'degrade2'){
+      appliqueFondCSS(el, `background:linear-gradient(to bottom,${stops});`);
+    } else {
+      appliqueFondCSS(el, dir === 'light'
+        ? `background:linear-gradient(135deg,${gc1},${gc3||'#ffffff'});`
+        : `background:linear-gradient(135deg,${stops});`);
+    }
   } else if(st.fondType === 'degrade3'){
-    appliqueFondCSS(el, `background:linear-gradient(to right,${c2},${c1});`);
+    const gc1 = st.gradColor1 || c1;
+    const gc2 = st.gradColor2 || c2;
+    const gc3 = st.gradColor3 || '';
+    const stops = gc3 ? `${gc2},${gc1},${gc3}` : `${gc2},${gc1}`;
+    appliqueFondCSS(el, `background:linear-gradient(to right,${stops});`);
   } else if(st.fondType === 'degrade4'){
-    appliqueFondCSS(el, `background:radial-gradient(ellipse at 0% 100%,${c1},${c2} 70%);`);
-  } else if(st.fondType === 'degrade5'){
-    appliqueFondCSS(el, `background:conic-gradient(from 180deg at 50% 50%,${c2},${c1},${c2});`);
+    const gc1 = st.gradColor1 || c1;
+    const gc2 = st.gradColor2 || c2;
+    const gc3 = st.gradColor3 || '';
+    const stops = gc3 ? `${gc1},${gc2},${gc3}` : `${gc1},${gc2} 70%`;
+    appliqueFondCSS(el, `background:radial-gradient(ellipse at 0% 100%,${stops});`);
   } else if(st.fondType === 'beton'){
-    appliqueFondCSS(el, `background:radial-gradient(ellipse at 20% 20%,${c1},${c2});`);
+    const gc1 = st.gradColor1 || c1;
+    const gc2 = st.gradColor2 || c2;
+    const gc3 = st.gradColor3 || '';
+    const stops = gc3 ? `${gc1},${gc2},${gc3}` : `${gc1},${gc2}`;
+    appliqueFondCSS(el, `background:radial-gradient(ellipse at 20% 20%,${stops});`);
   } else {
-    const fondAuto = styleFondSlide(s.num||idx+1, slides.length, c1, c2);
+    const fondAuto = styleFondSlide(s.num||idx+1, slides.length, c1, c2, idx);
     appliqueFondCSS(el, fondAuto && fondAuto.indexOf('background') >= 0
       ? fondAuto : `background:${c2||'#1a1a1a'};`);
   }
@@ -5541,6 +5828,16 @@ function majPanneauEditeur(idx){
         <textarea class="cvp-textarea" rows="4"
           oninput="cvpMajTexte(${idx},'corps',this.value)">${corpsCourant.replace(/`/g,"'")}</textarea>
       </div>
+      ${(slide && slide.type === 'conclusion') ? `
+      <div style="margin-top:.5rem;display:flex;align-items:center;gap:.5rem;">
+        <label style="font-size:.72rem;color:var(--gris-clair);display:flex;align-items:center;gap:.4rem;cursor:pointer;">
+          <input type="checkbox" id="cvp-logo-toggle" ${CFG.logoUrl && !st.hideLogo ? 'checked' : ''}
+            onchange="setSlideStyle(${idx},'hideLogo',!this.checked);appliquerStylesSlide(${idx})"
+            style="accent-color:var(--rose);"/>
+          Afficher le logo
+        </label>
+        ${CFG.logoUrl ? '<img src="'+CFG.logoUrl+'" style="max-height:20px;max-width:60px;object-fit:contain;opacity:.6;"/>' : '<span style="font-size:.65rem;color:#666;">Aucun logo — va dans Mon Compte</span>'}
+      </div>` : ''}
     </div>
 
     <!-- Section FOND -->
@@ -5551,11 +5848,14 @@ function majPanneauEditeur(idx){
       <div class="cvp-row-pills">
         <button class="cvp-pill ${st.fondType==='auto'?'on':''}"  onclick="setSlideStyle(${idx},'fondType','auto');majPanneauEditeur(${idx})">Auto</button>
         <button class="cvp-pill ${st.fondType==='uni'?'on':''}"   onclick="cvpFondUniClick(${idx})">Uni</button>
-        <button class="cvp-pill ${['degrade','degrade2','beton','degrade3','degrade4','degrade5'].includes(st.fondType)?'on':''}" onclick="setSlideStyle(${idx},'fondType','degrade');majPanneauEditeur(${idx})">Dégradé</button>
+        <button class="cvp-pill ${['degrade','degrade2','beton','degrade3','degrade4'].includes(st.fondType)?'on':''}" onclick="setSlideStyle(${idx},'fondType','degrade');majPanneauEditeur(${idx})">Dégradé</button>
         <label class="cvp-pill ${st.fondType==='photo'?'on':''}">Photo
           <input type="file" accept="image/*" style="display:none" onchange="cvpFondPhoto(${idx},this)"/>
         </label>
       </div>
+
+      <!-- Fonds perso (si uploadés dans Mon Compte) -->
+      ${renderFondsPersoPanel(idx)}
 
       <!-- Couleur fond uni -->
       ${st.fondType==='uni' ? `
@@ -5572,7 +5872,7 @@ function majPanneauEditeur(idx){
       </div>` : ''}
 
       <!-- Dégradé : variantes -->
-      ${['degrade','degrade2','beton','degrade3','degrade4','degrade5'].includes(st.fondType) ? `
+      ${['degrade','degrade2','beton','degrade3','degrade4'].includes(st.fondType) ? `
       <div class="cvp-lbl" style="margin:.4rem 0 .3rem;">Variante</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin-bottom:.5rem;">
         <button class="cvp-pill-grad ${st.fondType==='degrade'&&(st.degradeDir||'dark')==='dark'?'on':''}"
@@ -5599,10 +5899,26 @@ function majPanneauEditeur(idx){
           style="background:radial-gradient(ellipse at 0% 100%,${c1},${c2} 70%);"
           onclick="setSlideStyle(${idx},'fondType','degrade4');appliquerStylesSlide(${idx})">
           <span>Radial<br/>coin</span></button>
-        <button class="cvp-pill-grad ${st.fondType==='degrade5'?'on':''}"
-          style="background:conic-gradient(from 180deg at 50% 50%,${c2},${c1},${c2});"
-          onclick="setSlideStyle(${idx},'fondType','degrade5');appliquerStylesSlide(${idx})">
-          <span>Conique</span></button>
+      </div>
+
+      <!-- Couleurs du dégradé — personnalisables -->
+      <div class="cvp-lbl" style="margin:.4rem 0 .3rem;">Couleurs du dégradé</div>
+      <div class="cvp-row" style="gap:.4rem;flex-wrap:wrap;">
+        <span class="cvp-lbl" style="min-width:auto;">C1</span>
+        <input type="color" value="${st.gradColor1||c1}"
+          oninput="setSlideStyle(${idx},'gradColor1',this.value);appliquerStylesSlide(${idx})"
+          style="width:28px;height:24px;border:none;background:none;cursor:pointer;border-radius:4px;"/>
+        <span class="cvp-lbl" style="min-width:auto;">C2</span>
+        <input type="color" value="${st.gradColor2||c2}"
+          oninput="setSlideStyle(${idx},'gradColor2',this.value);appliquerStylesSlide(${idx})"
+          style="width:28px;height:24px;border:none;background:none;cursor:pointer;border-radius:4px;"/>
+        <span class="cvp-lbl" style="min-width:auto;">C3</span>
+        <input type="color" value="${st.gradColor3||''}"
+          oninput="setSlideStyle(${idx},'gradColor3',this.value);appliquerStylesSlide(${idx})"
+          style="width:28px;height:24px;border:none;background:none;cursor:pointer;border-radius:4px;opacity:${st.gradColor3?1:0.4};"/>
+        <button class="cvp-pill" style="font-size:.55rem;padding:2px 5px;"
+          onclick="setSlideStyle(${idx},'gradColor1','${c1}');setSlideStyle(${idx},'gradColor2','${c2}');setSlideStyle(${idx},'gradColor3','');appliquerStylesSlide(${idx});majPanneauEditeur(${idx})">
+          Reset</button>
       </div>` : ''}
 
       <!-- Photo : 3 modes -->
@@ -6347,7 +6663,7 @@ async function regenLegendePaneau(){
   if(!texte){ toast('\u26a0\ufe0f G\u00e9n\u00e8re d\u2019abord le post','err'); return; }
   const loader = document.getElementById('gen-inline-loader');
   const loaderTxt = document.getElementById('gen-inline-loader-txt');
-  loader.classList.add('on'); loaderTxt.textContent='Régénération de la légende…';
+  loader.classList.add('on'); loaderTxt.textContent='Regénération de la légende…';
   try{
     const prompt = `Voici un post ${reseau} :\n\n${texte}\n\nGénère uniquement la légende optimisée pour ${reseau} avec les hashtags les plus pertinents. Réponds uniquement avec la légende, sans préambule.`;
     const leg = await appelIA(prompt);
@@ -6541,13 +6857,26 @@ function afficherRes(resultats){
 
       const item = document.createElement('div');
       item.className = 'res-item';
+
+      // Scripts (Stories, Réel, Vidéo) → rendu tableau visuel
+      const isScript = ['Stories','Réel','Vidéo'].includes(r.typeContenu);
+      let texteHtml = '';
+      if(isScript){
+        if(r.typeContenu === 'Stories')     texteHtml = renderScriptStory(r.texte||'');
+        else if(r.typeContenu === 'Réel')   texteHtml = renderScriptReel(r.texte||'');
+        else if(r.typeContenu === 'Vidéo')  texteHtml = renderScriptVideoLI(r.texte||'');
+      } else {
+        texteHtml = escapeHtml(r.texte||'').replace(/\n/g,'<br/>');
+        if(r.legende) texteHtml += `<br/><br/><span class="res-item-legende">${escapeHtml(r.legende)}</span>`;
+      }
+
       item.innerHTML = `
         <div class="res-item-meta">
           <span class="res-item-type">${r.typeContenu}</span>
           ${dateAff ? `<span class="res-item-date">📅 ${dateAff}</span>` : ''}
           <button class="btn btn-sm btn-ghost" onclick="ouvrirEdit(${r.id})" style="margin:0;padding:.25rem .6rem;font-size:.72rem;">✏️ Éditer</button>
         </div>
-        <div class="res-item-texte">${escapeHtml(r.texte||'').replace(/\n/g,'<br/>')}${r.legende?`<br/><br/><span class="res-item-legende">${escapeHtml(r.legende)}</span>`:''}</div>`;
+        <div class="res-item-texte">${texteHtml}</div>`;
       body.appendChild(item);
     });
   });
@@ -6690,6 +7019,7 @@ function gspToggleActu(event){
 
 async function genererStoryPanel(){
   if(!verifierCleIA()) return;
+  if(!CFG.as){ toast('⚙️ URL Apps Script manquante — va dans Mon Compte → Connexions','err'); return; }
 
   const loader = document.getElementById('gsp-loader');
   const btnGen = document.getElementById('gsp-btn-gen');
@@ -6751,8 +7081,8 @@ async function genererStoryPanel(){
     });
     toast('✅ Story générée et sauvegardée !','ok');
 
-    // Bouton passe en Régénérer + corbeille
-    btnGen.textContent = '🔄 Régénérer';
+    // Bouton passe en Regénérer + corbeille
+    btnGen.textContent = '🔄 Regénérer';
     const gspActions = document.getElementById('gsp-actions');
     if(gspActions && !gspActions.querySelector('.gsp-trash')){
       const btn = document.createElement('button');
@@ -7161,9 +7491,11 @@ function ouvrirEdit(id){
   document.getElementById('opt-ig').className='reseau-opt'+(it.reseau==='Instagram'?' on-ig':'');
   // Date
   document.getElementById('edit-date').value=it.date||dateAujourdhui();
-  // Texte — carrousel ou post standard
+  // Texte — carrousel, script (Stories/Réel/Vidéo), ou post standard
   const editCarrousel = it.typeContenu === 'Carrousel';
+  const editScript    = ['Stories','Réel','Vidéo'].includes(it.typeContenu);
   const editZoneWrap  = document.getElementById('edit-carrousel-zone');
+  const editScriptZone = document.getElementById('edit-script-zone');
   const editTextArea  = document.getElementById('edit-texte');
   const editTexteHd   = document.getElementById('edit-texte-hd');
 
@@ -7175,22 +7507,42 @@ function ouvrirEdit(id){
       if(editZoneWrap) editZoneWrap.style.display = 'block';
       if(editTextArea) editTextArea.style.display = 'none';
       if(editTexteHd)  editTexteHd.style.display  = 'none';
+      if(editScriptZone) editScriptZone.style.display = 'none';
       afficherCarrousel(slides, it.legende||'', it.reseau||'Instagram', 'edit-carrousel-wrap');
     } else {
       // JSON mal formé — afficher en texte brut
       if(editZoneWrap) editZoneWrap.style.display = 'none';
+      if(editScriptZone) editScriptZone.style.display = 'none';
       if(editTextArea){ editTextArea.style.display='block'; editTextArea.value = it.texte||''; }
     }
+  } else if(editScript){
+    // Stories, Réel, Vidéo → afficher en tableau visuel
+    if(editZoneWrap) editZoneWrap.style.display = 'none';
+    if(editScriptZone) editScriptZone.style.display = 'block';
+    if(editTextArea) editTextArea.style.display = 'none';
+    if(editTexteHd) editTexteHd.style.display = 'none';
+    const scriptWrap = document.getElementById('edit-script-wrap');
+    if(scriptWrap){
+      const format = it.typeContenu;
+      if(format === 'Stories')     scriptWrap.innerHTML = renderScriptStory(it.texte||'');
+      else if(format === 'Réel')   scriptWrap.innerHTML = renderScriptReel(it.texte||'');
+      else if(format === 'Vidéo')  scriptWrap.innerHTML = renderScriptVideoLI(it.texte||'');
+      else scriptWrap.innerHTML = '<div style="white-space:pre-wrap;font-size:.82rem;">' + escapeHtml(it.texte||'') + '</div>';
+    }
+    // Garder aussi le textarea caché avec le texte brut pour la sauvegarde
+    if(editTextArea) editTextArea.value = it.texte||'';
   } else {
     if(editZoneWrap) editZoneWrap.style.display = 'none';
+    if(editScriptZone) editScriptZone.style.display = 'none';
     if(editTextArea){ editTextArea.style.display = 'block'; editTextArea.value = it.texte||''; }
     if(editTexteHd)  editTexteHd.style.display   = 'block';
   }
   document.getElementById('edit-legende').value=it.legende||'';
-  // Masquer le textarea légende pour les carrousels (légende déjà dans le viewer)
+  // Masquer le textarea légende pour les carrousels et scripts (légende déjà dans le rendu ou pas applicable)
   const legHd = document.getElementById('edit-legende-hd');
   const legTa = document.getElementById('edit-legende');
-  if(editCarrousel){
+  const regenRow = editTextArea ? editTextArea.closest('.sheet')?.querySelector('.regen-row') : null;
+  if(editCarrousel || editScript){
     if(legHd) legHd.style.display = 'none';
     if(legTa) legTa.style.display = 'none';
   } else {
@@ -7250,7 +7602,7 @@ function toggleStModale(){
   else{ btn.textContent='✓ Marquer publié'; btn.style.background='rgba(46,204,113,.12)'; btn.style.color='var(--succes)'; }
 }
 
-// Régénérer le post depuis la modale
+// Regénérer le post depuis la modale
 async function regenPost(){
   if(!verifierCleIA()) return;
   if(!editId) return;
@@ -7611,7 +7963,7 @@ async function genCreerLegende(){
   const loader = document.getElementById('creer-loader');
   const loaderTxt = document.getElementById('creer-loader-txt');
   loader.classList.add('on');
-  loaderTxt.textContent = 'Régénération de la légende…';
+  loaderTxt.textContent = 'Regénération de la légende…';
   try{
     const prompt = `Voici un post ${reseau} :\n\n${texte}\n\nGénère uniquement la légende optimisée pour ${reseau} avec les hashtags les plus pertinents. Réponds uniquement avec la légende, sans préambule.`;
     const leg = await appelIA(prompt);
@@ -7932,6 +8284,10 @@ function sauvegarderCompte(){
   localStorage.setItem('roze_police_titre', CFG.policeTitre);
   localStorage.setItem('roze_police_corps', CFG.policeCorps);
   localStorage.setItem('roze_logo_url',     CFG.logoUrl);
+  // Logo : prioriser le base64 uploadé sur l'URL manuelle
+  const logoB64 = localStorage.getItem('roze_logo_base64') || '';
+  if(logoB64) CFG.logoUrl = logoB64;
+  else CFG.logoUrl = gv('cfg-logo-url') || CFG.logoUrl;
   localStorage.setItem('roze_nom',          CFG.nom);
   localStorage.setItem('roze_entreprise',   CFG.entreprise);
   localStorage.setItem('roze_metier',       CFG.metier);
@@ -8218,7 +8574,8 @@ function toggleStoryPubliee(){
 
 async function genStoryTexte(){
   if(!verifierCleIA()) return;
-  if(storyModalIndex === null) return;
+  if(storyModalIndex === null){ toast('⚠️ Aucune story sélectionnée','err'); return; }
+  if(!CFG.as){ toast('⚙️ URL Apps Script manquante — va dans Mon Compte → Connexions','err'); return; }
 
   const s    = STORIES_CFG[storyModalIndex];
   const zone = document.getElementById('story-modal-exemple-txt');
@@ -8229,10 +8586,11 @@ async function genStoryTexte(){
   const matiere = matiereSemaine();
   const joursNoms = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
 
-  // Utiliser la suggestion IA du jour si disponible
+  // Utiliser le sujet configuré du jour (prioritaire), sinon la suggestion IA, sinon le défaut
   const aujStr = dateAujourdhui();
   const cleSujet = 'roze_story_sujet_ia_' + aujStr + '_' + storyModalIndex;
-  const suggestionIA = localStorage.getItem(cleSujet) || STORY_SUJET_DEFAUT[s.typo] || '';
+  const suggestionIA = localStorage.getItem(cleSujet) || '';
+  const sujetDuJour = (s.sujet && s.sujet.trim()) ? s.sujet.trim() : (suggestionIA || STORY_SUJET_DEFAUT[s.typo] || '');
 
   const body = {
     action:     'generer_post',
@@ -8241,7 +8599,7 @@ async function genStoryTexte(){
     reseau:     'Instagram',
     format:     'Stories',
     pilier:     s.typo === 'vente' ? 'autorite' : s.typo === 'valeur' ? 'expertise' : 'visibilite',
-    sujet:      '[STORY ' + s.typo.toUpperCase() + '] ' + suggestionIA,
+    sujet:      '[STORY ' + s.typo.toUpperCase() + '] ' + sujetDuJour,
     matiere:    matiere,
     story_type: s.typo
   };
@@ -8256,7 +8614,7 @@ async function genStoryTexte(){
     zone.style.cssText = 'overflow-x:auto;';
     const html = renderScriptStory(texte);
     zone.innerHTML = html || '<div style="white-space:pre-wrap;font-size:.82rem;">' + escapeHtml(texte) + '</div>';
-    if(btn){ btn.disabled = false; btn.textContent = '🔄 Régénérer'; }
+    if(btn){ btn.disabled = false; btn.textContent = '🔄 Regénérer'; }
     toast('✅ Script généré !','ok');
   } catch(e){
     zone.textContent = 'Erreur de génération.';

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- v=2026-05-18-ambiance-variete-visuelle-carrousel -->
+<!-- v=2026-05-25-export-sync-fidelite -->
 <html lang="fr">
 <head>
   <meta charset="UTF-8"/>
@@ -3774,84 +3774,97 @@ async function rechercherActu(){
   }
   wl.classList.remove('on');
 }
+// ── HELPER EXPORT : construit le DOM d'une slide identique au viewer ──
+function buildExportSlide(i, s, st, c1, c2, ptit, pcorp, W, H){
+  const amb = s.ambiance || 'sombre';
+  const isRespiration = (amb === 'respiration');
+  const gc1 = st.gradColor1||c1, gc2 = st.gradColor2||c2, gc3 = st.gradColor3||'';
+  const stops = gc3 ? `${gc2},${gc1},${gc3}` : `${gc2},${gc1}`;
+
+  // Fond — miroir exact de appliquerStylesSlide
+  let bgCss = '';
+  if(st.fondType==='uni' && st.fondColor)       bgCss = st.fondColor;
+  else if(st.fondType==='degrade'){
+    const dir = st.degradeDir||'dark';
+    bgCss = dir==='light' ? `linear-gradient(135deg,${gc1},${gc3||'#ffffff'})` : `linear-gradient(135deg,${stops})`;
+  }
+  else if(st.fondType==='degrade2')              bgCss = `linear-gradient(to bottom,${stops})`;
+  else if(st.fondType==='degrade3')              bgCss = `linear-gradient(to right,${stops})`;
+  else if(st.fondType==='degrade4'){
+    const s4 = gc3 ? `${gc1},${gc2},${gc3}` : `${gc1},${gc2} 70%`;
+    bgCss = `radial-gradient(ellipse at 0% 100%,${s4})`;
+  }
+  else if(st.fondType==='beton')                 bgCss = `radial-gradient(ellipse at 20% 20%,${stops})`;
+  else if(st.fondType==='photo' && cvFondPhotoParSlide[i]) bgCss = '#111';
+  else if(amb==='clair')                         bgCss = AMBIANCE_CLAIR_BG;
+  else                                           bgCss = fondSlide(s.num||i+1, carrouselCourant.slides.length, c1, c2, i);
+
+  // Photo overlay — 3 modes identiques au viewer
+  let photoHtml = '';
+  if(st.fondType==='photo' && cvFondPhotoParSlide[i]){
+    photoHtml = `<img src="${cvFondPhotoParSlide[i]}" alt="" crossOrigin="anonymous"
+      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:block;"/>`;
+    const mode = st.photoMode||'filter';
+    if(mode==='blur'){
+      photoHtml += `<div style="position:absolute;inset:0;backdrop-filter:blur(${st.fondPhotoFlou||8}px);-webkit-backdrop-filter:blur(${st.fondPhotoFlou||8}px);z-index:1;"></div>`;
+    } else if(mode!=='raw'){
+      let rgb = '0,0,0';
+      if(st.filtreColor==='couleur1'){ const h=(c1||'#E8186D').replace('#',''); rgb=`${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)}`; }
+      else if(st.filtreColor==='blanc') rgb='255,255,255';
+      photoHtml += `<div style="position:absolute;inset:0;background:rgba(${rgb},${st.filtreOpacite||0.30});z-index:1;"></div>`;
+    }
+  }
+
+  const gridHtml = (amb==='clair') ? `<div style="position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,0,0,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.03) 1px,transparent 1px);background-size:100px 100px;"></div>` : '';
+
+  // Couleurs texte — miroir du panneau éditeur
+  const baseCoul = st.textColor || (amb==='clair' ? '#1A1A1A' : '#ffffff');
+  const titreCol  = st.titreCouleur  || (isRespiration ? c1 : baseCoul);
+  const ssCol     = st.sstitreCouleur || baseCoul;
+  const corpsCol  = st.corpsCouleur  || baseCoul;
+  const shadow = st.ombreActive ? `text-shadow:0 2px ${st.ombreBlur||6}px rgba(0,0,0,${st.ombreOpacite||0.6});` : '';
+
+  const pad = Math.round(H*(st.margeV??14)/14*0.055)+'px '+Math.round(W*(st.margeH??12)/12*0.065)+'px';
+  const titreFs = s.type==='hook' ? Math.round(H*0.048) : Math.round(H*0.038);
+  const corpsFs = Math.round(H*0.022), ssFs = Math.round(H*0.018);
+
+  const sstitreHtml = s.sousTitre ? `<div style="font-size:${ssFs}px;font-weight:600;margin-bottom:${Math.round(H*0.012)}px;line-height:1.3;color:${ssCol};${shadow}">${nettoyerSousTitre(s.sousTitre)}</div>` : '';
+  const logoHtml = (s.type==='conclusion' && CFG.logoUrl && !st.hideLogo)
+    ? `<div style="display:flex;justify-content:${{left:'flex-start',right:'flex-end',center:'center'}[st.logoPos||'center']};margin-bottom:${Math.round(H*0.02)}px;">
+        <img src="${CFG.logoUrl}" crossOrigin="anonymous" style="max-width:${Math.round(W*0.22)}px;max-height:${Math.round(H*0.045)}px;object-fit:contain;opacity:.85;" onerror="this.style.display='none'"/></div>` : '';
+
+  const titreStyle = `font-family:'${st.policeTitre||ptit}',serif;font-size:${Math.round(titreFs*(st.titreSize||1))}px;font-weight:700;line-height:${st.titreLH||1.25};color:${titreCol};${shadow}${isRespiration?'font-style:italic;':'margin-bottom:'+Math.round(H*0.018)+'px;'}`;
+  const titreRendu = rendreTitreAccent(s.titre||'', c1, bgCss);
+  const corpsHtml = isRespiration ? '' : `<div style="font-family:'${st.policeCorps||pcorp}',sans-serif;font-size:${Math.round(corpsFs*(st.corpsSize||1))}px;line-height:${st.corpsLH||1.6};flex:1;white-space:pre-line;color:${corpsCol};${shadow}">${s.corps||''}</div>`;
+
+  const div = document.createElement('div');
+  div.style.cssText = `position:fixed;left:-9999px;top:0;width:${W}px;height:${H}px;overflow:hidden;background:${bgCss};font-family:'${st.policeCorps||pcorp}',sans-serif;color:${baseCoul};padding:${pad};box-sizing:border-box;display:flex;flex-direction:column;${isRespiration?'justify-content:center;align-items:center;':''}text-align:${isRespiration?'center':(st.align||'left')};`;
+  div.innerHTML = `${photoHtml}${gridHtml}
+    <div style="position:relative;z-index:2;display:flex;flex-direction:column;${isRespiration?'justify-content:center;align-items:center;':''}height:100%;width:100%;text-align:${isRespiration?'center':(st.align||'left')};">
+      ${logoHtml}${sstitreHtml}
+      <div style="${titreStyle}">${titreRendu}</div>
+      ${corpsHtml}
+    </div>`;
+  return { div, bgCss };
+}
+
 async function exporterPNG(){
   if(!carrouselCourant) return;
   toast('⏳ Préparation des PNG…','ok');
   await chargerScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
 
   const { slides } = carrouselCourant;
-  const c1   = CFG.couleur1 || '#E8186D';
-  const c2   = CFG.couleur2 || '#111111';
-  const ptit = CFG.policeTitre || 'Playfair Display';
-  const pcorp= CFG.policeCorps || 'DM Sans';
-  const fmt  = CAR_FORMATS[carFormatRatio] || CAR_FORMATS['4:5'];
+  const c1 = CFG.couleur1||'#E8186D', c2 = CFG.couleur2||'#111111';
+  const ptit = CFG.policeTitre||'Playfair Display', pcorp = CFG.policeCorps||'DM Sans';
+  const fmt = CAR_FORMATS[carFormatRatio]||CAR_FORMATS['4:5'];
   const W = fmt.w, H = fmt.h;
 
   for(let i = 0; i < slides.length; i++){
-    const s  = slides[i];
-    const st = getSlideStyle(i);
-    const amb = s.ambiance || 'sombre';
-    const fond = fondSlide(s.num||i+1, slides.length, c1, c2, i);
-    const tcoul= st.textColor || (amb === 'clair' ? '#1A1A1A' : '#ffffff');
-
-    // Fond CSS résolu depuis slideStyles — identique à ce que voit l'utilisateur
-    let bgCss = '';
-    if(st.fondType === 'uni' && st.fondColor){
-      bgCss = st.fondColor;
-    } else if(st.fondType === 'degrade'){
-      bgCss = `linear-gradient(135deg,${c2},${c1})`;
-    } else if(st.fondType === 'degrade2'){
-      bgCss = `linear-gradient(155deg,${c2},${c1} 160%)`;
-    } else if(st.fondType === 'beton'){
-      bgCss = `radial-gradient(ellipse at 20% 20%,${c1},${c2})`;
-    } else if(st.fondType === 'photo' && cvFondPhotoParSlide[i]){
-      bgCss = fond; // photo traitée séparément via img tag
-    } else if(amb === 'clair'){
-      bgCss = AMBIANCE_CLAIR_BG;
-    } else {
-      bgCss = fond; // 'auto' → DA par défaut
-    }
-
-    const isRespiration = (amb === 'respiration');
-    const pad = Math.round(H * 0.055) + 'px ' + Math.round(W * 0.065) + 'px';
-    const titreFs = s.type==='hook' ? Math.round(H*0.048) : Math.round(H*0.038);
-    const corpsFs = Math.round(H * 0.022);
-    const ssFs    = Math.round(H * 0.018);
-
-    const photoHtml = (st.fondType === 'photo' && cvFondPhotoParSlide[i]) ? `
-      <img src="${cvFondPhotoParSlide[i]}" alt="" crossOrigin="anonymous"
-        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;display:block;"/>
-      <div style="position:absolute;inset:0;background:rgba(0,0,0,${st.fondPhotoVoile||0.45});backdrop-filter:blur(${st.fondPhotoFlou||0}px);z-index:1;"></div>` : '';
-
-    // Grille subtile pour ambiance clair dans l'export
-    const gridHtml = (amb === 'clair') ? `<div style="position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);background-size:100px 100px;"></div>` : '';
-
-    const sstitreHtml = s.sousTitre ? `<div style="font-size:${ssFs}px;font-weight:600;opacity:.85;margin-bottom:${Math.round(H*0.012)}px;line-height:1.3;">${s.sousTitre.replace(/^\s*[-–—•]+\s*/,'')}</div>` : '';
-    const logoHtml = (s.type==='conclusion' && CFG.logoUrl && !st.hideLogo)
-      ? `<img src="${CFG.logoUrl}" crossOrigin="anonymous" style="max-width:${Math.round(W*0.22)}px;max-height:${Math.round(H*0.045)}px;object-fit:contain;opacity:.85;margin-bottom:${Math.round(H*0.02)}px;display:block;" onerror="this.style.display='none'"/>`
-      : '';
-
-    // Respiration : titre en italique accent, centré, pas de corps
-    const titreStyle = isRespiration
-      ? `font-family:'${ptit}',serif;font-size:${Math.round(titreFs*(st.titreSize||1))}px;font-weight:700;line-height:${st.titreLH||1.25};color:${c1};font-style:italic;`
-      : `font-family:'${ptit}',serif;font-size:${Math.round(titreFs*(st.titreSize||1))}px;font-weight:700;line-height:${st.titreLH||1.25};margin-bottom:${Math.round(H*0.018)}px;`;
-    const corpsHtml = isRespiration ? '' : `<div style="font-size:${Math.round(corpsFs*(st.corpsSize||1))}px;line-height:${st.corpsLH||1.6};flex:1;white-space:pre-line;">${s.corps||''}</div>`;
-
-    const div = document.createElement('div');
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:${W}px;height:${H}px;overflow:hidden;background:${bgCss};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:${pad};box-sizing:border-box;display:flex;flex-direction:column;${isRespiration?'justify-content:center;align-items:center;':''}text-align:${isRespiration?'center':(st.align||'left')};`;
-    div.innerHTML = `
-      ${photoHtml}
-      ${gridHtml}
-      <div style="position:relative;z-index:2;display:flex;flex-direction:column;${isRespiration?'justify-content:center;align-items:center;':''}height:100%;width:100%;text-align:${isRespiration?'center':(st.align||'left')};">
-        ${logoHtml}
-        ${sstitreHtml}
-        <div style="${titreStyle}">${s.titre||''}</div>
-        ${corpsHtml}
-      </div>`;
-
+    const { div, bgCss } = buildExportSlide(i, slides[i], getSlideStyle(i), c1, c2, ptit, pcorp, W, H);
     document.body.appendChild(div);
     try{
-      const canvas = await window.html2canvas(div, {width:W, height:H, scale:1, useCORS:true, allowTaint:true, backgroundColor:bgCss.startsWith('linear')||bgCss.startsWith('radial') ? null : bgCss});
+      const isGrad = bgCss.startsWith('linear')||bgCss.startsWith('radial');
+      const canvas = await window.html2canvas(div, {width:W, height:H, scale:1, useCORS:true, allowTaint:true, backgroundColor:isGrad?null:bgCss});
       const link = document.createElement('a');
       link.download = `carrousel-slide-${String(i+1).padStart(2,'0')}.png`;
       link.href = canvas.toDataURL('image/png');
@@ -3873,50 +3886,20 @@ async function exporterPDF(){
   await chargerScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
 
   const { slides } = carrouselCourant;
-  const c1   = CFG.couleur1 || '#E8186D';
-  const c2   = CFG.couleur2 || '#111111';
-  const ptit = CFG.policeTitre || 'Playfair Display';
-  const pcorp= CFG.policeCorps || 'DM Sans';
-  const fmt  = CAR_FORMATS[carFormatRatio] || CAR_FORMATS['4:5'];
+  const c1 = CFG.couleur1||'#E8186D', c2 = CFG.couleur2||'#111111';
+  const ptit = CFG.policeTitre||'Playfair Display', pcorp = CFG.policeCorps||'DM Sans';
+  const fmt = CAR_FORMATS[carFormatRatio]||CAR_FORMATS['4:5'];
   const W = fmt.w, H = fmt.h;
 
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ orientation:'portrait', unit:'px', format:[W, H] });
 
   for(let i = 0; i < slides.length; i++){
-    const s  = slides[i];
-    const st = getSlideStyle(i);
-    const fond = fondSlide(s.num||i+1, slides.length, c1, c2);
-    const tcoul= st.textColor || '#ffffff';
-
-    let bgCss = '';
-    if(st.fondType === 'uni' && st.fondColor)        bgCss = st.fondColor;
-    else if(st.fondType === 'degrade')               bgCss = `linear-gradient(135deg,${c2},${c1})`;
-    else if(st.fondType === 'degrade2')              bgCss = `linear-gradient(155deg,${c2},${c1} 160%)`;
-    else if(st.fondType === 'beton')                 bgCss = `radial-gradient(ellipse at 20% 20%,${c1},${c2})`;
-    else                                             bgCss = fond;
-
-    const pad = Math.round(H*0.055)+'px '+Math.round(W*0.065)+'px';
-    const titreFs = s.type==='hook' ? Math.round(H*0.048) : Math.round(H*0.038);
-    const corpsFs = Math.round(H*0.022);
-    const ssFs    = Math.round(H*0.018);
-    const sstitreHtml = s.sousTitre ? `<div style="font-size:${ssFs}px;font-weight:600;opacity:.85;margin-bottom:${Math.round(H*0.012)}px;">${s.sousTitre.replace(/^\s*[-–—•]+\s*/,'')}</div>` : '';
-    const logoHtml = (s.type==='conclusion' && CFG.logoUrl && !st.hideLogo)
-      ? `<img src="${CFG.logoUrl}" crossOrigin="anonymous" style="max-width:${Math.round(W*0.22)}px;max-height:${Math.round(H*0.045)}px;object-fit:contain;opacity:.85;margin-bottom:${Math.round(H*0.02)}px;display:block;" onerror="this.style.display='none'"/>` : '';
-
-    const div = document.createElement('div');
-    div.style.cssText = `position:fixed;left:-9999px;top:0;width:${W}px;height:${H}px;overflow:hidden;background:${bgCss};font-family:'${pcorp}',sans-serif;color:${tcoul};padding:${pad};box-sizing:border-box;display:flex;flex-direction:column;text-align:${st.align||'left'};`;
-    div.innerHTML = `
-      <div style="display:flex;flex-direction:column;height:100%;width:100%;text-align:${st.align||'left'};">
-        ${logoHtml}
-        ${sstitreHtml}
-        <div style="font-family:'${ptit}',serif;font-size:${Math.round(titreFs*(st.titreSize||1))}px;font-weight:700;line-height:${st.titreLH||1.25};margin-bottom:${Math.round(H*0.018)}px;">${s.titre||''}</div>
-        <div style="font-size:${Math.round(corpsFs*(st.corpsSize||1))}px;line-height:${st.corpsLH||1.6};flex:1;white-space:pre-line;">${s.corps||''}</div>
-        <div style="position:absolute;top:${Math.round(H*0.03)}px;right:${Math.round(W*0.05)}px;font-size:${Math.round(H*0.016)}px;opacity:.3;">${i+1}/${slides.length}</div>
-      </div>`;
+    const { div, bgCss } = buildExportSlide(i, slides[i], getSlideStyle(i), c1, c2, ptit, pcorp, W, H);
     document.body.appendChild(div);
     try{
-      const canvas = await window.html2canvas(div, {width:W, height:H, scale:1, useCORS:true, allowTaint:true, backgroundColor:bgCss.includes('gradient')?null:bgCss});
+      const isGrad = bgCss.includes('gradient');
+      const canvas = await window.html2canvas(div, {width:W, height:H, scale:1, useCORS:true, allowTaint:true, backgroundColor:isGrad?null:bgCss});
       if(i > 0) pdf.addPage([W, H]);
       pdf.addImage(canvas.toDataURL('image/jpeg',0.95), 'JPEG', 0, 0, W, H);
     }catch(e){ console.error('PDF slide '+i, e); }
@@ -5388,6 +5371,18 @@ function renderCvSlide(s, idx, total, c1, c2, ptit, pcorp, opts){
 function cvUpdateSlide(idx, field, val){
   if(!carrouselCourant || !carrouselCourant.slides[idx]) return;
   carrouselCourant.slides[idx][field] = val;
+  // Sync vers les textareas du panneau éditeur (si ouvert sur cette slide)
+  if(idx === cvSlideActive){
+    const panel = document.getElementById('cv-fs-panel-inner');
+    if(!panel) return;
+    const textareas = panel.querySelectorAll('.cvp-textarea');
+    const fieldMap = {sousTitre:0, titre: carrouselCourant.slides[idx].sousTitre?1:0,
+      corps: carrouselCourant.slides[idx].sousTitre?2:1};
+    const ti = fieldMap[field];
+    if(ti !== undefined && textareas[ti] && document.activeElement !== textareas[ti]){
+      textareas[ti].value = val.replace(/\[ACCENT\]|\[\/ACCENT\]/g,'');
+    }
+  }
 }
 
 function afficherCarrousel(slides, legende, reseau, containerId){

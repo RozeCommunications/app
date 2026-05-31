@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#E8186D"/>
   <link rel="manifest" href="manifest.json"/>
   <link rel="apple-touch-icon" href="icon-192.png"/>
-  <title>Roze — Assistant Réseaux Sociaux</title>
+  <title>Roze - Assistant Réseaux Sociaux</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
     :root{
@@ -217,7 +217,7 @@
     .gen-bigbtn .gb-ic{font-size:1.8rem;}
     .gen-bigbtn .gb-titre{font-size:.9rem;font-weight:700;}
     .gen-bigbtn .gb-desc{font-size:.75rem;opacity:1;color:rgba(255,255,255,.75);line-height:1.3;}
-    /* Mode light — boutons Générer */
+    /* Mode light - boutons Générer */
     [data-theme="light"] .gen-bigbtn{
       background:#fff;
       border:1.5px solid var(--gris-border);
@@ -257,7 +257,7 @@
     .loader p{font-size:.85rem;color:var(--gris-clair);}
     .loader p em{color:var(--rose);font-style:normal;}
     #zone-res{margin-top:1rem;}
-        /* ── Résultats semaine — 3 encarts ── */
+        /* ── Résultats semaine - 3 encarts ── */
     .res-encart{
       background:var(--gris-carte);
       border:1px solid var(--gris-border);
@@ -753,9 +753,13 @@
     .cv-header h4{font-size:.88rem;font-weight:700;}
     .cv-header .cv-actions{display:flex;gap:.5rem;}
     .cv-slides-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:12px;padding:1rem;scroll-snap-type:x mandatory;}
-    /* ─ SLIDES — format piloté par --cv-ratio (JS écrit cette variable) ─ */
+    /* ─ SLIDES - format piloté par --cv-ratio (JS écrit cette variable) ─ */
     :root{ --cv-ratio: 3/4; }
     .cv-slide-sm{flex-shrink:0;width:120px;aspect-ratio:var(--cv-ratio);border-radius:8px;overflow:hidden;position:relative;cursor:pointer;scroll-snap-align:start;transition:transform .15s,box-shadow .15s;border:2px solid transparent;}
+    .cv-slide-sm .cv-slide-inner{position:absolute;top:0;left:0;width:300%;height:300%;transform:scale(0.3333);transform-origin:0 0;padding:22px 18px;}
+    .cv-slide-sm .cv-slide-titre{font-size:1.12rem;line-height:1.22;}
+    .cv-slide-sm .cv-slide-sstitre{font-size:.72rem;}
+    .cv-slide-sm .cv-slide-corps{font-size:.86rem;overflow:hidden;}
     .cv-slide-sm:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.4);}
     .cv-slide-sm.active{border-color:var(--rose);}
     .cv-slide-lg{height:100%;width:auto;aspect-ratio:var(--cv-ratio);max-height:520px;border-radius:14px;overflow:hidden;position:relative;}
@@ -999,7 +1003,7 @@
       /* Fond sombre sur toute la fenêtre */
       html{background:#0a0a0a;}
 
-      /* Body centré — contenu de l'app dans 480px */
+      /* Body centré - contenu de l'app dans 480px */
       body{
         max-width:480px;
         margin:0 auto;
@@ -1031,7 +1035,7 @@
       body{max-width:430px;}
       /* Box-shadow du header s'adapte automatiquement */
     }
-    /* ── Mon Compte — section labels ── */
+    /* ── Mon Compte - section labels ── */
     .compte-section-lbl{
       font-size:.68rem;
       font-weight:800;
@@ -1057,14 +1061,14 @@
       margin:1rem 0 .2rem;
       opacity:.5;
     }
-    /* ── Stories — sp-row padding ── */
+    /* ── Stories - sp-row padding ── */
     .sp-row{display:flex;align-items:center;gap:.6rem;padding:.55rem 0;}
     .sp-row:not(:last-child){border-bottom:1px solid rgba(255,255,255,.05);}
     .sp-row label{font-size:.82rem;font-weight:500;color:var(--blanc-doux);flex:1;}
     .sp-row select{background:var(--gris-input);border:1px solid var(--gris-border);color:var(--blanc);border-radius:8px;padding:.35rem .6rem;font-size:.78rem;font-family:'DM Sans',sans-serif;}
     .sp-jour-hd{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;cursor:pointer;gap:.6rem;}
     
-    /* ── Se repérer — onglets ── */
+    /* ── Se repérer - onglets ── */
     .aide-tabs{display:flex;gap:.4rem;margin-bottom:1.1rem;overflow-x:auto;scrollbar-width:none;}
     .aide-tabs::-webkit-scrollbar{display:none;}
     .aide-tab{background:var(--gris-carte);border:1px solid var(--gris-border);color:var(--gris-clair);font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;padding:.5rem .9rem;border-radius:20px;cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0;}
@@ -1072,7 +1076,7 @@
     .aide-tab-content{display:none;}
     .aide-tab-content.on{display:block;}
 
-    /* ── Piliers — cartes enrichies ── */
+    /* ── Piliers - cartes enrichies ── */
     .pilier-card-vis{border-left:3px solid #4A9DFF;}
     .pilier-card-aut{border-left:3px solid var(--rose);}
     .pilier-card-exp{border-left:3px solid #2ECC71;}
@@ -1091,7 +1095,7 @@
     .pd-item{font-size:.8rem;color:var(--gris-clair);line-height:1.45;padding:.3rem .5rem;background:rgba(255,255,255,.03);border-radius:6px;}
     .pilier-conseil{background:rgba(232,24,109,.07);border:1px solid rgba(232,24,109,.2);border-radius:12px;padding:.9rem 1rem;font-size:.8rem;color:#d4839a;line-height:1.6;margin-top:1rem;}
 
-    /* ── Accueil — bandeau story séparé ── */
+    /* ── Accueil - bandeau story séparé ── */
     .pc-story-bandeau{background:var(--gris-carte);border:1px solid var(--gris-border);border-radius:14px;padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin-bottom:.8rem;}
     .pc-story-bandeau-left{flex:1;min-width:0;}
     .pc-section-lbl{
@@ -1103,7 +1107,7 @@
       white-space:nowrap;
       overflow:visible;
     }
-    /* Séparateur fin sous le titre — utilisé via .pc-section-lbl + .pc-sep-titre */
+    /* Séparateur fin sous le titre - utilisé via .pc-section-lbl + .pc-sep-titre */
     .pc-sep-titre{
       height:1px;
       background:rgba(255,255,255,.1);
@@ -1116,7 +1120,7 @@
       background:rgba(0,0,0,.08);
     }
     
-    /* ── Accueil — double bandeau côte à côte ── */
+    /* ── Accueil - double bandeau côte à côte ── */
     /* ── Toggle thème ── */
     .theme-switch{
       background:none;
@@ -1259,7 +1263,7 @@
       font-weight:700;
       color:var(--rose-clair);
     }
-    /* pc-double retiré — structure verticale */
+    /* pc-double retiré - structure verticale */
     .pc-col{
       background:none;
       border:none;
@@ -1269,7 +1273,7 @@
       overflow:hidden;
       min-width:0;
     }
-    /* ── Story col — 62% ── */
+    /* ── Story col - 62% ── */
     .pc-story-col{
       padding:1.2rem 1rem 1rem 1rem;
       display:flex;
@@ -1298,7 +1302,7 @@
     .typo-vente    { background:rgba(232,24,109,.15); color:var(--rose-clair); border:1px solid rgba(232,24,109,.3); }
     .typo-valeur   { background:rgba(52,152,219,.15); color:#74b9ff;           border:1px solid rgba(52,152,219,.3); }
     .typo-lifestyle{ background:rgba(46,204,113,.12); color:#55efc4;           border:1px solid rgba(46,204,113,.25); }
-    /* Sujet — jamais tronqué */
+    /* Sujet - jamais tronqué */
     .pc-story-sujet{
       font-size:.78rem;
       font-weight:500;
@@ -1309,7 +1313,7 @@
       flex:1;
       min-width:0;
     }
-    /* Bouton Ouvrir et publier — affordant */
+    /* Bouton Ouvrir et publier - affordant */
     .pc-story-btn-publier{
       display:flex;
       align-items:center;
@@ -1507,7 +1511,7 @@
       <h1>Ton assistant<br/><em>réseaux sociaux</em></h1>
       <p>Pour devenir régulier, cohérent et impactant en moins de 2h par semaine.</p>
     </div>
-    <!-- ① MA SEMAINE — en premier -->
+    <!-- ① MA SEMAINE - en premier -->
     <div class="cta-semaine" onclick="go('p-semaine')">
       <div class="pc-section-lbl">✍️ Ma semaine</div>
       <div class="pc-sep-titre"></div>
@@ -1526,7 +1530,7 @@
       <button onclick="viderQueueSync()" style="background:none;border:none;color:var(--rose);font-size:.75rem;font-weight:700;cursor:pointer;padding:0;margin-left:auto;">Synchroniser →</button>
     </div>
 
-    <!-- ② POSTS — encart autonome -->
+    <!-- ② POSTS - encart autonome -->
     <div class="pc-encart" style="margin-bottom:.8rem;">
       <div style="padding:1.2rem 1rem 1rem 1rem;">
         <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -1560,16 +1564,16 @@
       </div>
     </div>
 
-    <!-- ③ STORY DU JOUR — encart autonome -->
+    <!-- ③ STORY DU JOUR - encart autonome -->
     <div class="pc-encart">
       <div class="pc-story-col" id="pc-story-zone" style="padding:1.2rem 1rem 1rem 1rem;">
         <div class="pc-story-header">
           <div class="pc-section-lbl">📱 Story du jour</div>
-          <span class="pc-story-typo-badge" id="pc-story-typo-badge">—</span>
+          <span class="pc-story-typo-badge" id="pc-story-typo-badge">-</span>
         </div>
         <div class="pc-sep-titre"></div>
         <div class="pc-story-row">
-          <span class="pc-story-sujet" id="pc-story-sujet">—</span>
+          <span class="pc-story-sujet" id="pc-story-sujet">-</span>
           <button class="pc-story-btn-publier" id="pc-story-badge" onclick="toggleStoryQuick()">
             <span class="pc-story-btn-icon" id="pc-story-btn-icon">⚠️</span>
             <span class="pc-story-btn-txt" id="pc-story-btn-txt">À publier</span>
@@ -1608,11 +1612,11 @@
         <span class="kpi-lbl">publiés<br/>ce mois</span>
       </div>
       <div class="kpi" id="kpi-taux">
-        <span class="kpi-val" id="kpi-taux-val">—</span>
+        <span class="kpi-val" id="kpi-taux-val">-</span>
         <span class="kpi-lbl">taux de<br/>régularité</span>
       </div>
       <div class="kpi" id="kpi-prochain">
-        <span class="kpi-val" id="kpi-prochain-val">—</span>
+        <span class="kpi-val" id="kpi-prochain-val">-</span>
         <span class="kpi-lbl">prochain<br/>post</span>
       </div>
     </div>
@@ -1687,7 +1691,7 @@
       </div>
     </div>
 
-    <!-- Panneau "1 post" — même modèle que création depuis calendrier -->
+    <!-- Panneau "1 post" - même modèle que création depuis calendrier -->
     <div class="gen-panel" id="gen-panel">
       <h4>✨ Générer 1 post</h4>
 
@@ -1695,14 +1699,14 @@
       <span class="creer-lbl">📅 Date de publication</span>
       <input type="date" id="gen-date" style="margin-bottom:.2rem;font-size:16px;width:100%;max-width:100%;box-sizing:border-box;display:block;"/>
 
-      <!-- Réseau social — en premier -->
+      <!-- Réseau social - en premier -->
       <span class="creer-lbl">Réseau social</span>
       <div class="format-chips" id="gen-reseaux">
         <div class="chip on" onclick="setGenReseau(this,'LinkedIn')">💼 LinkedIn</div>
         <div class="chip" onclick="setGenReseau(this,'Instagram')">📸 Instagram</div>
       </div>
 
-      <!-- Pilier de contenu — en second -->
+      <!-- Pilier de contenu - en second -->
       <span class="creer-lbl">Pilier de contenu</span>
       <div class="piliers-row" id="gen-piliers">
         <div class="pilier-chip" onclick="setGenPilier(this,'visibilite')"><span class="pi">🔭</span><span class="pn">Visibilité</span></div>
@@ -1725,12 +1729,12 @@
       </div>
 
       <!-- Sujet (optionnel) -->
-      <span class="creer-lbl">Sujet <span style="color:#888;font-weight:400;">(optionnel — sinon l'IA choisit)</span></span>
+      <span class="creer-lbl">Sujet <span style="color:#888;font-weight:400;">(optionnel - sinon l'IA choisit)</span></span>
       <div class="creer-sujet-row">
         <input type="text" id="gen-sujet" placeholder="Ex : mon retour sur le dernier salon pro…"/>
       </div>
 
-      <!-- Actu web — visible uniquement pour piliers Visibilité et Expertise -->
+      <!-- Actu web - visible uniquement pour piliers Visibilité et Expertise -->
       <div class="actu-row" id="gen-actu-row" style="margin-top:.7rem;display:none;" onclick="toggleActu()">
         <div class="actu-lbl">
           🔍 Inclure une actu du secteur
@@ -1813,7 +1817,7 @@
       </div>
 
       <!-- Sujet libre -->
-      <span class="creer-lbl" style="margin-top:.5rem;">Sujet <span style="font-weight:400;color:var(--gris-clair);font-size:.75rem;">(optionnel — sinon l'IA choisit)</span></span>
+      <span class="creer-lbl" style="margin-top:.5rem;">Sujet <span style="font-weight:400;color:var(--gris-clair);font-size:.75rem;">(optionnel - sinon l'IA choisit)</span></span>
       <input type="text" id="gsp-sujet" placeholder="Ex : Mon retour sur le dernier salon pro…" style="font-size:16px;"/>
 
       <!-- Actu web -->
@@ -1859,7 +1863,7 @@
     <div class="cal-top">
       <div class="cal-nav">
         <button class="cal-btn" onclick="navCal(-1)">‹</button>
-        <div class="cal-per" id="cal-per">—</div>
+        <div class="cal-per" id="cal-per">-</div>
         <button class="cal-btn" onclick="navCal(1)">›</button>
       </div>
       <div class="vue-tog">
@@ -1891,7 +1895,7 @@
     <!-- Panneau Stories -->
     <div class="stories-panel" id="stories-panel">
       <div class="sp-header">
-        <h4>📱 Stories — semaine en cours</h4>
+        <h4>📱 Stories - semaine en cours</h4>
         <button class="sp-close" onclick="toggleStoriesPanel()">✕</button>
       </div>
       <div id="sp-liste"><!-- rempli par JS --></div>
@@ -1955,7 +1959,7 @@
           <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.3rem;">Plus c'est précis, plus l'IA adapte les exemples à ta cible réelle.</div>
           <label class="lbl" style="margin-top:.6rem;">Univers professionnel</label>
           <select id="cfg-univers" onchange="onUniversChange(this.value)" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);">
-            <option value="">— Choisir —</option>
+            <option value="">- Choisir -</option>
             <option value="manuel">🛠️ Métiers manuels &amp; artisanat</option>
             <option value="commerce">🛍️ Commerce &amp; vente</option>
             <option value="bienetre">🌿 Bien-être, santé &amp; sport</option>
@@ -1966,7 +1970,7 @@
 
           <label class="lbl" id="lbl-cat-metier" style="margin-top:.6rem;display:none;">Catégorie précise</label>
           <select id="cfg-cat-metier" onchange="ss('roze_cat_metier',this.value)" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);display:none;">
-            <option value="">— Choisir —</option>
+            <option value="">- Choisir -</option>
           </select>
           <div id="cat-metier-hint" style="font-size:.7rem;color:var(--gris-clair);margin-top:.3rem;display:none;">L'IA adapte exemples, ton, cibles et structures narratives selon ta catégorie.</div>
 
@@ -1983,7 +1987,7 @@
 
           <label class="lbl" style="margin-top:.6rem;">
             Sources de veille
-            <span style="font-weight:400;color:var(--gris-clair);font-size:.75rem;">— URLs uniquement</span>
+            <span style="font-weight:400;color:var(--gris-clair);font-size:.75rem;">- URLs uniquement</span>
             <span id="refs-compteur" style="font-size:.72rem;color:var(--rose-clair);margin-left:.4rem;font-weight:700;">0/10</span>
           </label>
           <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.5rem;line-height:1.5;">
@@ -1996,7 +2000,7 @@
             oninput="validerURLsSources(this)"></textarea>
           <div id="refs-erreur" style="font-size:.72rem;color:var(--rose);margin-top:.3rem;display:none;"></div>
           <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.3rem;line-height:1.4;">
-            L'IA lit ces pages directement — 1 source tirée aléatoirement par génération.
+            L'IA lit ces pages directement - 1 source tirée aléatoirement par génération.
           </div>
 
       <!-- Registre, Tonalité, Partage, Expressions de marque -->
@@ -2010,18 +2014,18 @@
 
         <label class="lbl" style="margin-top:.8rem;">Tonalité principale</label>
         <select id="cfg-tonalite" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);">
-          <option value="direct">⚡ Direct &amp; tranchant — je dis ce que je pense, sans tourner autour</option>
-          <option value="chaleureux">🤝 Chaleureux &amp; proche — je crée de la proximité, je suis accessible</option>
-          <option value="pedagogue">📖 Pédagogue &amp; posé — j'explique, je rassure, je structure</option>
-          <option value="sobre">🎯 Expert &amp; sobre — professionnel, factuel, peu d'effusion</option>
-          <option value="enthousiaste">🔥 Enthousiaste &amp; énergique — je mets de l'élan dans tout ce que je fais</option>
+          <option value="direct">⚡ Direct &amp; tranchant - je dis ce que je pense, sans tourner autour</option>
+          <option value="chaleureux">🤝 Chaleureux &amp; proche - je crée de la proximité, je suis accessible</option>
+          <option value="pedagogue">📖 Pédagogue &amp; posé - j'explique, je rassure, je structure</option>
+          <option value="sobre">🎯 Expert &amp; sobre - professionnel, factuel, peu d'effusion</option>
+          <option value="enthousiaste">🔥 Enthousiaste &amp; énergique - je mets de l'élan dans tout ce que je fais</option>
         </select>
 
         <label class="lbl" style="margin-top:.8rem;">Niveau de partage personnel</label>
         <select id="cfg-partage" style="font-size:16px;width:100%;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);">
-          <option value="ouvert">🔓 Ouvert — je partage coulisses, doutes, moments perso</option>
-          <option value="equilibre">⚖️ Équilibré — pro avec quelques touches personnelles</option>
-          <option value="reserve">🔒 Réservé — je reste professionnel, peu de perso</option>
+          <option value="ouvert">🔓 Ouvert - je partage coulisses, doutes, moments perso</option>
+          <option value="equilibre">⚖️ Équilibré - pro avec quelques touches personnelles</option>
+          <option value="reserve">🔒 Réservé - je reste professionnel, peu de perso</option>
         </select>
 
         <label class="lbl" style="margin-top:.8rem;">Expressions de marque <span style="color:#888;font-size:.7rem;font-weight:400;">(formules que tu utilises vraiment)</span></label>
@@ -2051,12 +2055,12 @@
             <input type="text" id="cfg-couleur2" placeholder="#111111" style="flex:1;font-size:16px;"/>
             <div id="preview-couleur2" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--gris-border);flex-shrink:0;"></div>
           </div>
-          <label class="lbl">Couleur accent <span style="color:#888;font-size:.7rem;font-weight:400;">(optionnel — pour slides intermédiaires)</span></label>
+          <label class="lbl">Couleur accent <span style="color:#888;font-size:.7rem;font-weight:400;">(optionnel - pour slides intermédiaires)</span></label>
           <div style="display:flex;gap:.5rem;align-items:center;">
             <input type="text" id="cfg-couleur3" placeholder="Ex : #F5A623" style="flex:1;font-size:16px;" oninput="previewCouleur('couleur3')"/>
             <div id="preview-couleur3" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--gris-border);flex-shrink:0;"></div>
           </div>
-          <label class="lbl">Couleur neutre <span style="color:#888;font-size:.7rem;font-weight:400;">(optionnel — fond slides neutres)</span></label>
+          <label class="lbl">Couleur neutre <span style="color:#888;font-size:.7rem;font-weight:400;">(optionnel - fond slides neutres)</span></label>
           <div style="display:flex;gap:.5rem;align-items:center;">
             <input type="text" id="cfg-couleur4" placeholder="Ex : #F9F4F0" style="flex:1;font-size:16px;" oninput="previewCouleur('couleur4')"/>
             <div id="preview-couleur4" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--gris-border);flex-shrink:0;"></div>
@@ -2080,7 +2084,7 @@
             <button class="btn btn-ghost btn-sm" id="cfg-logo-clear" onclick="clearLogoLocal()" style="display:none;font-size:.7rem;">✕</button>
           </div>
           <input type="url" id="cfg-logo-url" placeholder="Ou colle une URL directe (https://...)" style="font-size:16px;margin-top:.4rem;"/>
-          <div class="opt" style="margin-top:.3rem;">Logo sur la dernière slide (upload recommandé — les liens Google Drive sont souvent bloqués par le navigateur)</div>
+          <div class="opt" style="margin-top:.3rem;">Logo sur la dernière slide (upload recommandé - les liens Google Drive sont souvent bloqués par le navigateur)</div>
           <label class="lbl" style="margin-top:.8rem;">Fonds personnalisés (carrousels)</label>
           <div class="opt" style="margin-bottom:.4rem;">Importe jusqu'à 3 images de fond. Elles apparaîtront comme option dans l'éditeur de carrousel.</div>
           <div style="display:flex;flex-direction:column;gap:.5rem;">
@@ -2202,7 +2206,7 @@
       <div class="acc-body" style="padding-top:.6rem;">
         <label class="lbl">Lien Google Sheets (Apps Script)</label>
         <input type="url" id="cfg-as" placeholder="https://script.google.com/…" style="font-size:16px;"/>
-        <label class="lbl">Ton IA — choisis ton assistant</label>
+        <label class="lbl">Ton IA - choisis ton assistant</label>
         <div class="ia-selector">
           <div class="ia-opt" id="ia-opt-claude" onclick="setIA('claude')">
             <span class="ia-logo">🤖</span>
@@ -2220,16 +2224,16 @@
         <div class="ia-champ" id="ia-champ-claude">
           <label class="lbl">Clé API Claude <a href="https://console.anthropic.com" target="_blank" style="color:var(--rose-clair);font-weight:400;font-size:.68rem;">(console.anthropic.com)</a></label>
           <input type="password" id="cfg-api" placeholder="sk-ant-…" autocomplete="off"/>
-          <div class="opt">Dépose 5€ de crédit — couvre plus d'un an d'utilisation.</div>
+          <div class="opt">Dépose 5€ de crédit - couvre plus d'un an d'utilisation.</div>
         </div>
         <div class="ia-champ" id="ia-champ-gemini">
           <label class="lbl">Clé API Gemini <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#7baeff;font-weight:400;font-size:.68rem;">(aistudio.google.com)</a></label>
           <input type="password" id="cfg-api-gemini" placeholder="AIza…" autocomplete="off"/>
-          <div class="opt">Tier gratuit — sans carte bancaire. Génère ta clé en 30 secondes.</div>
+          <div class="opt">Tier gratuit - sans carte bancaire. Génère ta clé en 30 secondes.</div>
         </div>
         <div class="conn-sep"></div>
 
-        <!-- Préférences email — RGPD -->
+        <!-- Préférences email - RGPD -->
         <div style="margin-top:.8rem;">
           <div style="font-size:.78rem;font-weight:700;color:var(--blanc-doux);margin-bottom:.5rem;">📬 Rappel hebdomadaire par email</div>
           <div class="actu-row" id="mail-optin-row" style="cursor:pointer;" onclick="toggleMailOptin()">
@@ -2249,7 +2253,7 @@
       </div>
     </div>
 
-    <!-- Boutons d'action — hors accordéon Connexions -->
+    <!-- Boutons d'action - hors accordéon Connexions -->
     <div style="margin-top:1.6rem;">
       <button class="btn btn-rose btn-full" id="btn-sauvegarder" onclick="sauvegarderCompte()" style="padding:1rem;font-size:.95rem;letter-spacing:.02em;"><span class="btn-save-bar" id="btn-save-bar"></span>💾 Sauvegarder Mon Compte</button>
       <button class="btn btn-ghost" style="width:100%;margin-top:.5rem;font-size:.78rem;color:var(--gris-clair);" onclick="seDeconnecter()">↩️ Se déconnecter</button>
@@ -2316,13 +2320,13 @@
       <div class="aide-card">
         <div class="ac-titre">🏪 Pilier Activité</div>
         <div class="ac-desc">Posts qui montrent ce que tu fais au quotidien, mettent en avant une offre ou annoncent un événement. Trois niveaux selon le sujet : montrer l'activité (coulisses, savoir-faire), présenter une offre, ou annoncer une promotion. Ce pilier crée de la proximité et déclenche l'acte d'achat sans jamais forcer la vente.</div>
-        <div class="ac-ex">Exemples : "Ce matin j'ai passé 2h sur ce carrelage — voilà ce que j'y ai découvert", présentation d'un produit en situation, annonce d'une offre de saison.</div>
+        <div class="ac-ex">Exemples : "Ce matin j'ai passé 2h sur ce carrelage - voilà ce que j'y ai découvert", présentation d'un produit en situation, annonce d'une offre de saison.</div>
       </div>
 
       <div class="aide-card">
         <div class="ac-titre">✏️ Pilier Autre (personnalisé)</div>
         <div class="ac-desc">Tu définis toi-même le thème. Utile pour les séries thématiques, les lancements d'offre ou les moments forts de ton agenda. Écris simplement le nom de ta série ou ton thème dans le champ.</div>
-        <div class="ac-ex">Exemple : "Série : 30 secondes pour comprendre Excel — épisode 1 sur 10".</div>
+        <div class="ac-ex">Exemple : "Série : 30 secondes pour comprendre Excel - épisode 1 sur 10".</div>
       </div>
 
       <div class="aide-card">
@@ -2332,14 +2336,14 @@
 
       <div class="aide-card">
         <div class="ac-titre">📱 Stories</div>
-        <div class="ac-desc">Contenus verticaux éphémères (24h) sur Instagram. Les stories quotidiennes sont le meilleur outil pour créer de la confiance : elles donnent rendez-vous à ton audience chaque jour et montrent que tu es actif, présent, accessible. Sur Instagram, la régularité en stories est souvent plus importante que la régularité en posts — c'est là que se construit le lien humain avec ta communauté.</div>
-        <div class="ac-desc" style="margin-top:.5rem;">L'idéal est d'en publier 6 jours sur 7 — une journée sans story dans la semaine est acceptable pour souffler, mais pas plus. Chaque jour, l'app te propose un thème (Lifestyle, Valeur ou Vente) et génère automatiquement une suggestion de sujet adaptée à ton métier et ta cible.</div>
+        <div class="ac-desc">Contenus verticaux éphémères (24h) sur Instagram. Les stories quotidiennes sont le meilleur outil pour créer de la confiance : elles donnent rendez-vous à ton audience chaque jour et montrent que tu es actif, présent, accessible. Sur Instagram, la régularité en stories est souvent plus importante que la régularité en posts - c'est là que se construit le lien humain avec ta communauté.</div>
+        <div class="ac-desc" style="margin-top:.5rem;">L'idéal est d'en publier 6 jours sur 7 - une journée sans story dans la semaine est acceptable pour souffler, mais pas plus. Chaque jour, l'app te propose un thème (Lifestyle, Valeur ou Vente) et génère automatiquement une suggestion de sujet adaptée à ton métier et ta cible.</div>
         <div class="ac-ex">Tu paramètres les thèmes dans Mon Compte → Stories. La suggestion de sujet du jour est générée par l'IA au premier regard sur l'app.</div>
       </div>
 
       <div class="aide-card">
         <div class="ac-titre">🔥 Semaines consécutives</div>
-        <div class="ac-desc">Nombre de semaines d'affilée où tu as rempli tes 8 questions hebdomadaires. La régularité est le vrai moteur de la croissance sur les réseaux — c'est ce chiffre qui compte le plus sur le long terme. Un message de félicitations apparaît tous les mois.</div>
+        <div class="ac-desc">Nombre de semaines d'affilée où tu as rempli tes 8 questions hebdomadaires. La régularité est le vrai moteur de la croissance sur les réseaux - c'est ce chiffre qui compte le plus sur le long terme. Un message de félicitations apparaît tous les mois.</div>
       </div>
     </div>
 
@@ -2356,45 +2360,45 @@
       </div>
 
       <div class="aide-card pilier-card-vis">
-        <div class="ac-titre">🔭 Visibilité — Attirer</div>
+        <div class="ac-titre">🔭 Visibilité - Attirer</div>
         <div class="ac-desc"><strong>Objectif :</strong> toucher des personnes qui ne te connaissent pas encore. Ce pilier est conçu pour sortir de ta communauté existante et être partagé.</div>
         <div class="pilier-detail">
           <div class="pd-item">🔍 <strong>Ce que fait l'IA :</strong> cherche automatiquement une actualité récente de ton secteur et t'aide à donner ton avis dessus.</div>
-          <div class="pd-item">🪝 <strong>Type de hook :</strong> donnée chiffrée surprenante — ex : "65% des indépendants publient moins d'une fois par semaine."</div>
+          <div class="pd-item">🪝 <strong>Type de hook :</strong> donnée chiffrée surprenante - ex : "65% des indépendants publient moins d'une fois par semaine."</div>
           <div class="pd-item">🎨 <strong>Ton :</strong> accessible, engageant, parfois décalé. Donne envie d'être partagé ou commenté.</div>
         </div>
         <div class="ac-ex">Exemples : avis sur une tendance du secteur, post avec humour sur ton quotidien pro, prise de position sur une actu.</div>
       </div>
 
       <div class="aide-card pilier-card-aut">
-        <div class="ac-titre">👑 Autorité — Convaincre</div>
+        <div class="ac-titre">👑 Autorité - Convaincre</div>
         <div class="ac-desc"><strong>Objectif :</strong> prouver ta valeur par des preuves concrètes et créer un lien humain avec ton audience. Ce pilier convertit les curieux en clients.</div>
         <div class="pilier-detail">
           <div class="pd-item">📂 <strong>Ce que fait l'IA :</strong> puise dans tes retours clients, tes anecdotes et ta méthode enregistrés dans ton profil.</div>
-          <div class="pd-item">🪝 <strong>Type de hook :</strong> anecdote personnelle ou client concrète et datée — ex : "Il y a 3 semaines, une cliente m'a dit quelque chose qui m'a arrêtée net."</div>
+          <div class="pd-item">🪝 <strong>Type de hook :</strong> anecdote personnelle ou client concrète et datée - ex : "Il y a 3 semaines, une cliente m'a dit quelque chose qui m'a arrêtée net."</div>
           <div class="pd-item">🎨 <strong>Ton :</strong> authentique, humain, direct. Jamais publicitaire.</div>
         </div>
         <div class="ac-ex">Exemples : retour client mot pour mot, coulisses de ton travail, résultat client chiffré, pourquoi tu as choisi ce métier.</div>
       </div>
 
       <div class="aide-card pilier-card-exp">
-        <div class="ac-titre">🧠 Expertise — Apporter de la valeur</div>
+        <div class="ac-titre">🧠 Expertise - Apporter de la valeur</div>
         <div class="ac-desc"><strong>Objectif :</strong> enseigner quelque chose d'utile et te positionner comme une référence. Ce pilier fidélise et crédibilise.</div>
         <div class="pilier-detail">
           <div class="pd-item">📚 <strong>Ce que fait l'IA :</strong> génère des conseils actionnables ancrés dans ton domaine, avec des structures pédagogiques claires.</div>
-          <div class="pd-item">🪝 <strong>Type de hook :</strong> affirmation contre-intuitive ou erreur fréquente — ex : "La plupart des artisans font cette erreur sur leurs stories sans le savoir."</div>
+          <div class="pd-item">🪝 <strong>Type de hook :</strong> affirmation contre-intuitive ou erreur fréquente - ex : "La plupart des artisans font cette erreur sur leurs stories sans le savoir."</div>
           <div class="pd-item">🎨 <strong>Ton :</strong> pédagogique, précis, concret. Chaque post apporte quelque chose d'actionnable.</div>
         </div>
         <div class="ac-ex">Exemples : "Les 3 erreurs que font les restaurateurs sur Instagram", astuce méconnue de ton secteur, série pédagogique.</div>
       </div>
 
       <div class="aide-card pilier-card-act">
-        <div class="ac-titre">🏪 Activité — Montrer & Vendre</div>
+        <div class="ac-titre">🏪 Activité - Montrer & Vendre</div>
         <div class="ac-desc"><strong>Objectif :</strong> créer de la proximité en montrant ton quotidien, mettre en avant une offre ou annoncer un événement. Ce pilier déclenche l'acte d'achat sans forcer.</div>
         <div class="pilier-detail">
-          <div class="pd-item">🏗️ <strong>Niveau 1 — Montrer l'activité :</strong> coulisses, savoir-faire en action, produit en situation. Hook = scène concrète du quotidien. Pas de vente.</div>
-          <div class="pd-item">🎁 <strong>Niveau 2 — Mettre en avant une offre :</strong> la situation vécue par le client d'abord — l'offre arrive APRÈS, jamais en premier.</div>
-          <div class="pd-item">📣 <strong>Niveau 3 — Promotion directe :</strong> le sujet contient une date, un prix ou un mot-clé promo. Hook = l'événement ou la durée. Urgence réelle, jamais fabriquée.</div>
+          <div class="pd-item">🏗️ <strong>Niveau 1 - Montrer l'activité :</strong> coulisses, savoir-faire en action, produit en situation. Hook = scène concrète du quotidien. Pas de vente.</div>
+          <div class="pd-item">🎁 <strong>Niveau 2 - Mettre en avant une offre :</strong> la situation vécue par le client d'abord - l'offre arrive APRÈS, jamais en premier.</div>
+          <div class="pd-item">📣 <strong>Niveau 3 - Promotion directe :</strong> le sujet contient une date, un prix ou un mot-clé promo. Hook = l'événement ou la durée. Urgence réelle, jamais fabriquée.</div>
           <div class="pd-item">🎨 <strong>Ton :</strong> incarné, direct, sans pression commerciale.</div>
         </div>
         <div class="ac-ex">Exemples : "Ce matin j'ai passé 2h sur ce carrelage", présentation d'un produit en situation, annonce d'une offre de saison.</div>
@@ -2403,7 +2407,7 @@
       <div class="aide-card pilier-card-autre">
         <div class="ac-titre">✏️ Pilier Autre (personnalisé)</div>
         <div class="ac-desc">Tu définis toi-même le thème. Utile pour les séries thématiques, les lancements d'offre ou les moments forts de ton agenda. L'IA maintient la cohérence de ta série d'un post à l'autre.</div>
-        <div class="ac-ex">Exemple : "Série : 30 secondes pour comprendre Excel — épisode 1 sur 10".</div>
+        <div class="ac-ex">Exemple : "Série : 30 secondes pour comprendre Excel - épisode 1 sur 10".</div>
       </div>
 
       <div class="pilier-conseil">
@@ -2419,7 +2423,7 @@
       <h3>🔑 Obtenir tes clés API</h3>
 
       <div style="font-size:.8rem;color:#aaa;line-height:1.6;margin-bottom:1rem;">
-        Une clé API permet à l'outil d'envoyer tes demandes de génération à un modèle d'IA. Tu en as besoin d'au moins une pour générer des posts. Chaque fournisseur a sa propre tarification — Gemini est gratuit pour commencer.
+        Une clé API permet à l'outil d'envoyer tes demandes de génération à un modèle d'IA. Tu en as besoin d'au moins une pour générer des posts. Chaque fournisseur a sa propre tarification - Gemini est gratuit pour commencer.
       </div>
 
       <!-- GEMINI -->
@@ -2435,7 +2439,7 @@
 
       <!-- CLAUDE -->
       <div class="api-key-bloc">
-        <div class="api-key-titre">🟣 Claude (Anthropic) <span class="api-key-payant">Payant — ~1€ pour 100 posts</span></div>
+        <div class="api-key-titre">🟣 Claude (Anthropic) <span class="api-key-payant">Payant - ~1€ pour 100 posts</span></div>
         <div class="api-key-etape"><strong>1.</strong> Va sur <a href="https://console.anthropic.com" target="_blank" class="api-key-lien">↗ console.anthropic.com</a></div>
         <div class="api-key-etape"><strong>2.</strong> Crée un compte Anthropic ou connecte-toi</div>
         <div class="api-key-etape"><strong>3.</strong> Menu gauche → <strong>"API Keys"</strong> → <strong>"Create Key"</strong></div>
@@ -2448,9 +2452,9 @@
       <div class="aide-card" style="margin-top:.5rem;">
         <div class="ac-titre" style="font-size:.78rem;">❓ Quelle clé choisir ?</div>
         <div class="ac-desc" style="font-size:.78rem;line-height:1.7;">
-          — <strong>Gemini</strong> : idéal pour démarrer sans frais. Résultats très bons sur tous les formats.<br/>
-          — <strong>Claude</strong> : légèrement meilleur sur les textes longs et nuancés (carrousels, vidéos, storytelling). Recommandé si tu génères beaucoup de contenu.<br/>
-          — Tu peux avoir les deux clés et basculer depuis Mon Compte → Connexions selon tes besoins.
+          - <strong>Gemini</strong> : idéal pour démarrer sans frais. Résultats très bons sur tous les formats.<br/>
+          - <strong>Claude</strong> : légèrement meilleur sur les textes longs et nuancés (carrousels, vidéos, storytelling). Recommandé si tu génères beaucoup de contenu.<br/>
+          - Tu peux avoir les deux clés et basculer depuis Mon Compte → Connexions selon tes besoins.
         </div>
       </div>
 
@@ -2463,29 +2467,29 @@
       <h3>🚀 Comment utiliser l'outil</h3>
 
       <div class="aide-card">
-        <div class="ac-titre" style="margin-bottom:.6rem;">Chaque semaine — le rituel en 2 temps</div>
-        <div class="tuto-step"><div class="tuto-num">1</div><div class="tuto-txt"><strong>Lundi soir — 5 min</strong><br/>Va dans l'onglet <strong>Semaine</strong> et réponds aux 8 questions. Aucune obligation de tout remplir — même 3 réponses suffisent pour alimenter l'IA.</div></div>
-        <div class="tuto-step"><div class="tuto-num">2</div><div class="tuto-txt"><strong>Mardi matin — 20 min</strong><br/>Va dans <strong>Générer</strong> → choisis ton pilier, ton réseau, ton format → clique sur Générer → ajuste si besoin → copie ou sauvegarde dans le calendrier.</div></div>
+        <div class="ac-titre" style="margin-bottom:.6rem;">Chaque semaine - le rituel en 2 temps</div>
+        <div class="tuto-step"><div class="tuto-num">1</div><div class="tuto-txt"><strong>Lundi soir - 5 min</strong><br/>Va dans l'onglet <strong>Semaine</strong> et réponds aux 8 questions. Aucune obligation de tout remplir - même 3 réponses suffisent pour alimenter l'IA.</div></div>
+        <div class="tuto-step"><div class="tuto-num">2</div><div class="tuto-txt"><strong>Mardi matin - 20 min</strong><br/>Va dans <strong>Générer</strong> → choisis ton pilier, ton réseau, ton format → clique sur Générer → ajuste si besoin → copie ou sauvegarde dans le calendrier.</div></div>
       </div>
 
       <div class="aide-card">
-        <div class="ac-titre" style="margin-bottom:.6rem;">Générer un post — étape par étape</div>
-        <div class="tuto-step"><div class="tuto-num">1</div><div class="tuto-txt"><strong>Choisis un pilier</strong> — Visibilité, Autorité, Expertise ou Activité. Ce choix oriente tout le post (sources, ton, thème).</div></div>
-        <div class="tuto-step"><div class="tuto-num">2</div><div class="tuto-txt"><strong>Choisis le réseau</strong> — LinkedIn ou Instagram. Le format et la longueur s'adaptent automatiquement.</div></div>
-        <div class="tuto-step"><div class="tuto-num">3</div><div class="tuto-txt"><strong>Choisis le format</strong> — Texte, Photo, Carrousel ou Réel. Pour un carrousel, tu verras les slides générées et pourras les exporter.</div></div>
-        <div class="tuto-step"><div class="tuto-num">4</div><div class="tuto-txt"><strong>Sujet (optionnel)</strong> — si tu as une idée précise, écris-la. Sinon laisse vide : l'IA choisit depuis ta matière de la semaine.</div></div>
-        <div class="tuto-step"><div class="tuto-num">5</div><div class="tuto-txt"><strong>Clique sur Générer</strong> — le texte apparaît directement. Lis-le, ajuste ce qui ne sonne pas comme toi, puis copie ou sauvegarde.</div></div>
-        <div class="tuto-step"><div class="tuto-num">6</div><div class="tuto-txt"><strong>Sauvegarde dans le calendrier</strong> — choisis la date de publication et clique sur Sauvegarder. Le post apparaît dans ton calendrier avec son statut "À relire".</div></div>
+        <div class="ac-titre" style="margin-bottom:.6rem;">Générer un post - étape par étape</div>
+        <div class="tuto-step"><div class="tuto-num">1</div><div class="tuto-txt"><strong>Choisis un pilier</strong> - Visibilité, Autorité, Expertise ou Activité. Ce choix oriente tout le post (sources, ton, thème).</div></div>
+        <div class="tuto-step"><div class="tuto-num">2</div><div class="tuto-txt"><strong>Choisis le réseau</strong> - LinkedIn ou Instagram. Le format et la longueur s'adaptent automatiquement.</div></div>
+        <div class="tuto-step"><div class="tuto-num">3</div><div class="tuto-txt"><strong>Choisis le format</strong> - Texte, Photo, Carrousel ou Réel. Pour un carrousel, tu verras les slides générées et pourras les exporter.</div></div>
+        <div class="tuto-step"><div class="tuto-num">4</div><div class="tuto-txt"><strong>Sujet (optionnel)</strong> - si tu as une idée précise, écris-la. Sinon laisse vide : l'IA choisit depuis ta matière de la semaine.</div></div>
+        <div class="tuto-step"><div class="tuto-num">5</div><div class="tuto-txt"><strong>Clique sur Générer</strong> - le texte apparaît directement. Lis-le, ajuste ce qui ne sonne pas comme toi, puis copie ou sauvegarde.</div></div>
+        <div class="tuto-step"><div class="tuto-num">6</div><div class="tuto-txt"><strong>Sauvegarde dans le calendrier</strong> - choisis la date de publication et clique sur Sauvegarder. Le post apparaît dans ton calendrier avec son statut "À relire".</div></div>
       </div>
 
       <div class="aide-card">
         <div class="ac-titre">💡 Conseils pour de meilleurs résultats</div>
         <div class="ac-desc" style="line-height:2;">
-          — Plus tu remplis les 8 questions avec des détails précis et vrais, plus l'IA génère dans ta voix.<br/>
-          — Relis toujours le post généré à voix haute : si tu ne te reconnais pas dans ce que tu entends, reformule.<br/>
-          — Utilise le bouton Regénérer si le premier résultat ne te convient pas — chaque génération est différente.<br/>
-          — Varie les 4 piliers chaque semaine pour une présence équilibrée.<br/>
-          — Pour les stories vente, le plus important est d'avoir un mot-clé clair (ex : "COACHING", "DEVIS") que tes abonnés peuvent t'envoyer en DM.
+          - Plus tu remplis les 8 questions avec des détails précis et vrais, plus l'IA génère dans ta voix.<br/>
+          - Relis toujours le post généré à voix haute : si tu ne te reconnais pas dans ce que tu entends, reformule.<br/>
+          - Utilise le bouton Regénérer si le premier résultat ne te convient pas - chaque génération est différente.<br/>
+          - Varie les 4 piliers chaque semaine pour une présence équilibrée.<br/>
+          - Pour les stories vente, le plus important est d'avoir un mot-clé clair (ex : "COACHING", "DEVIS") que tes abonnés peuvent t'envoyer en DM.
         </div>
       </div>
     </div>
@@ -2549,7 +2553,7 @@
       <div style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Aperçu carrousel</div>
       <div id="edit-carrousel-wrap"></div>
     </div>
-    <!-- Zone script visuel (Stories, Réel, Vidéo — tableau) -->
+    <!-- Zone script visuel (Stories, Réel, Vidéo - tableau) -->
     <div id="edit-script-zone" style="display:none;">
       <div style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Script</div>
       <div id="edit-script-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch;"></div>
@@ -2560,7 +2564,7 @@
     </div>
     <div class="mini-loader" id="loader-regen"><div class="mini-ring"></div><span>Regénération en cours…</span></div>
 
-    <!-- Légende (masquée pour les carrousels — déjà dans le viewer) -->
+    <!-- Légende (masquée pour les carrousels - déjà dans le viewer) -->
     <div id="edit-legende-hd" style="font-size:.75rem;color:var(--gris-clair);margin:.8rem 0 .4rem;">Légende & hashtags</div>
     <textarea class="legende-zone" id="edit-legende" placeholder="Légende + hashtags…"></textarea>
     <div class="regen-row">
@@ -2622,7 +2626,7 @@
     </div>
 
     <!-- Date -->
-    <div class="date-badge" id="creer-date-badge">📅 —</div>
+    <div class="date-badge" id="creer-date-badge">📅 -</div>
     <input type="date" id="creer-date" style="display:none;"/>
 
     <!-- Pilier de contenu -->
@@ -2656,7 +2660,7 @@
     </div>
 
     <!-- Sujet -->
-    <span class="creer-lbl">Sujet <span style="color:#888;font-weight:400;">(optionnel — sinon l'IA choisit)</span></span>
+    <span class="creer-lbl">Sujet <span style="color:#888;font-weight:400;">(optionnel - sinon l'IA choisit)</span></span>
     <div class="creer-sujet-row">
       <input type="text" id="creer-sujet" placeholder="Ex : mon retour sur le dernier salon pro…"/>
       <button class="btn btn-ghost" onclick="genCreerPost()">✨ Générer</button>
@@ -2740,18 +2744,18 @@ if(!RYTHME.ig.jours) RYTHME.ig.jours = [4];
 // Stories config (7 jours)
 const STORIES_DEF = [
   {jour:'Lundi',   typo:'lifestyle', sujet:'Scène du quotidien pro ou perso qui révèle qui tu es'},
-  {jour:'Mardi',   typo:'valeur',    sujet:'1 astuce utile pour ton client cible — angle pratique, 1 slide = 1 idée'},
+  {jour:'Mardi',   typo:'valeur',    sujet:'1 astuce utile pour ton client cible - angle pratique, 1 slide = 1 idée'},
   {jour:'Mercredi',typo:'vente',     sujet:'Contextualisation → Problème / douleur du client → Appel à action vers l\'offre'},
   {jour:'Jeudi',   typo:'lifestyle', sujet:'Opinion assumée sur un sujet qui touche ta cible'},
-  {jour:'Vendredi',typo:'valeur',    sujet:'1 astuce utile pour ton client cible — nouvel angle, nouvelle idée'},
-  {jour:'Samedi',  typo:'lifestyle', sujet:'Valeur incarnée — montrer, pas déclarer'},
+  {jour:'Vendredi',typo:'valeur',    sujet:'1 astuce utile pour ton client cible - nouvel angle, nouvelle idée'},
+  {jour:'Samedi',  typo:'lifestyle', sujet:'Valeur incarnée - montrer, pas déclarer'},
   {jour:'Dimanche',typo:'vente',     sujet:'Contextualisation → Problème / douleur du client → Appel à action vers l\'offre'},
 ];
 
 // Sujets par défaut proposés quand l'utilisateur change de typo
 const STORY_SUJET_DEFAUT = {
   lifestyle: 'Scène du quotidien pro ou perso qui révèle qui tu es',
-  valeur:    '1 astuce utile pour ton client cible — angle pratique, 1 slide = 1 idée',
+  valeur:    '1 astuce utile pour ton client cible - angle pratique, 1 slide = 1 idée',
   vente:     'Contextualisation → Problème / douleur du client → Appel à action vers l\'offre',
   aucune:    ''
 };
@@ -2776,7 +2780,7 @@ let CAL = { vue:'mois', annee:new Date().getFullYear(), mois:new Date().getMonth
 // INIT
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded',()=>{
-  // Auth EN PREMIER — évite tout flash de l'app sans connexion
+  // Auth EN PREMIER - évite tout flash de l'app sans connexion
   initAuth();
   initTheme(); initUI(); chargerCompte(); affDate(); construireStoriesUI(); majGenFormats(getGenReseau()); majRythme(); chargerGoogleFonts();
   syncConfigDepuisSheets(); // Sync multi-appareils au démarrage
@@ -2803,7 +2807,7 @@ function initUI(){
 
 
 // ══════════════════════════════════════════
-// STORY DU JOUR — COMPTEUR ACCUEIL
+// STORY DU JOUR - COMPTEUR ACCUEIL
 // ══════════════════════════════════════════
 let sqpIdx = null;   // index story du jour dans STORIES_CFG
 let sqpDate = null;  // date ISO de la story du jour
@@ -2813,7 +2817,7 @@ let sqpDate = null;  // date ISO de la story du jour
 // Générée 1x/jour, stockée en localStorage
 // ══════════════════════════════════════════
 function genererSuggestionStoryIA(idx, typo, dateCle){
-  // Construire la suggestion localement depuis le profil — pas d'appel API
+  // Construire la suggestion localement depuis le profil - pas d'appel API
   // pour éviter de recevoir un hook de post au lieu d'un sujet court
   const metier = localStorage.getItem('roze_tronc') || localStorage.getItem('roze_metier') || '';
   const cible  = localStorage.getItem('roze_cible') || '';
@@ -2835,9 +2839,9 @@ function genererSuggestionStoryIA(idx, typo, dateCle){
       `Ton avis tranché sur une idée reçue que ${cible||'tes clients'} ont souvent`,
     ],
     valeur: [
-      `L'erreur la plus fréquente que font ${cible||'tes clients'} — et comment l'éviter`,
+      `L'erreur la plus fréquente que font ${cible||'tes clients'} - et comment l'éviter`,
       `1 astuce concrète sur ${metier||'ton domaine'} que peu de gens connaissent`,
-      `Ce que ${cible||'tes clients'} font souvent à l'envers — et la bonne façon de faire`,
+      `Ce que ${cible||'tes clients'} font souvent à l'envers - et la bonne façon de faire`,
       `La question que tu poses à chaque nouveau client et pourquoi elle change tout`,
       `3 choses à vérifier avant de ${cible ? 'choisir un ' + metier : 'démarrer'}`,
     ]
@@ -2873,7 +2877,7 @@ function majStoryDuJour(){
   const s = STORIES_CFG[idx];
   if(!s) return;
 
-  const typoNom = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente',aucune:'—'};
+  const typoNom = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente',aucune:'-'};
   const publiee = localStorage.getItem('roze_story_pub_' + aujStr) === '1';
 
   const elSujet     = document.getElementById('pc-story-sujet');
@@ -2884,7 +2888,7 @@ function majStoryDuJour(){
   const typoClasse  = {vente:'typo-vente',valeur:'typo-valeur',lifestyle:'typo-lifestyle',aucune:'typo-aucune'};
 
   if(elTypoBadge){
-    elTypoBadge.textContent = typoNom[s.typo] || '—';
+    elTypoBadge.textContent = typoNom[s.typo] || '-';
     elTypoBadge.className   = 'pc-story-typo-badge ' + (typoClasse[s.typo]||'');
   }
 
@@ -2919,7 +2923,7 @@ function majStoryDuJour(){
           if(el) el.textContent = suggestion;
           // Aussi mettre à jour le sqp-titre si panel ouvert
           const sqpTitre = document.getElementById('sqp-titre');
-          if(sqpTitre) sqpTitre.textContent = 'Story ' + joursNoms[idx] + ' — ' + suggestion;
+          if(sqpTitre) sqpTitre.textContent = 'Story ' + joursNoms[idx] + ' - ' + suggestion;
         } else {
           const el = document.getElementById('pc-story-sujet');
           if(el) el.textContent = STORY_SUJET_DEFAUT[s.typo] || '';
@@ -2946,7 +2950,7 @@ function majStoryDuJour(){
 
   const sqpTitre = document.getElementById('sqp-titre');
   const sujetAffiche = suggestionCachee || STORY_SUJET_DEFAUT[s.typo] || '';
-  if(sqpTitre) sqpTitre.textContent = 'Story ' + joursNoms[idx] + ' — ' + sujetAffiche;
+  if(sqpTitre) sqpTitre.textContent = 'Story ' + joursNoms[idx] + ' - ' + sujetAffiche;
 }
 
 function toggleStoryQuick(){
@@ -3211,7 +3215,7 @@ function toggleDuoTab(id){
 }
 
 // ══════════════════════════════════════════════════════
-// LOGO — upload local en base64 (fiable, pas de CORS)
+// LOGO - upload local en base64 (fiable, pas de CORS)
 // ══════════════════════════════════════════════════════
 function uploadLogoLocal(input){
   const file = input.files && input.files[0];
@@ -3254,7 +3258,7 @@ function initLogoPreview(){
 }
 
 // ══════════════════════════════════════════════════════
-// FONDS PERSONNALISÉS — upload 1 à 3 images de fond
+// FONDS PERSONNALISÉS - upload 1 à 3 images de fond
 // ══════════════════════════════════════════════════════
 const MAX_FONDS = 3;
 
@@ -3350,7 +3354,7 @@ function osTab(btn,os){ document.querySelectorAll('.os-tab').forEach(b=>b.classL
 // ══════════════════════════════════════════
 
 // ══════════════════════════════════════════
-// GAMIFICATION STREAK — logique réelle
+// GAMIFICATION STREAK - logique réelle
 // ══════════════════════════════════════════
 
 // Messages de félicitations par palier mensuel
@@ -3359,15 +3363,15 @@ const STREAK_MESSAGES = {
         msg:'4 semaines de régularité. Tu as posé les bases. L’algorithme commence à te reconnaître.' },
   8:  { ic:'🔥', badge:'2 mois',   titre:'2 mois sans faillir !',
         msg:'Tu as publié chaque semaine pendant 2 mois. C’est dans la durée que la confiance de ton audience se construit.' },
-  12: { ic:'🏆', badge:'3 mois',   titre:'3 mois — tu es dans le top 5% !',
+  12: { ic:'🏆', badge:'3 mois',   titre:'3 mois - tu es dans le top 5% !',
         msg:'Moins de 5% des professionnels tiennent 3 mois sur les réseaux. Tu fais partie de ceux qui durent.' },
   16: { ic:'💎', badge:'4 mois',   titre:'4 mois de présence régulière',
         msg:'Ton audience te reconnaît maintenant comme une voix de référence dans ton secteur. Continue.' },
-  20: { ic:'🚀', badge:'5 mois',   titre:'5 mois — tu es inarrêtable !',
+  20: { ic:'🚀', badge:'5 mois',   titre:'5 mois - tu es inarrêtable !',
         msg:'5 mois de publications régulières. Les opportunités que ça génère sont souvent invisibles mais bien réelles.' },
-  24: { ic:'⭐', badge:'6 mois',   titre:'6 mois — mi-parcours !',
-        msg:'Une demi-année de régularité. Tu n’es plus en train d’essayer — tu es quelqu’un qui publie, point.' },
-  36: { ic:'👑', badge:'9 mois',   titre:'9 mois — Top of Mind !',
+  24: { ic:'⭐', badge:'6 mois',   titre:'6 mois - mi-parcours !',
+        msg:'Une demi-année de régularité. Tu n’es plus en train d’essayer - tu es quelqu’un qui publie, point.' },
+  36: { ic:'👑', badge:'9 mois',   titre:'9 mois - Top of Mind !',
         msg:'Presque un an. Les gens dans ton secteur savent qui tu es. C’est ça, le vrai résultat d’une présence régulière.' },
   48: { ic:'🌟', badge:'1 an !!!', titre:'1 AN de régularité !',
         msg:'365 jours à tenir ta promesse éditoriale. Peu de professionnels peuvent en dire autant. Félicitations.' },
@@ -3460,7 +3464,7 @@ function fermerStreakModal(){
 }
 
 async function enrSemaine(){
-  if(!CFG.as){ toast('⚙️ URL Google Sheets manquante — va dans Mon Compte → Connexions','err'); return; }
+  if(!CFG.as){ toast('⚙️ URL Google Sheets manquante - va dans Mon Compte → Connexions','err'); return; }
   const btn = document.getElementById('btn-enr-semaine');
   if(btn){ btn.classList.add('btn-progress'); btn.textContent = '⏳ Enregistrement…'; }
   const d={
@@ -3484,7 +3488,7 @@ async function enrSemaine(){
       viderDraft();
       syncConfigVersSheets(); // Propager aux autres appareils
       if(btn){ btn.classList.remove('btn-progress'); btn.innerHTML = '✅ Semaine enregistrée !'; setTimeout(()=>{btn.innerHTML='💾 Enregistrer ma semaine';},2500); }
-      toast('✅ Semaine enregistrée — mémoire IA mise à jour !','ok');
+      toast('✅ Semaine enregistrée - mémoire IA mise à jour !','ok');
     } else {
       if(btn){ btn.classList.remove('btn-progress'); btn.innerHTML = '💾 Enregistrer ma semaine'; }
       toast('❌ '+(j.erreur||'Erreur'),'err');
@@ -3531,7 +3535,7 @@ function majQuotaResume(){
   const el = document.getElementById('quota-txt');
   if(el) el.textContent = total > 0
     ? parts.join(' · ')
-    : 'Aucun réseau configuré — clique pour modifier';
+    : 'Aucun réseau configuré - clique pour modifier';
 }
 
 function majFormats(){
@@ -3545,7 +3549,7 @@ function majGenFormats(reseau){
     {fmt:'Post texte',ic:'📝'},{fmt:'Carrousel',ic:'🎠'},{fmt:'Vidéo',ic:'🎬'},{fmt:'Photo',ic:'🖼️'}
   ];
   const igFormats = [
-    // Instagram : pas de "Post texte" — format inexistant sur ce réseau
+    // Instagram : pas de "Post texte" - format inexistant sur ce réseau
     {fmt:'Photo',ic:'🖼️'},{fmt:'Carrousel',ic:'🎠'},{fmt:'Réel',ic:'🎬'}
   ];
   const fmts = reseau === 'LinkedIn' ? liFormats : igFormats;
@@ -3629,10 +3633,10 @@ Ton : pédagogique, précis, concret. Chaque post doit apporter quelque chose d'
 
     activite: `PILIER : ACTIVITÉ
 Objectif : montrer ce que tu fais au quotidien, promouvoir une offre ou annoncer un événement. Ce pilier crée de la proximité et déclenche l'acte d'achat.
-3 NIVEAUX — détecter selon le sujet :
-NIVEAU 1 — MONTRER L'ACTIVITÉ (défaut) : coulisses, process, savoir-faire en action. Hook = scène concrète du quotidien. Jamais de vente, jamais de prix.
-NIVEAU 2 — METTRE EN AVANT UNE OFFRE : situation vécue par le client d'abord, bénéfice de l'offre ensuite. L'offre arrive APRÈS la situation — jamais en premier.
-NIVEAU 3 — PROMOTION DIRECTE : sujet contient une date, un prix ou un mot-clé promo. Hook = l'événement ou la durée en première phrase. Urgence réelle, jamais fabriquée.
+3 NIVEAUX - détecter selon le sujet :
+NIVEAU 1 - MONTRER L'ACTIVITÉ (défaut) : coulisses, process, savoir-faire en action. Hook = scène concrète du quotidien. Jamais de vente, jamais de prix.
+NIVEAU 2 - METTRE EN AVANT UNE OFFRE : situation vécue par le client d'abord, bénéfice de l'offre ensuite. L'offre arrive APRÈS la situation - jamais en premier.
+NIVEAU 3 - PROMOTION DIRECTE : sujet contient une date, un prix ou un mot-clé promo. Hook = l'événement ou la durée en première phrase. Urgence réelle, jamais fabriquée.
 Ton : incarné, direct, sans pression commerciale.`,
 
     autre: `PILIER PERSONNALISÉ : ${autreTexte||"Série ou thème défini par l'utilisateur"}
@@ -3656,7 +3660,7 @@ function setGenReseau(chip, reseau){
   majGenFormats(reseau);
 }
 
-// Sélection format — panneau Générer
+// Sélection format - panneau Générer
 function setGenFormat(chip){
   document.querySelectorAll('#gen-formats .chip').forEach(c=>c.classList.remove('on'));
   chip.classList.add('on');
@@ -3666,7 +3670,7 @@ function setGenFormat(chip){
   if(photoZone) photoZone.style.display = (fmt==='Photo'||fmt==='Carrousel') ? 'block' : 'none';
 }
 
-// Sélection format — modale Créer
+// Sélection format - modale Créer
 function setCreerFormat(chip){
   document.querySelectorAll('#creer-formats .chip').forEach(c=>c.classList.remove('on'));
   chip.classList.add('on');
@@ -3711,7 +3715,7 @@ function togglePanel(){
   document.getElementById('gen-post-actions').style.display='none';
   document.getElementById('lbl-gen-texte').style.display='none';
 
-  // Ancre — scroll immédiat vers le panel
+  // Ancre - scroll immédiat vers le panel
   setTimeout(() => p.scrollIntoView({ behavior:'smooth', block:'start' }), 50);
 }
 
@@ -3725,12 +3729,12 @@ function toggleActu(){
     document.getElementById('actu-result').classList.remove('on');
     actuTexte = '';
   }
-  // Pas de recherche ici — elle se déclenche au clic sur Générer
+  // Pas de recherche ici - elle se déclenche au clic sur Générer
 }
 
 async function rechercherActu(){
-  // Délègue à l'Apps Script — qui gère le modèle via fallback automatique
-  // Silencieuse en cas d'échec — ne bloque jamais la génération
+  // Délègue à l'Apps Script - qui gère le modèle via fallback automatique
+  // Silencieuse en cas d'échec - ne bloque jamais la génération
   const sujetSaisi = (document.getElementById('gen-sujet')||{}).value?.trim() || '';
   const metier     = CFG.metier || '';
   const pilier     = genPilier || 'autorite';
@@ -3781,7 +3785,7 @@ function buildExportSlide(i, s, st, c1, c2, ptit, pcorp, W, H){
   const gc1 = st.gradColor1||c1, gc2 = st.gradColor2||c2, gc3 = st.gradColor3||'';
   const stops = gc3 ? `${gc2},${gc1},${gc3}` : `${gc2},${gc1}`;
 
-  // Fond — miroir exact de appliquerStylesSlide
+  // Fond - miroir exact de appliquerStylesSlide
   let bgCss = '';
   if(st.fondType==='uni' && st.fondColor)       bgCss = st.fondColor;
   else if(st.fondType==='degrade'){
@@ -3799,7 +3803,7 @@ function buildExportSlide(i, s, st, c1, c2, ptit, pcorp, W, H){
   else if(amb==='clair')                         bgCss = AMBIANCE_CLAIR_BG;
   else                                           bgCss = fondSlide(s.num||i+1, carrouselCourant.slides.length, c1, c2, i);
 
-  // Photo overlay — 3 modes identiques au viewer
+  // Photo overlay - 3 modes identiques au viewer
   let photoHtml = '';
   if(st.fondType==='photo' && cvFondPhotoParSlide[i]){
     photoHtml = `<img src="${cvFondPhotoParSlide[i]}" alt="" crossOrigin="anonymous"
@@ -3817,7 +3821,7 @@ function buildExportSlide(i, s, st, c1, c2, ptit, pcorp, W, H){
 
   const gridHtml = (amb==='clair') ? `<div style="position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,0,0,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,0.03) 1px,transparent 1px);background-size:100px 100px;"></div>` : '';
 
-  // Couleurs texte — miroir du panneau éditeur
+  // Couleurs texte - miroir du panneau éditeur
   const baseCoul = st.textColor || (amb==='clair' ? '#1A1A1A' : '#ffffff');
   const titreCol  = st.titreCouleur  || (isRespiration ? c1 : baseCoul);
   const ssCol     = st.sstitreCouleur || baseCoul;
@@ -3828,14 +3832,15 @@ function buildExportSlide(i, s, st, c1, c2, ptit, pcorp, W, H){
   const titreFs = s.type==='hook' ? Math.round(H*0.048) : Math.round(H*0.038);
   const corpsFs = Math.round(H*0.022), ssFs = Math.round(H*0.018);
 
-  const sstitreHtml = s.sousTitre ? `<div style="font-size:${ssFs}px;font-weight:600;margin-bottom:${Math.round(H*0.012)}px;line-height:1.3;color:${ssCol};${shadow}">${nettoyerSousTitre(s.sousTitre)}</div>` : '';
+  const sstitreHtml = s.sousTitre ? `<div style="font-size:${ssFs}px;font-weight:600;margin-bottom:${Math.round(H*0.012)}px;line-height:1.3;color:${ssCol};${shadow}${st.sstitreItalic?'font-style:italic;':''}">${nettoyerSousTitre(s.sousTitre)}</div>` : '';
   const logoHtml = (s.type==='conclusion' && CFG.logoUrl && !st.hideLogo)
     ? `<div style="display:flex;justify-content:${{left:'flex-start',right:'flex-end',center:'center'}[st.logoPos||'center']};margin-bottom:${Math.round(H*0.02)}px;">
         <img src="${CFG.logoUrl}" crossOrigin="anonymous" style="max-width:${Math.round(W*0.22)}px;max-height:${Math.round(H*0.045)}px;object-fit:contain;opacity:.85;" onerror="this.style.display='none'"/></div>` : '';
 
-  const titreStyle = `font-family:'${st.policeTitre||ptit}',serif;font-size:${Math.round(titreFs*(st.titreSize||1))}px;font-weight:700;line-height:${st.titreLH||1.25};color:${titreCol};${shadow}${isRespiration?'font-style:italic;':'margin-bottom:'+Math.round(H*0.018)+'px;'}`;
+  const titreItal = (isRespiration || st.titreItalic) ? 'font-style:italic;' : '';
+  const titreStyle = `font-family:'${st.policeTitre||ptit}',serif;font-size:${Math.round(titreFs*(st.titreSize||1))}px;font-weight:700;line-height:${st.titreLH||1.25};color:${titreCol};${shadow}${titreItal}${isRespiration?'':'margin-bottom:'+Math.round(H*0.018)+'px;'}`;
   const titreRendu = rendreTitreAccent(s.titre||'', c1, bgCss);
-  const corpsHtml = isRespiration ? '' : `<div style="font-family:'${st.policeCorps||pcorp}',sans-serif;font-size:${Math.round(corpsFs*(st.corpsSize||1))}px;line-height:${st.corpsLH||1.6};flex:1;white-space:pre-line;color:${corpsCol};${shadow}">${s.corps||''}</div>`;
+  const corpsHtml = isRespiration ? '' : `<div style="font-family:'${st.policeCorps||pcorp}',sans-serif;font-size:${Math.round(corpsFs*(st.corpsSize||1))}px;line-height:${st.corpsLH||1.6};flex:1;white-space:pre-line;color:${corpsCol};${shadow}${st.corpsItalic?'font-style:italic;':''}">${s.corps||''}</div>`;
 
   const div = document.createElement('div');
   div.style.cssText = `position:fixed;left:-9999px;top:0;width:${W}px;height:${H}px;overflow:hidden;background:${bgCss};font-family:'${st.policeCorps||pcorp}',sans-serif;color:${baseCoul};padding:${pad};box-sizing:border-box;display:flex;flex-direction:column;${isRespiration?'justify-content:center;align-items:center;':''}text-align:${isRespiration?'center':(st.align||'left')};`;
@@ -3877,7 +3882,7 @@ async function exporterPNG(){
 }
 
 // ══════════════════════════════════════════
-// EXPORT PDF (LinkedIn) — jsPDF
+// EXPORT PDF (LinkedIn) - jsPDF
 // ══════════════════════════════════════════
 async function exporterPDF(){
   if(!carrouselCourant) return;
@@ -3937,12 +3942,12 @@ const DRIVE_DOSSIERS = [
 let driveEtatActuel = 'dossiers';
 let driveDossierActif = null;
 let drivePhotoSelectionnee = null;
-let photoSlide1 = null; // { src: dataURL, nom: string } — photo pour slide 1 des carrousels
+let photoSlide1 = null; // { src: dataURL, nom: string } - photo pour slide 1 des carrousels
 
 // Charger photoSlide1 depuis localStorage si disponible
 (function(){ try{ const p=localStorage.getItem('roze_photo_slide1'); if(p) photoSlide1=JSON.parse(p); }catch(e){} })();
 
-// Contraste WCAG 2.1 — ratio minimum 4.5:1 pour texte normal
+// Contraste WCAG 2.1 - ratio minimum 4.5:1 pour texte normal
 function luminanceRGB(hex){
   const r=parseInt(hex.slice(1,3),16)/255;
   const g=parseInt(hex.slice(3,5),16)/255;
@@ -4022,9 +4027,9 @@ function validerPhotoManuelle(dossier){
   const el = document.getElementById('drive-desc-manuelle');
   const desc = el ? el.value.trim() : '';
   if(!desc){ toast('\u26a0\ufe0f Saisis une description','err'); return; }
-  drivePhotoSelectionnee = { nom: dossier + ' \u2014 ' + desc, url:'', description: desc };
+  drivePhotoSelectionnee = { nom: dossier + ' - ' + desc, url:'', description: desc };
   document.getElementById('q7').value = desc;
-  afficherPreviewPhoto(dossier + ' \u2014 ' + desc, '', desc);
+  afficherPreviewPhoto(dossier + ' - ' + desc, '', desc);
   fermerDriveExplorer();
   toast('\u2705 Photo d\u00e9crite ajout\u00e9e','ok');
 }
@@ -4050,7 +4055,7 @@ function effacerPhoto(){
 }
 
 // ══════════════════════════════════════════
-// Q7 — IMPORT PHOTO VERS DRIVE
+// Q7 - IMPORT PHOTO VERS DRIVE
 // ══════════════════════════════════════════
 // ══════════════════════════════════════════
 // SÉLECTEUR STYLE POST PHOTO
@@ -4134,7 +4139,7 @@ async function genHookPhoto(textePost){
 // ══════════════════════════════════════════════════════════
 const GOOGLE_CLIENT_ID = '467619618320-vf33rsticsngcoomhsg9u66l6spvv6gh.apps.googleusercontent.com';
 
-// Session persistante dans localStorage — durée 30 jours
+// Session persistante dans localStorage - durée 30 jours
 // L'utilisateur n'a pas à se reconnecter à chaque ouverture de l'app
 const AUTH_KEY     = 'roze_auth_email';
 const AUTH_NOM     = 'roze_auth_nom';
@@ -4161,7 +4166,7 @@ function effacerSession(){
   localStorage.removeItem(AUTH_EXPIRY);
 }
 
-// Rétro-compatibilité — fonctions utilisées ailleurs
+// Rétro-compatibilité - fonctions utilisées ailleurs
 function getSessionEmail(){ return localStorage.getItem(AUTH_KEY) || ''; }
 function initAuth(){
   const session = lireSession();
@@ -4195,7 +4200,7 @@ function lancerGSI(){
     document.getElementById('google-signin-btn'),
     { theme:'filled_black', size:'large', text:'signin_with', shape:'pill', width:280 }
   );
-  // One Tap — propose la reconnexion automatique si le compte est mémorisé
+  // One Tap - propose la reconnexion automatique si le compte est mémorisé
   google.accounts.id.prompt();
 }
 
@@ -4213,7 +4218,7 @@ async function onGoogleSignIn(response){
 
   const asUrl = CFG.as || localStorage.getItem('roze_as') || '';
   if(!asUrl){
-    // Première configuration — pas encore d'URL AS
+    // Première configuration - pas encore d'URL AS
     sauvegarderSession(email, nom);
     afficherApp();
     return;
@@ -4254,7 +4259,7 @@ function afficherApp(){
   afficherStreak();
   affDate();
 
-  // Sync immédiate au démarrage — sans délai arbitraire
+  // Sync immédiate au démarrage - sans délai arbitraire
   // rendreCal() sera appelé dans syncPostsDepuisSheets après setBiblio()
   syncPostsDepuisSheets();
 
@@ -4278,7 +4283,7 @@ function seDeconnecter(){
 }
 
 // ══════════════════════════════════════════════════════════
-// CONFIG SHEETS — sync multi-appareils
+// CONFIG SHEETS - sync multi-appareils
 // ══════════════════════════════════════════════════════════
 
 // Construire l'objet config à envoyer au Sheets
@@ -4401,8 +4406,8 @@ function appliquerConfig(config){
 
 // Lire la config depuis le Sheets (au démarrage si CFG.as connu)
 async function syncPostsDepuisSheets(){
-  if(!CFG.as){ console.warn('[Roze] syncPostsDepuisSheets: CFG.as vide — sync impossible'); return; }
-  console.log('[Roze] Sync depuis Sheets — CFG.as:', CFG.as.substring(0,50)+'...');
+  if(!CFG.as){ console.warn('[Roze] syncPostsDepuisSheets: CFG.as vide - sync impossible'); return; }
+  console.log('[Roze] Sync depuis Sheets - CFG.as:', CFG.as.substring(0,50)+'...');
   try{
     const r = await fetch(CFG.as, {
       method: 'POST',
@@ -4447,7 +4452,7 @@ async function syncPostsDepuisSheets(){
     ];
 
     console.log('[Roze] postsReconstruits:', postsReconstruits.length, '(Sheets:', postsSheets.length, '+ attente:', postsLocauxEnAttente.length, ')');
-    // Remplacer le localStorage et rafraîchir — identique sur tous les appareils
+    // Remplacer le localStorage et rafraîchir - identique sur tous les appareils
     setBiblio(postsReconstruits);
     majSemMini(); majKPIs();
     rendreCal();
@@ -4468,7 +4473,7 @@ async function syncConfigDepuisSheets(){
       appliquerConfig(j.config);
       chargerCompte(); // Rafraîchir les champs du DOM
     }
-  } catch(e){ /* silencieux — on garde le localStorage */ }
+  } catch(e){ /* silencieux - on garde le localStorage */ }
 }
 
 // Sauvegarder la config vers le Sheets
@@ -4482,7 +4487,7 @@ async function syncConfigVersSheets(){
   } catch(e){ /* silencieux */ }
 }
 
-// lireMd et lireFichierModeles supprimés — profil lu depuis Sheets via Apps Script
+// lireMd et lireFichierModeles supprimés - profil lu depuis Sheets via Apps Script
 
 function matiereSemaine(){
   // Récupère depuis les champs si dispo, sinon depuis le brouillon sauvegardé
@@ -4537,7 +4542,7 @@ function viderDraft(){
 
 
 // ══════════════════════════════════════════
-// SÉLECTEUR IA — Claude / Gemini
+// SÉLECTEUR IA - Claude / Gemini
 // ══════════════════════════════════════════
 
 function setIA(ia, save=true){
@@ -4557,7 +4562,7 @@ function setIA(ia, save=true){
   if(cGemini) cGemini.classList.toggle('on', ia==='gemini');
 }
 
-// Appel unifié — route vers Claude ou Gemini
+// Appel unifié - route vers Claude ou Gemini
 async function appelIA(prompt){
   if(CFG.ia === 'gemini'){
     return appelGemini(prompt);
@@ -4593,7 +4598,7 @@ async function appelGemini(prompt){
 
 
 // ══════════════════════════════════════════
-// TRADUCTEUR D'ERREURS API — messages clairs pour l'utilisateur
+// TRADUCTEUR D'ERREURS API - messages clairs pour l'utilisateur
 // ══════════════════════════════════════════
 function traduireErreurIA(err) {
   const code = err.message || '';
@@ -4634,9 +4639,9 @@ function traduireErreurIA(err) {
 // Vérification clé présente selon IA sélectionnée
 function verifierCleIA(){
   if(CFG.ia === 'gemini'){
-    if(!CFG.apiGemini){ toast('⚙️ Clé API manquante — va dans Mon Compte → Connexions', 'err'); return false; }
+    if(!CFG.apiGemini){ toast('⚙️ Clé API manquante - va dans Mon Compte → Connexions', 'err'); return false; }
   } else {
-    if(!CFG.api){ toast('⚙️ Clé API manquante — va dans Mon Compte → Connexions', 'err'); return false; }
+    if(!CFG.api){ toast('⚙️ Clé API manquante - va dans Mon Compte → Connexions', 'err'); return false; }
   }
   return true;
 }
@@ -4683,7 +4688,7 @@ function nettoyerIntroIA(texte){
       // Phrase purement descriptive du contenu (heuristique)
       /^(voici|ci-dessous|j'ai (créé|rédigé|préparé|conçu)|en voici|je te (propose|présente))/i.test(l) ||
       // Ligne contenant uniquement des tirets ou étoiles (séparateur)
-      /^[-—=*]{3,}$/.test(l)
+      /^[--=*]{3,}$/.test(l)
     );
 
     if(estIntroMeta){
@@ -4694,7 +4699,9 @@ function nettoyerIntroIA(texte){
     }
   }
 
-  return lignes.slice(debut).join('\n').trimStart();
+  return lignes.slice(debut).join('\n').trimStart()
+    .replace(/\u2014/g, '-')   // em-dash
+    .replace(/\u2013/g, '-');  // en-dash
 }
 
 function limiterHashtags(texte, max=5){
@@ -4722,7 +4729,7 @@ function nettoyerJsonNewlines(s){
         inString = true;
         result.push(c);
       } else {
-        // Potentielle fermeture — vérifier ce qui suit
+        // Potentielle fermeture - vérifier ce qui suit
         // Un vrai délimiteur JSON est suivi de : , } ] ou whitespace avant ces chars
         let j = i + 1;
         while(j < s.length && (s[j] === ' ' || s[j] === '\n' || s[j] === '\r' || s[j] === '\t')) j++;
@@ -4819,7 +4826,7 @@ function renderScriptReel(texte) {
       html += '</tbody></table></div>';
       if (tableData.truncated) {
         html += '<div style="margin-top:.5rem;padding:.5rem .7rem;background:rgba(232,24,109,.08);border-left:3px solid var(--rose);border-radius:4px;font-size:.75rem;color:var(--rose);line-height:1.5;">'
-          + '⚠️ Script tronqué — clique sur <strong>Regénérer</strong> pour un script complet.</div>';
+          + '⚠️ Script tronqué - clique sur <strong>Regénérer</strong> pour un script complet.</div>';
       }
     } else {
       html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">' + escapeHtml(scriptMatch[1]) + '</div>';
@@ -4872,7 +4879,7 @@ function renderScriptVideoLI(texte) {
       html += '</tbody></table></div>';
       if (tableData.truncated) {
         html += '<div style="margin-top:.5rem;padding:.5rem .7rem;background:rgba(232,24,109,.08);border-left:3px solid var(--rose);border-radius:4px;font-size:.75rem;color:var(--rose);line-height:1.5;">'
-          + '⚠️ Script tronqué — clique sur <strong>Regénérer</strong> pour un script complet.</div>';
+          + '⚠️ Script tronqué - clique sur <strong>Regénérer</strong> pour un script complet.</div>';
       }
     } else {
       html += '<div style="white-space:pre-wrap;font-size:.82rem;color:var(--blanc-doux);">' + escapeHtml(scriptMatch[1]) + '</div>';
@@ -4938,15 +4945,15 @@ function renderScriptStory(texte) {
       html += '</tbody></table></div>';
       if (tableData.truncated) {
         html += '<div style="margin-top:.5rem;padding:.5rem .7rem;background:rgba(232,24,109,.08);border-left:3px solid var(--rose);border-radius:4px;font-size:.75rem;color:var(--rose);line-height:1.5;">'
-          + '⚠️ Script tronqué — la dernière slide est peut-être incomplète. Clique sur <strong>Regénérer</strong> pour obtenir un script complet.</div>';
+          + '⚠️ Script tronqué - la dernière slide est peut-être incomplète. Clique sur <strong>Regénérer</strong> pour obtenir un script complet.</div>';
       }
     } else {
-      // Tableau non parseable — afficher le texte brut proprement
+      // Tableau non parseable - afficher le texte brut proprement
       html += '<div style="white-space:pre-wrap;font-size:.82rem;line-height:1.7;color:var(--blanc-doux);">'
         + escapeHtml(scriptMatch[1].trim()) + '</div>';
     }
   } else if (texteNet.trim()) {
-    // Pas de bloc SCRIPT trouvé — afficher tout le texte tel quel
+    // Pas de bloc SCRIPT trouvé - afficher tout le texte tel quel
     html += '<div style="white-space:pre-wrap;font-size:.82rem;line-height:1.7;color:var(--blanc-doux);">'
       + escapeHtml(texteNet.trim()) + '</div>';
   }
@@ -4984,7 +4991,7 @@ function afficherResultatScript(texte, format, containerId) {
 }
 
 // ══════════════════════════════════════════════════════════
-// FIGURES NARRATIVES — badge + rotation
+// FIGURES NARRATIVES - badge + rotation
 // ══════════════════════════════════════════════════════════
 function afficherBadgeFigure(fig) {
   if (!fig) return;
@@ -5012,7 +5019,7 @@ function prochainIndexSource(max) {
 function buildStatsEviterBloc(){
   const stats = getStatsMois();
   if(!stats.length) return '';
-  return '\n=== DONNÉES DÉJÀ UTILISÉES CE MOIS — NE PAS RÉUTILISER ===\n'
+  return '\n=== DONNÉES DÉJÀ UTILISÉES CE MOIS - NE PAS RÉUTILISER ===\n'
     + stats.map((s,i) => (i+1)+'. '+s).join('\n')
     + '\nSi l\'actualité contient l\'une de ces données, utilises-en une différente du même article ou cherche une autre source.\n';
 }
@@ -5026,7 +5033,7 @@ function construireStoriesUI(){
     <div class="story-jour${s.typo==='aucune' ? ' story-jour-off' : ''}">
       <div class="story-jour-hd">
         <span class="jour-nom">${s.jour}</span>
-        <span class="typo-badge ${typoMap[s.typo]||'typo-aucune'}">${typoNom[s.typo]||'—'}</span>
+        <span class="typo-badge ${typoMap[s.typo]||'typo-aucune'}">${typoNom[s.typo]||'-'}</span>
       </div>
       <select style="margin-bottom:.3rem;font-size:14px;" onchange="
         const nouvelleTypo = this.value;
@@ -5035,7 +5042,7 @@ function construireStoriesUI(){
         const tyMap = {lifestyle:'typo-lifestyle',valeur:'typo-valeur',vente:'typo-vente',aucune:'typo-aucune'};
         const nmMap = {lifestyle:'Lifestyle',valeur:'Valeur',vente:'Vente',aucune:'Aucune'};
         b.className = 'typo-badge ' + (tyMap[nouvelleTypo]||'typo-aucune');
-        b.textContent = nmMap[nouvelleTypo] || '—';
+        b.textContent = nmMap[nouvelleTypo] || '-';
         this.closest('.story-jour').classList.toggle('story-jour-off', nouvelleTypo==='aucune');
         if(nouvelleTypo !== 'aucune' && typeof STORY_SUJET_DEFAUT !== 'undefined'){
           STORIES_CFG[${i}].sujet = STORY_SUJET_DEFAUT[nouvelleTypo] || '';
@@ -5046,7 +5053,7 @@ function construireStoriesUI(){
         <option value="lifestyle" ${s.typo==='lifestyle'?'selected':''}>🎭 Lifestyle / Storytelling</option>
         <option value="valeur"    ${s.typo==='valeur'?'selected':''}>💡 Valeur / Astuce</option>
         <option value="vente"     ${s.typo==='vente'?'selected':''}>🎯 Vente</option>
-        <option value="aucune"    ${s.typo==='aucune'?'selected':''}>— Aucune story</option>
+        <option value="aucune"    ${s.typo==='aucune'?'selected':''}>- Aucune story</option>
       </select>
     </div>`).join('');
 }
@@ -5078,15 +5085,15 @@ let overridesLH       = {};
 let overridesFS       = {};
 let cvFondPhotoSrc    = null;
 const cvFondPhotoParSlide = {};
-// Styles par slide — panneau éditeur
+// Styles par slide - panneau éditeur
 let slideStyles = {}; // { idx: {fondType, fondColor, fondPhotoVoile, fondPhotoFlou,
 
 // ══════════════════════════════════════════
-// POLICES DISPONIBLES — 30+ Google Fonts
+// POLICES DISPONIBLES - 30+ Google Fonts
 // ══════════════════════════════════════════
 const POLICES_TITRE = [
   'Playfair Display','Cormorant Garamond','Libre Baskerville','Merriweather',
-  'Lora','Georgia','EB Garamond','Crimson Text','Bodoni Moda','GFS Didot',
+  'Lora','EB Garamond','Crimson Text','Bodoni Moda','GFS Didot',
   'Abril Fatface','Cinzel','Josefin Slab','Unna','Spectral',
   'Montserrat','Raleway','Oswald','Bebas Neue','Anton',
   'Barlow','DM Serif Display','Fraunces','Syne','Big Shoulders Display',
@@ -5097,17 +5104,30 @@ const POLICES_CORPS = [
   'Inter','Work Sans','Barlow','Source Sans 3','Mulish','Outfit',
   'Plus Jakarta Sans','Figtree','Manrope','Jost','Karla',
   'Cabin','Hind','Quicksand','Exo 2','Titillium Web',
-  'Noto Sans','Ubuntu','Rubik','Fira Sans','Muli',
+  'Noto Sans','Ubuntu','Rubik','Fira Sans',
   'Libre Franklin','Heebo','Overpass'
 ];
 
 function chargerGoogleFonts(){
   const toutes = [...new Set([...POLICES_TITRE, ...POLICES_CORPS])];
-  const families = toutes.map(p=>p.replace(/ /g,'+')+':ital,wght@0,400;0,700;1,400').join('&family=');
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = 'https://fonts.googleapis.com/css2?family=' + families + '&display=swap';
-  document.head.appendChild(link);
+  // Charger en 2 lots pour isoler les erreurs éventuelles
+  const moitie = Math.ceil(toutes.length / 2);
+  [toutes.slice(0, moitie), toutes.slice(moitie)].forEach(lot => {
+    const families = lot.map(p => p.replace(/ /g,'+') + ':wght@400;700').join('&family=');
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=' + families + '&display=swap';
+    document.head.appendChild(link);
+  });
+  // Charger aussi la police configurée par l'utilisateur si absente des listes
+  [CFG.policeTitre, CFG.policeCorps].forEach(p => {
+    if(p && !toutes.includes(p)){
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=' + p.replace(/ /g,'+') + ':wght@400;700&display=swap';
+      document.head.appendChild(link);
+    }
+  });
 }
 
                       //        fondDeg, titreSize, sstitreSize, corpsSize,
@@ -5127,6 +5147,7 @@ function getSlideStyle(idx){
     ombreActive:false, ombreOpacite:0.6, ombreBlur:6,
     align:'left', textColor:'',
     margeH:12, margeV:14,
+    titreItalic:false, sstitreItalic:false, corpsItalic:false,
     numVisible:false, logoPos:'center'
   };
   return Object.assign({}, defs, slideStyles[idx]||{});
@@ -5246,7 +5267,7 @@ function styleFondSlide(num, total, c1, c2, idx){
     return 'background:' + AMBIANCE_CLAIR_BG + ';';
   }
 
-  // DA "Editorial Noir" — palette sombre systématique
+  // DA "Editorial Noir" - palette sombre systématique
   const dark = ajusterLum(c2||'#0d0d0d', -8);
   const sombre = c2 || '#0d0d0d';
   // Défaut selon styleFondActif
@@ -5272,7 +5293,7 @@ function rendreTitreAccent(titre, accent, fond){
 
 function nettoyerSousTitre(s){
   if(!s) return '';
-  return s.replace(/^\s*[-–—•*#]+\s*/,'').replace(/\[.*?\]/g,'').trim();
+  return s.replace(/^\s*[-–-•*#]+\s*/,'').replace(/\[.*?\]/g,'').trim();
 }
 
 function fontSizeTitre(titre, facteur, maxPx){
@@ -5354,7 +5375,7 @@ function renderCvSlide(s, idx, total, c1, c2, ptit, pcorp, opts){
     <div class="cv-slide-num">${idx+1}/${total}</div>
     <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};${isRespiration ? 'justify-content:center;align-items:center;text-align:center;' : ''}">
       ${(s.type==='conclusion' && CFG.logoUrl) ? renderLogoSlide(idx) : ''}
-      <!-- type masqué — ne s'affiche pas sur les slides -->
+      <!-- type masqué - ne s'affiche pas sur les slides -->
       ${sstitre ? `<div class="cv-slide-sstitre" ${editAttr}
         data-idx="${idx}" data-field="sousTitre"
         oninput="cvUpdateSlide(${idx},'sousTitre',this.innerText)">${escapeHtml(sstitre)}</div>` : ''}
@@ -5417,10 +5438,10 @@ function afficherCarrousel(slides, legende, reseau, containerId){
       <div class="cv-edit-hint" style="text-align:center;margin:.4rem 0;">↓ Tape sur une slide pour l'éditer en plein écran</div>
       <div class="cv-slides-wrap" id="cv-slides-wrap">
         ${slides.map((s,i) => renderCvSlide(s, i, slides.length, c1, c2, ptit, pcorp, {small:true, editable:false})).join('')}
-        <div class="cv-slide-add" onclick="toast('➕ Slide ajoutée — réédite le carrousel depuis le panneau.','ok')" style="flex-shrink:0;width:52px;height:auto;border-radius:10px;border:1.5px dashed rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.3);font-size:1.2rem;margin:1rem 0;">+</div>
+        <div class="cv-slide-add" onclick="toast('➕ Slide ajoutée - réédite le carrousel depuis le panneau.','ok')" style="flex-shrink:0;width:52px;height:auto;border-radius:10px;border:1.5px dashed rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.3);font-size:1.2rem;margin:1rem 0;">+</div>
       </div>
 
-      <!-- Toolbar contextuelle supprimée — édition via plein écran uniquement -->
+      <!-- Toolbar contextuelle supprimée - édition via plein écran uniquement -->
 
       <div class="cv-export-bar">
         <span style="display:flex;align-items:center;gap:.3rem;">
@@ -5498,7 +5519,6 @@ function appliquerStylesSlide(idx){
   const c2 = CFG.couleur2||'#111111';
   const st = getSlideStyle(idx);
   const inner = el.querySelector('.cv-slide-inner');
-  const isLg  = el.classList.contains('cv-slide-lg');
 
   // ─ FOND ─
   el.querySelectorAll('.cv-photo-overlay,.cv-blur-overlay').forEach(o=>o.remove());
@@ -5514,7 +5534,7 @@ function appliquerStylesSlide(idx){
     const mode = st.photoMode || 'filter';
 
     if(mode === 'raw'){
-      // Photo brute — aucun traitement
+      // Photo brute - aucun traitement
     } else if(mode === 'blur'){
       // Flou UNIQUEMENT sur le fond via backdrop-filter sur overlay
       // Le texte reste parfaitement lisible par-dessus
@@ -5583,11 +5603,11 @@ function appliquerStylesSlide(idx){
 
   // ─ TEXTE ─
   if(inner){
-    inner.style.position = 'relative';
+    // position gérée par CSS (relative pour lg, absolute pour sm+scale)
     inner.style.zIndex   = '1';
     inner.style.textAlign = st.align;
 
-    // Marges via curseurs (margeH px / margeV px) — appliquées sur lg et sm
+    // Marges via curseurs (margeH px / margeV px)
     const mV = st.margeV ?? 14;
     const mH = st.margeH ?? 12;
     inner.style.padding = `${mV}px ${mH}px`;
@@ -5605,24 +5625,25 @@ function appliquerStylesSlide(idx){
     const corpsEl   = inner.querySelector('.cv-slide-corps');
     const numEl     = el.querySelector('.cv-slide-num');
 
+    // Tailles toujours identiques (lg) ; les miniatures sm sont réduites par CSS transform:scale
     if(titreEl){
-      const base = isLg ? 1.12 : 0.78;
-      titreEl.style.fontSize   = (base * (st.titreSize||1)) + 'rem';
+      titreEl.style.fontSize   = (1.12 * (st.titreSize||1)) + 'rem';
       titreEl.style.lineHeight = st.titreLH || 1.3;
       titreEl.style.fontFamily = `'${st.policeTitre}',serif`;
+      titreEl.style.fontStyle  = (s.ambiance==='respiration' || st.titreItalic) ? 'italic' : 'normal';
       titreEl.style.color      = st.titreCouleur || baseCoul;
       titreEl.style.textShadow = shadowVal;
     }
     if(sstitreEl){
-      const base = isLg ? 0.72 : 0.58;
-      sstitreEl.style.fontSize   = (base * (st.sstitreSize||1)) + 'rem';
+      sstitreEl.style.fontSize   = (0.72 * (st.sstitreSize||1)) + 'rem';
+      sstitreEl.style.fontStyle  = st.sstitreItalic ? 'italic' : 'normal';
       sstitreEl.style.color      = st.sstitreCouleur || baseCoul;
       sstitreEl.style.textShadow = shadowVal;
     }
     if(corpsEl){
-      const base = isLg ? 0.86 : 0.65;
-      corpsEl.style.fontSize   = (base * (st.corpsSize||1)) + 'rem';
+      corpsEl.style.fontSize   = (0.86 * (st.corpsSize||1)) + 'rem';
       corpsEl.style.lineHeight = st.corpsLH || 1.5;
+      corpsEl.style.fontStyle  = st.corpsItalic ? 'italic' : 'normal';
       corpsEl.style.color      = st.corpsCouleur || baseCoul;
       corpsEl.style.textShadow = shadowVal;
     }
@@ -5799,13 +5820,13 @@ function majPanneauEditeur(idx){
   const slide = carrouselCourant && carrouselCourant.slides[idx];
   const titreCourant  = (slide && slide.titre)  || '';
   const corpsCourant  = (slide && slide.corps)   || '';
-  const sstitreCourant = (slide && slide.sousTitre) ? slide.sousTitre.replace(/^\s*[-–—•*#]+\s*/, '').trim() : '';
+  const sstitreCourant = (slide && slide.sousTitre) ? slide.sousTitre.replace(/^\s*[-–-•*#]+\s*/, '').trim() : '';
 
   panel.innerHTML = `
-    <!-- Section CONTENU — édition directe du texte -->
+    <!-- Section CONTENU - édition directe du texte -->
     <div class="cvp-section">
       <div class="cvp-section-titre" style="display:flex;justify-content:space-between;align-items:center;">
-        Slide ${idx+1} — Contenu
+        Slide ${idx+1} - Contenu
       </div>
       ${sstitreCourant ? `
       <div style="margin-bottom:.35rem;">
@@ -5831,7 +5852,7 @@ function majPanneauEditeur(idx){
             style="accent-color:var(--rose);"/>
           Afficher le logo
         </label>
-        ${CFG.logoUrl ? '<img src="'+CFG.logoUrl+'" style="max-height:20px;max-width:60px;object-fit:contain;opacity:.6;"/>' : '<span style="font-size:.65rem;color:#666;">Aucun logo — va dans Mon Compte</span>'}
+        ${CFG.logoUrl ? '<img src="'+CFG.logoUrl+'" style="max-height:20px;max-width:60px;object-fit:contain;opacity:.6;"/>' : '<span style="font-size:.65rem;color:#666;">Aucun logo - va dans Mon Compte</span>'}
       </div>` : ''}
     </div>
 
@@ -5896,7 +5917,7 @@ function majPanneauEditeur(idx){
           <span>Radial<br/>coin</span></button>
       </div>
 
-      <!-- Couleurs du dégradé — personnalisables -->
+      <!-- Couleurs du dégradé - personnalisables -->
       <div class="cvp-lbl" style="margin:.4rem 0 .3rem;">Couleurs du dégradé</div>
       <div class="cvp-row" style="gap:.4rem;flex-wrap:wrap;">
         <span class="cvp-lbl" style="min-width:auto;">C1</span>
@@ -6012,9 +6033,10 @@ function majPanneauEditeur(idx){
       </div>
       <div class="cvp-row">
         <span class="cvp-lbl">Police</span>
-        <select class="cvp-select" onchange="setSlideStyle(${idx},'policeTitre',this.value)">
-          ${(typeof POLICES_TITRE!=='undefined'?POLICES_TITRE:['Playfair Display','Georgia','Cormorant Garamond','Libre Baskerville','Merriweather','Lora']).map(p=>`<option value="${p}" ${st.policeTitre===p?'selected':''}>${p}</option>`).join('')}
+        <select class="cvp-select" onchange="setSlideStyle(${idx},'policeTitre',this.value)" style="flex:1;">
+          ${(typeof POLICES_TITRE!=='undefined'?POLICES_TITRE:['Playfair Display','Cormorant Garamond','Libre Baskerville','Merriweather','Lora']).map(p=>`<option value="${p}" ${st.policeTitre===p?'selected':''}>${p}</option>`).join('')}
         </select>
+        <button class="cvp-pill${st.titreItalic?' on':''}" onclick="setSlideStyle(${idx},'titreItalic',!getSlideStyle(${idx}).titreItalic);majPanneauEditeur(${idx})" style="font-style:italic;min-width:28px;text-align:center;flex-shrink:0;" title="Italique titre">I</button>
       </div>
 
       ${(carrouselCourant&&carrouselCourant.slides[idx]&&carrouselCourant.slides[idx].sousTitre) ? `
@@ -6039,6 +6061,7 @@ function majPanneauEditeur(idx){
           oninput="setSlideStyle(${idx},'sstitreSize',parseFloat(this.value));this.nextElementSibling.textContent=Math.round(this.value*100)+'%'"
           class="cvp-slider"/>
         <span class="cvp-val">${Math.round((st.sstitreSize||1)*100)}%</span>
+        <button class="cvp-pill${st.sstitreItalic?' on':''}" onclick="setSlideStyle(${idx},'sstitreItalic',!getSlideStyle(${idx}).sstitreItalic);majPanneauEditeur(${idx})" style="font-style:italic;min-width:28px;text-align:center;flex-shrink:0;" title="Italique sous-titre">I</button>
       </div>` : ''}
 
       <div class="cvp-sub-titre">Corps</div>
@@ -6072,9 +6095,10 @@ function majPanneauEditeur(idx){
       </div>
       <div class="cvp-row">
         <span class="cvp-lbl">Police</span>
-        <select class="cvp-select" onchange="setSlideStyle(${idx},'policeCorps',this.value)">
+        <select class="cvp-select" onchange="setSlideStyle(${idx},'policeCorps',this.value)" style="flex:1;">
           ${(typeof POLICES_CORPS!=='undefined'?POLICES_CORPS:['DM Sans','Nunito','Lato','Open Sans','Raleway','Poppins']).map(p=>`<option value="${p}" ${st.policeCorps===p?'selected':''}>${p}</option>`).join('')}
         </select>
+        <button class="cvp-pill${st.corpsItalic?' on':''}" onclick="setSlideStyle(${idx},'corpsItalic',!getSlideStyle(${idx}).corpsItalic);majPanneauEditeur(${idx})" style="font-style:italic;min-width:28px;text-align:center;flex-shrink:0;" title="Italique corps">I</button>
       </div>
     </div>
 
@@ -6365,7 +6389,7 @@ function splitTexteLegende(texte){
   t = t.replace(/[\u201C\u201D\u00AB\u00BB]/g, '"').replace(/[\u2018\u2019]/g, "'");
 
 
-  // Tentative extraction JSON carrousel — regex pour capturer toute indentation
+  // Tentative extraction JSON carrousel - regex pour capturer toute indentation
   let jIdx = -1;
   const jMatch = t.match(/\{[\s\n]*"slides"/);
   if(jMatch) jIdx = t.indexOf(jMatch[0]);
@@ -6377,7 +6401,7 @@ function splitTexteLegende(texte){
       if(t[i]==='{') depth++;
       else if(t[i]==='}') { depth--; if(depth===0){ endIdx=i; break; } }
     }
-    if(endIdx < 0) console.warn('[CV] ⚠️ JSON tronqué — accolade fermante introuvable (len='+t.length+')');
+    if(endIdx < 0) console.warn('[CV] ⚠️ JSON tronqué - accolade fermante introuvable (len='+t.length+')');
     console.log('[CV] endIdx='+endIdx+' jsonStr.length='+(endIdx>-1?endIdx-jIdx+1:0));
     if(endIdx > -1){
       let jsonStr = t.slice(jIdx, endIdx+1);
@@ -6392,7 +6416,7 @@ function splitTexteLegende(texte){
           return { texte:t, legende, isCarrousel:true, slides:data.slides };
         }
       }catch(e){
-        console.warn('[CV] JSON.parse échoué:', e.message, '— jsonStr début:', jsonStr.slice(0,100));
+        console.warn('[CV] JSON.parse échoué:', e.message, '- jsonStr début:', jsonStr.slice(0,100));
         // Tentative 2 : nettoyage virgules trailing
         try{
           const jsonStr2 = jsonStr.replace(/,\s*([}\]])/g,'$1');
@@ -6483,7 +6507,7 @@ function lireRythme(){
         idx++; di++;
       }
     });
-    // Stories — même jour que le dernier post Instagram
+    // Stories - même jour que le dernier post Instagram
     const dernierJourIg = RYTHME.ig.jours ? RYTHME.ig.jours[RYTHME.ig.jours.length-1] : 4;
     const dateStory = new Date(lundi.getTime() + dernierJourIg * 86400000).toISOString().split('T')[0];
     posts.push({reseau:'Instagram', typeContenu:'Stories', pilier:'autorite', date:dateStory});
@@ -6511,7 +6535,7 @@ async function genUnPost(){
   result.textContent=''; result.classList.remove('on');
   legZone.classList.remove('on'); actions.style.display='none';
   document.getElementById('lbl-gen-texte').style.display='none';
-  // Loader inline désactivé — le bouton lui-même affiche "Génération..."
+  // Loader inline désactivé - le bouton lui-même affiche "Génération..."
   // inlineLoader.classList.add('on');
   if(btnGen){ btnGen.disabled=true; btnGen.textContent='⏳ Génération…'; btnGen.classList.add('btn-progress'); }
 
@@ -6527,7 +6551,7 @@ async function genUnPost(){
       if(!actuTexte) await rechercherActu();
     }
 
-    // Envoi vers Apps Script — la génération se fait côté serveur
+    // Envoi vers Apps Script - la génération se fait côté serveur
     const body = {
       action:          'generer_post',
       ia:              CFG.ia || 'claude',
@@ -6612,7 +6636,8 @@ async function genUnPost(){
       document.getElementById('lbl-gen-texte').style.display='block';
       document.getElementById('lbl-gen-texte').textContent='Texte du post';
       document.getElementById('gen-legende').value = l;
-      if(format !== 'Stories') legZone.classList.add('on');
+      const isPostTexteLI = (format==='Post texte' && reseau==='LinkedIn');
+      if(format !== 'Stories' && !isPostTexteLI) legZone.classList.add('on');
       actions.style.display='flex';
       // Sélecteur de style Photo
       const psZone = document.getElementById('gen-photo-style-zone');
@@ -6669,7 +6694,7 @@ async function regenLegendePaneau(){
 }
 
 function supprimerGenPanel(){
-  // Reset tout le panneau Générer — supprime le post en cours
+  // Reset tout le panneau Générer - supprime le post en cours
   const result = document.getElementById('gen-result');
   if(result){ result.textContent=''; result.classList.remove('on'); }
   const cvInline = document.getElementById('gen-cv-inline');
@@ -6750,7 +6775,7 @@ function copierGenPanel(){
 async function genSemaine(){
   if(!verifierCleIA()) return;
   const posts = lireRythme();
-  if(!posts.length){ toast('⚠️ Aucun format activé — configure ton rythme dans Mon Compte','err'); return; }
+  if(!posts.length){ toast('⚠️ Aucun format activé - configure ton rythme dans Mon Compte','err'); return; }
 
   const loader=document.getElementById('loader');
   const zoneRes=document.getElementById('zone-res');
@@ -6862,7 +6887,7 @@ function afficherRes(resultats){
         else if(r.typeContenu === 'Vidéo')  texteHtml = renderScriptVideoLI(r.texte||'');
       } else {
         texteHtml = escapeHtml(r.texte||'').replace(/\n/g,'<br/>');
-        if(r.legende) texteHtml += `<br/><br/><span class="res-item-legende">${escapeHtml(r.legende)}</span>`;
+        if(r.legende && !(r.typeContenu==='Post texte' && r.reseau==='LinkedIn')) texteHtml += `<br/><br/><span class="res-item-legende">${escapeHtml(r.legende)}</span>`;
       }
 
       item.innerHTML = `
@@ -6898,7 +6923,7 @@ function toggleEncart(id){
 // BROUILLONS / IDÉES
 // ══════════════════════════════════════════════════
 // ══════════════════════════════════════════════════
-// PANEL "1 STORY" — génération story depuis p-generer
+// PANEL "1 STORY" - génération story depuis p-generer
 // ══════════════════════════════════════════════════
 let gspTypeActif = 'vente';
 let gspActuTexte = '';
@@ -6928,7 +6953,7 @@ function toggleStoryPanel(){
   if(chips[0]) chips[0].classList.add('on-vente');
   gspTypeActif = 'vente';
 
-  // Ancre — scroll immédiat vers le panel
+  // Ancre - scroll immédiat vers le panel
   setTimeout(() => panel.scrollIntoView({ behavior:'smooth', block:'start' }), 50);
 }
 
@@ -6944,10 +6969,10 @@ function validerURLsSources(el){
   if(comptEl) comptEl.textContent = Math.min(lignes.length, 10) + '/10';
 
   if(nonURL.length){
-    if(errEl){ errEl.textContent = '⚠️ Ligne(s) invalide(s) — chaque ligne doit commencer par https://'; errEl.style.display='block'; }
+    if(errEl){ errEl.textContent = '⚠️ Ligne(s) invalide(s) - chaque ligne doit commencer par https://'; errEl.style.display='block'; }
     el.style.borderColor = 'var(--rose)';
   } else if(trop){
-    if(errEl){ errEl.textContent = '⚠️ Maximum 10 URLs — les lignes suivantes seront ignorées.'; errEl.style.display='block'; }
+    if(errEl){ errEl.textContent = '⚠️ Maximum 10 URLs - les lignes suivantes seront ignorées.'; errEl.style.display='block'; }
     el.style.borderColor = 'var(--rose)';
   } else {
     if(errEl) errEl.style.display='none';
@@ -6982,7 +7007,7 @@ function publierSur(reseau){
   const legende = document.getElementById('gen-legende')?.value || '';
   const tout = texte + (legende ? '\n\n' + legende : '');
   navigator.clipboard.writeText(tout).then(() => {
-    toast('✅ Post copié dans le presse-papier — colle-le directement sur ' + reseau + ' !', 'ok');
+    toast('✅ Post copié dans le presse-papier - colle-le directement sur ' + reseau + ' !', 'ok');
     setTimeout(() => {
       if(reseau === 'Instagram'){
         const url = CFG.instaUser
@@ -7014,7 +7039,7 @@ function gspToggleActu(event){
 
 async function genererStoryPanel(){
   if(!verifierCleIA()) return;
-  if(!CFG.as){ toast('⚙️ URL Apps Script manquante — va dans Mon Compte → Connexions','err'); return; }
+  if(!CFG.as){ toast('⚙️ URL Apps Script manquante - va dans Mon Compte → Connexions','err'); return; }
 
   const loader = document.getElementById('gsp-loader');
   const btnGen = document.getElementById('gsp-btn-gen');
@@ -7111,7 +7136,7 @@ function gspRegenerer(){
 }
 
 function gspSauvegarder(){
-  // Déjà sauvegardé à la génération — proposer d'aller au calendrier
+  // Déjà sauvegardé à la génération - proposer d'aller au calendrier
   toast('✅ Story déjà sauvegardée dans le calendrier','ok');
   setTimeout(() => go('p-calendrier'), 1600);
 }
@@ -7211,7 +7236,7 @@ function getBiblio(){ return lsJ('roze_biblio')||[]; }
 function setBiblio(b){ localStorage.setItem('roze_biblio',JSON.stringify(b)); }
 
 // ══════════════════════════════════════════
-// SYNCHRONISATION SHEETS — Posts générés
+// SYNCHRONISATION SHEETS - Posts générés
 // ══════════════════════════════════════════
 
 // File d'attente offline : posts en attente d'envoi vers Sheets
@@ -7220,7 +7245,7 @@ function setQueueSync(q){ localStorage.setItem('roze_sync_queue', JSON.stringify
 
 // Envoie un post vers l'onglet Posts_generes du Sheets
 async function syncPostVersSheets(post) {
-  if(!CFG.as){ console.warn('[Roze] syncPostVersSheets: CFG.as vide — post non envoyé au Sheets'); return false; }
+  if(!CFG.as){ console.warn('[Roze] syncPostVersSheets: CFG.as vide - post non envoyé au Sheets'); return false; }
   console.log('[Roze] Envoi post vers Sheets:', post.date, post.reseau, post.typeContenu);
   try {
     const r = await fetch(CFG.as, {
@@ -7280,7 +7305,7 @@ async function syncStatutVersSheets(post) {
         statut: post.statut
       })
     });
-  } catch(e) { /* silencieux — non bloquant */ }
+  } catch(e) { /* silencieux - non bloquant */ }
 }
 
 // Sync suppression vers Sheets
@@ -7402,7 +7427,7 @@ function majKPIs(){
   const semTotal = semaines.size;
   const elTaux = document.getElementById('kpi-taux-val');
   if(elTaux){
-    if(semTotal === 0){ elTaux.textContent = '—'; }
+    if(semTotal === 0){ elTaux.textContent = '-'; }
     else {
       // Calcul sur les 8 dernières semaines
       const maintenant = lundiSem(now);
@@ -7424,7 +7449,7 @@ function majKPIs(){
     .sort((a,b)=>a.date.localeCompare(b.date));
   const elProchain = document.getElementById('kpi-prochain-val');
   if(elProchain){
-    if(!prochains.length){ elProchain.textContent = '—'; }
+    if(!prochains.length){ elProchain.textContent = '-'; }
     else{
       const p = prochains[0];
       const d = new Date(p.date+'T12:00:00');
@@ -7486,7 +7511,7 @@ function ouvrirEdit(id){
   document.getElementById('opt-ig').className='reseau-opt'+(it.reseau==='Instagram'?' on-ig':'');
   // Date
   document.getElementById('edit-date').value=it.date||dateAujourdhui();
-  // Texte — carrousel, script (Stories/Réel/Vidéo), ou post standard
+  // Texte - carrousel, script (Stories/Réel/Vidéo), ou post standard
   const editCarrousel = it.typeContenu === 'Carrousel';
   const editScript    = ['Stories','Réel','Vidéo'].includes(it.typeContenu);
   const editZoneWrap  = document.getElementById('edit-carrousel-zone');
@@ -7505,7 +7530,7 @@ function ouvrirEdit(id){
       if(editScriptZone) editScriptZone.style.display = 'none';
       afficherCarrousel(slides, it.legende||'', it.reseau||'Instagram', 'edit-carrousel-wrap');
     } else {
-      // JSON mal formé — afficher en texte brut
+      // JSON mal formé - afficher en texte brut
       if(editZoneWrap) editZoneWrap.style.display = 'none';
       if(editScriptZone) editScriptZone.style.display = 'none';
       if(editTextArea){ editTextArea.style.display='block'; editTextArea.value = it.texte||''; }
@@ -7537,7 +7562,8 @@ function ouvrirEdit(id){
   const legHd = document.getElementById('edit-legende-hd');
   const legTa = document.getElementById('edit-legende');
   const regenRow = editTextArea ? editTextArea.closest('.sheet')?.querySelector('.regen-row') : null;
-  if(editCarrousel || editScript){
+  const isPostTexteLI = (it.typeContenu==='Post texte' && it.reseau==='LinkedIn');
+  if(editCarrousel || editScript || isPostTexteLI){
     if(legHd) legHd.style.display = 'none';
     if(legTa) legTa.style.display = 'none';
   } else {
@@ -7732,7 +7758,7 @@ function rendreMois(){
 function rendreSemaine(){
   const idx=indexBiblio(); const lundi=new Date(CAL.semDebut); const dim=new Date(lundi.getTime()+6*86400000);
   const opts={day:'numeric',month:'short'};
-  document.getElementById('cal-per').textContent=`${lundi.toLocaleDateString('fr-FR',opts)} – ${dim.toLocaleDateString('fr-FR',opts)}`;
+  document.getElementById('cal-per').textContent=`${lundi.toLocaleDateString('fr-FR',opts)} - ${dim.toLocaleDateString('fr-FR',opts)}`;
   const jCourts=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']; const aujStr=dateAujourdhui();
   const grid=document.getElementById('cal-grid'); grid.className='cal-sem'; grid.innerHTML='';
   for(let i=0;i<7;i++){
@@ -7848,7 +7874,7 @@ function getCreerFormat(){
 }
 
 async function genCreerPost(){
-  // Même logique complète que genUnPost — affiche dans la modale calendrier
+  // Même logique complète que genUnPost - affiche dans la modale calendrier
   if(!verifierCleIA()) return;
 
   const reseau = getCreerReseau();
@@ -7871,7 +7897,7 @@ async function genCreerPost(){
   if(lblTexte) lblTexte.style.display = 'none';
 
   try{
-    if(!CFG.as) throw new Error('URL Apps Script manquante — configure Mon Compte');
+    if(!CFG.as) throw new Error('URL Apps Script manquante - configure Mon Compte');
 
     const mat = matiereSemaine ? matiereSemaine() : '';
 
@@ -8089,12 +8115,12 @@ function onUniversChange(univers){
     select.style.display = 'none';
     if(lbl)  lbl.style.display  = 'none';
     if(hint) hint.style.display = 'none';
-    select.innerHTML = '<option value="">— Choisir —</option>';
+    select.innerHTML = '<option value="">- Choisir -</option>';
     return;
   }
 
   const sousCats = SOUS_CATEGORIES_PAR_UNIVERS[univers] || [];
-  select.innerHTML = '<option value="">— Choisir —</option>' +
+  select.innerHTML = '<option value="">- Choisir -</option>' +
     sousCats.map(s => `<option value="${s.val}">${s.label}</option>`).join('');
 
   // Restaurer la valeur si elle correspond à cet univers
@@ -8278,6 +8304,15 @@ function sauvegarderCompte(){
   localStorage.setItem('roze_couleur_texte',CFG.couleurTexte);
   localStorage.setItem('roze_police_titre', CFG.policeTitre);
   localStorage.setItem('roze_police_corps', CFG.policeCorps);
+  // Charger dynamiquement si la police n'est pas dans les listes prédéfinies
+  const toutesPolices = [...new Set([...POLICES_TITRE, ...POLICES_CORPS])];
+  [CFG.policeTitre, CFG.policeCorps].forEach(p => {
+    if(p && !toutesPolices.includes(p) && !document.querySelector('link[href*="'+p.replace(/ /g,'+')+'"]')){
+      const lk = document.createElement('link'); lk.rel='stylesheet';
+      lk.href = 'https://fonts.googleapis.com/css2?family='+p.replace(/ /g,'+')+':wght@400;700&display=swap';
+      document.head.appendChild(lk);
+    }
+  });
   localStorage.setItem('roze_logo_url',     CFG.logoUrl);
   // Logo : prioriser le base64 uploadé sur l'URL manuelle
   const logoB64 = localStorage.getItem('roze_logo_base64') || '';
@@ -8296,7 +8331,7 @@ function sauvegarderCompte(){
   majRythme();
   localStorage.setItem('roze_secteur', JSON.stringify(CFG.prenom));
   localStorage.setItem('roze_rythme',  JSON.stringify(RYTHME));
-  // Stories — lire les valeurs des inputs AVANT de sauvegarder
+  // Stories - lire les valeurs des inputs AVANT de sauvegarder
   document.querySelectorAll('#stories-config .story-jour').forEach((bloc, i) => {
     const sel   = bloc.querySelector('select');
     const input = bloc.querySelector('input[type=text]');
@@ -8322,7 +8357,7 @@ function sauvegarderCompte(){
     majCompletionCompte();
   }
 
-  // Sync en fire-and-forget — n'attend pas la réponse, ne bloque JAMAIS le bouton
+  // Sync en fire-and-forget - n'attend pas la réponse, ne bloque JAMAIS le bouton
   if(CFG.as){
     syncConfigVersSheets().catch(()=>{});
     syncConfigDepuisSheets().catch(()=>{});
@@ -8342,7 +8377,7 @@ function sauvegarderCompte(){
 const EXEMPLES_STORY = {
   lifestyle: (sujet) => `🎬 Montre une scène de ton quotidien (bureau, déplacement, moment perso)\n\n👉 Contexte : "${sujet}"\n\nEx: "Aujourd'hui j'étais [contexte]… et ça m'a fait penser à quelque chose d'important pour vous…"`,
   valeur:    (sujet) => `💡 1 astuce = 1 slide\n\n👉 Sujet : "${sujet}"\n\nEx: "Le truc que personne ne te dit sur [sujet]…\n→ [La réponse en une phrase]\n→ Swipe si tu veux en savoir plus"`,
-  vente:     (sujet) => `🎯 Structure en 3 temps :\n\n1. CONTEXTE DU JOUR\n   Ex: "J'étais au [lieu] aujourd'hui… et je me demandais si j'allais y arriver, comme quand on débute."\n\n2. LIEN AVEC TA CIBLE\n   Ex: "C'est un peu comme dans ton activité — on se met nos propres barrières. La peur d'oser, de se montrer."\n\n3. APPEL À ACTION DOUX\n   Ex: "Si toi aussi tu es prêt à lever tes barrières et devenir régulier sur Instagram pour être le Top of Mind de ton secteur — réponds \"TOM\" à cette story, on en parle en privé 👇"`
+  vente:     (sujet) => `🎯 Structure en 3 temps :\n\n1. CONTEXTE DU JOUR\n   Ex: "J'étais au [lieu] aujourd'hui… et je me demandais si j'allais y arriver, comme quand on débute."\n\n2. LIEN AVEC TA CIBLE\n   Ex: "C'est un peu comme dans ton activité - on se met nos propres barrières. La peur d'oser, de se montrer."\n\n3. APPEL À ACTION DOUX\n   Ex: "Si toi aussi tu es prêt à lever tes barrières et devenir régulier sur Instagram pour être le Top of Mind de ton secteur - réponds \"TOM\" à cette story, on en parle en privé 👇"`
 };
 
 let storyModalIndex = null; // index dans STORIES_CFG
@@ -8436,7 +8471,7 @@ async function genScriptPanel(idx, dateStr){
 
   const matiere = matiereSemaine();
 
-  // Génération via Apps Script — profil lu depuis Sheets
+  // Génération via Apps Script - profil lu depuis Sheets
   const body = {
     action:     'generer_post',
     ia:         CFG.ia || 'claude',
@@ -8450,7 +8485,7 @@ async function genScriptPanel(idx, dateStr){
   };
 
   try{
-    if(!CFG.as) throw new Error('URL Apps Script manquante — configure Mon Compte');
+    if(!CFG.as) throw new Error('URL Apps Script manquante - configure Mon Compte');
     const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
@@ -8570,7 +8605,7 @@ function toggleStoryPubliee(){
 async function genStoryTexte(){
   if(!verifierCleIA()) return;
   if(storyModalIndex === null){ toast('⚠️ Aucune story sélectionnée','err'); return; }
-  if(!CFG.as){ toast('⚙️ URL Apps Script manquante — va dans Mon Compte → Connexions','err'); return; }
+  if(!CFG.as){ toast('⚙️ URL Apps Script manquante - va dans Mon Compte → Connexions','err'); return; }
 
   const s    = STORIES_CFG[storyModalIndex];
   const zone = document.getElementById('story-modal-exemple-txt');
@@ -8600,7 +8635,7 @@ async function genStoryTexte(){
   };
 
   try{
-    if(!CFG.as) throw new Error('URL Apps Script manquante — configure Mon Compte');
+    if(!CFG.as) throw new Error('URL Apps Script manquante - configure Mon Compte');
     const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
@@ -8624,14 +8659,14 @@ async function genStoryTexte(){
 function majCompletionCompte(){
   const gv = id => (document.getElementById(id)||{}).value?.trim()||'';
 
-  // Identité personnelle — 7 champs
+  // Identité personnelle - 7 champs
   const identiteChamps = [
     gv('cfg-prenom'), gv('cfg-nom'), gv('cfg-entreprise'), gv('cfg-metier'),
     gv('cfg-cible'), gv('cfg-tonalite'), gv('cfg-references')
   ];
   const pctIdentite = Math.round(identiteChamps.filter(Boolean).length / identiteChamps.length * 100);
 
-  // Identité visuelle — 5 champs (couleur1, couleur2, police titre, police corps, logo)
+  // Identité visuelle - 5 champs (couleur1, couleur2, police titre, police corps, logo)
   const charteChamps = [
     gv('cfg-couleur1'), gv('cfg-couleur2'),
     gv('cfg-police-titre'), gv('cfg-police-corps'),
@@ -8639,7 +8674,7 @@ function majCompletionCompte(){
   ];
   const pctCharte = Math.round(charteChamps.filter(Boolean).length / charteChamps.length * 100);
 
-  // Mes réseaux sociaux — 2 champs
+  // Mes réseaux sociaux - 2 champs
   const reseauxChamps = [gv('cfg-insta-user'), gv('cfg-linkedin-url')];
   const pctReseaux = Math.round(reseauxChamps.filter(Boolean).length / reseauxChamps.length * 100);
 
@@ -8655,7 +8690,7 @@ function majCompletionCompte(){
 }
 
 // ══════════════════════════════════════════
-// MAIL OPTIN — RGPD
+// MAIL OPTIN - RGPD
 // ══════════════════════════════════════════
 async function toggleMailOptin(){
   const cb = document.getElementById('cb-mail-optin');
@@ -8675,7 +8710,7 @@ async function toggleMailOptin(){
       })
     });
     const j = await r.json();
-    if(j.succes) toast(optin ? '📬 Rappel hebdomadaire activé' : '🔕 Rappel désactivé — tu peux réactiver à tout moment', 'ok');
+    if(j.succes) toast(optin ? '📬 Rappel hebdomadaire activé' : '🔕 Rappel désactivé - tu peux réactiver à tout moment', 'ok');
     else toast('⚠️ Impossible de mettre à jour la préférence', 'err');
   } catch(e) {
     toast(optin ? '📬 Rappel activé' : '🔕 Rappel désactivé', 'ok');

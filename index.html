@@ -756,7 +756,7 @@
     /* ─ SLIDES - format piloté par --cv-ratio (JS écrit cette variable) ─ */
     :root{ --cv-ratio: 3/4; }
     .cv-slide-sm{flex-shrink:0;width:120px;aspect-ratio:var(--cv-ratio);border-radius:8px;overflow:hidden;position:relative;cursor:pointer;scroll-snap-align:start;transition:transform .15s,box-shadow .15s;border:2px solid transparent;}
-    .cv-slide-sm .cv-slide-inner{position:absolute;top:0;left:0;width:300%;height:300%;transform:scale(0.3333);transform-origin:0 0;padding:22px 18px;}
+    .cv-slide-sm .cv-slide-inner{position:absolute;top:0;left:0;width:var(--cv-preview-w,400px);height:var(--cv-preview-h,500px);transform:scale(var(--cv-preview-scale,0.3));transform-origin:0 0;padding:22px 18px;}
     .cv-slide-sm .cv-slide-titre{font-size:1.12rem;line-height:1.22;}
     .cv-slide-sm .cv-slide-sstitre{font-size:.72rem;}
     .cv-slide-sm .cv-slide-corps{font-size:.86rem;overflow:hidden;}
@@ -5365,7 +5365,7 @@ function renderCvSlide(s, idx, total, c1, c2, ptit, pcorp, opts){
         oninput="cvUpdateSlide(${idx},'corps',this.innerText)">${(s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>')}</div>`;
 
   // Grille subtile pour ambiance "clair"
-  const gridOverlay = (amb === 'clair') ? `<div style="position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);background-size:${small?'14px 14px':'40px 40px'};"></div>` : '';
+  const gridOverlay = (amb === 'clair') ? `<div style="position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);background-size:${small?'12px 12px':'40px 40px'};"></div>` : '';
 
   return `<div class="${slideClass}" id="${idPrefix}-${idx}"
     style="${styleFondSlide(s.num||idx+1,total,c1,c2,idx)}"
@@ -5673,12 +5673,14 @@ function setCarFormat(ratio){
   carFormatRatio = ratio;
   const fmt = CAR_FORMATS[ratio] || CAR_FORMATS['3:4'];
   const ar  = fmt.w + ' / ' + fmt.h;
-  // 1. Variable CSS globale → toutes les slides se redimensionnent simultanément
   document.documentElement.style.setProperty('--cv-ratio', ar);
-  // 2. Sync le select preview inline
+  // Dimensions pixel du conteneur miniature (120px affiché, 400px interne)
+  const pvW = 400, pvH = Math.round(pvW * fmt.h / fmt.w);
+  document.documentElement.style.setProperty('--cv-preview-w', pvW + 'px');
+  document.documentElement.style.setProperty('--cv-preview-h', pvH + 'px');
+  document.documentElement.style.setProperty('--cv-preview-scale', (120 / pvW).toFixed(4));
   const sel = document.getElementById('car-format-sel');
   if(sel && sel.value !== ratio) sel.value = ratio;
-  // 3. Sync le select fullscreen si ouvert
   const selFs = document.getElementById('car-format-sel-fs');
   if(selFs && selFs.value !== ratio) selFs.value = ratio;
 }

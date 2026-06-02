@@ -5833,17 +5833,17 @@ function majPanneauEditeur(idx){
       ${sstitreCourant ? `
       <div style="margin-bottom:.35rem;">
         <div class="cvp-lbl" style="margin-bottom:.2rem;margin-top:.1rem;">Accroche</div>
-        <textarea class="cvp-textarea" rows="1"
+        <textarea class="cvp-textarea" rows="${Math.min(3, Math.max(1, Math.ceil(sstitreCourant.length/30)))}"
           oninput="cvpMajTexte(${idx},'sousTitre',this.value)">${sstitreCourant.replace(/`/g,"'")}</textarea>
       </div>` : ''}
       <div style="margin-bottom:.35rem;">
         <div class="cvp-lbl" style="margin-bottom:.2rem;margin-top:.1rem;">Titre</div>
-        <textarea class="cvp-textarea" rows="2"
+        <textarea class="cvp-textarea" rows="${Math.min(5, Math.max(2, Math.ceil(titreCourant.length/30)))}"
           oninput="cvpMajTexte(${idx},'titre',this.value)">${titreCourant.replace(/\[ACCENT\]|\[\/ACCENT\]/g,'').replace(/`/g,"'")}</textarea>
       </div>
       <div>
         <div class="cvp-lbl" style="margin-bottom:.2rem;margin-top:.1rem;">Corps</div>
-        <textarea class="cvp-textarea" rows="4"
+        <textarea class="cvp-textarea" rows="${Math.min(12, Math.max(3, Math.ceil(corpsCourant.length/28) + (corpsCourant.match(/\n/g)||[]).length))}"
           oninput="cvpMajTexte(${idx},'corps',this.value)">${corpsCourant.replace(/`/g,"'")}</textarea>
       </div>
       ${(slide && slide.type === 'conclusion') ? `
@@ -6384,8 +6384,8 @@ function previewCouleur(champ){
 function splitTexteLegende(texte){
   if(!texte) return {texte:'', legende:''};
 
-  // Nettoyer les balises markdown ```json ... ``` si présentes
-  let t = texte.trim();
+  // Nettoyage universel : tirets longs (couvre tous les chemins d'appel, même sans nettoyerIntroIA)
+  let t = texte.trim().replace(/\u2014/g, '-').replace(/\u2013/g, '-');
   t = t.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/,'').trim();
   // Normaliser guillemets typographiques
   t = t.replace(/[\u201C\u201D\u00AB\u00BB]/g, '"').replace(/[\u2018\u2019]/g, "'");

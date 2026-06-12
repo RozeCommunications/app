@@ -2033,6 +2033,22 @@
 
         <label class="lbl" style="margin-top:.8rem;">Mots &amp; formules à éviter</label>
         <textarea id="cfg-mots-interdits" rows="2" placeholder="Ex : game-changer, disruptif, révolutionnaire…" style="font-size:16px;width:100%;resize:none;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);font-family:'DM Sans',sans-serif;"></textarea>
+
+        <label class="lbl" style="margin-top:1rem;">📅 Dates clés de mon activité <span style="color:#888;font-size:.7rem;font-weight:400;">(marronnier perso)</span></label>
+        <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.4rem;line-height:1.4;">Anniversaire d'entreprise, lancement, promo saisonnière... L'IA les intègre automatiquement quand elles approchent (21j avant).</div>
+        <div id="dates-perso-list" style="display:flex;flex-direction:column;gap:.3rem;margin-bottom:.4rem;"></div>
+        <div style="display:flex;gap:.4rem;align-items:center;">
+          <input type="number" id="dp-jour" min="1" max="31" placeholder="Jour" style="width:55px;font-size:14px;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:6px;padding:.35rem .4rem;color:var(--blanc-doux);"/>
+          <select id="dp-mois" style="font-size:14px;flex:0;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:6px;padding:.35rem .4rem;color:var(--blanc-doux);">
+            <option value="">Mois</option>
+            <option value="1">Jan</option><option value="2">Fév</option><option value="3">Mars</option>
+            <option value="4">Avr</option><option value="5">Mai</option><option value="6">Juin</option>
+            <option value="7">Juil</option><option value="8">Août</option><option value="9">Sep</option>
+            <option value="10">Oct</option><option value="11">Nov</option><option value="12">Déc</option>
+          </select>
+          <input type="text" id="dp-label" placeholder="Ex : Anniversaire boutique" style="flex:1;font-size:14px;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:6px;padding:.35rem .5rem;color:var(--blanc-doux);"/>
+          <button type="button" onclick="ajouterDatePerso()" style="background:var(--rose);color:#fff;border:none;border-radius:6px;padding:.35rem .6rem;font-size:.75rem;cursor:pointer;white-space:nowrap;">+ Ajouter</button>
+        </div>
       </div>
         </div>
       </div>
@@ -4490,10 +4506,9 @@ async function syncConfigVersSheets(){
 // lireMd et lireFichierModeles supprimés - profil lu depuis Sheets via Apps Script
 
 function matiereSemaine(){
-  // Récupère depuis les champs si dispo, sinon depuis le brouillon sauvegardé
   const draft = lsJ('roze_draft') || {};
   const qv = (id) => (document.getElementById(id)||{}).value?.trim() || draft[id] || '';
-  return [
+  const lignes = [
     'Anecdote : '     + qv('q1'),
     'Retour client : '+ qv('q2'),
     'Frein entendu : '+ qv('q3'),
@@ -4503,6 +4518,8 @@ function matiereSemaine(){
     'Photo disponible : '+ qv('q7'),
     'Intention éditoriale : '+ qv('q8'),
   ].filter(l => !l.endsWith(': ')).join('\n');
+  const marr = contexteMarronnier();
+  return marr ? (lignes ? lignes + '\n' + marr : marr) : lignes;
 }
 
 // ── Autosave brouillon questions (debounce 1.5s) ──
@@ -5128,6 +5145,87 @@ function chargerGoogleFonts(){
       document.head.appendChild(link);
     }
   });
+}
+
+// ══ MARRONNIER INTELLIGENT ══════════════════════════════════════════
+// [mois(1-12), jour, label (suggestion pour l'IA), secteurs ou null=tous]
+// Secteurs : manuel, commerce, bienetre, conseil, creation, services
+const MARRONNIERS = [
+  [1,1,"Nouvel An - voeux, bilan, intentions pour l'année",null],
+  [1,8,"Début des soldes d'hiver",["commerce"]],
+  [1,17,"Journée mondiale du café",["commerce","bienetre"]],
+  [1,24,"Journée du compliment - idée contenu feel-good",null],
+  [2,2,"Chandeleur",["commerce","bienetre"]],
+  [2,14,"Saint-Valentin - self-care, offres duo, idée cadeau",null],
+  [2,20,"Journée de la justice sociale",["conseil","services"]],
+  [3,8,"Journée internationale des droits des femmes",null],
+  [3,20,"Journée du bonheur",["bienetre","services"]],
+  [3,20,"Printemps - renouveau, nettoyage, nouveaux projets",null],
+  [3,22,"Journée mondiale de l'eau",["manuel","bienetre"]],
+  [4,1,"Poisson d'avril - post avec humour ou autodérision",null],
+  [4,7,"Journée mondiale de la santé",["bienetre"]],
+  [4,15,"Pâques (date approx.) - offre spéciale, pause, famille",["commerce","bienetre"]],
+  [4,22,"Jour de la Terre - engagement éco, valeurs",null],
+  [4,28,"Journée sécurité au travail",["manuel","conseil"]],
+  [5,1,"Fête du travail - fierté du métier, parcours",null],
+  [5,5,"Journée mondiale du rire",["bienetre","services"]],
+  [5,16,"Journée de la lumière",["creation","bienetre"]],
+  [5,25,"Fête des mères (date approx.) - idée cadeau, offre spéciale",null],
+  [6,1,"Journée mondiale des parents",["bienetre","services"]],
+  [6,5,"Journée de l'environnement",null],
+  [6,15,"Fête des pères (date approx.)",null],
+  [6,21,"Été - Fête de la musique",null],
+  [6,21,"Journée mondiale du yoga",["bienetre"]],
+  [6,25,"Début des soldes d'été",["commerce"]],
+  [7,14,"Fête nationale",null],
+  [7,30,"Journée de l'amitié",["services","bienetre"]],
+  [8,15,"Assomption - pause estivale",null],
+  [8,26,"Pré-rentrée - préparer la reprise, offres de rentrée",null],
+  [9,1,"Rentrée - nouveaux objectifs, nouvelles formations",null],
+  [9,10,"Journée mondiale de prévention du suicide",["bienetre"]],
+  [9,21,"Journée de la paix",null],
+  [9,22,"Automne - bilan de mi-année, ralentir",null],
+  [9,27,"Journée mondiale du tourisme",["commerce","services"]],
+  [10,1,"Octobre rose - cancer du sein, soutien",["bienetre"]],
+  [10,5,"Journée mondiale des enseignants",["conseil","services"]],
+  [10,10,"Journée mondiale de la santé mentale",["bienetre","services"]],
+  [10,16,"Journée mondiale de l'alimentation",["commerce","bienetre"]],
+  [10,31,"Halloween - post créatif ou décalé",["commerce","creation"]],
+  [11,1,"Toussaint",null],
+  [11,3,"Journée de la gentillesse (FR)",null],
+  [11,19,"Journée mondiale de l'homme",["bienetre","services"]],
+  [11,20,"Journée des droits de l'enfant",["bienetre","services"]],
+  [11,25,"Journée contre les violences faites aux femmes",null],
+  [11,29,"Black Friday (date approx.) - position éthique ou offre",["commerce"]],
+  [12,1,"Journée mondiale contre le SIDA",["bienetre"]],
+  [12,3,"Journée du handicap",["services","bienetre"]],
+  [12,5,"Journée du bénévolat",["services"]],
+  [12,21,"Hiver - cocooning, bilan annuel",null],
+  [12,25,"Noël - gratitude, voeux, offres de fin d'année",null],
+  [12,31,"Réveillon - bilan de l'année, meilleurs moments",null]
+];
+
+function contexteMarronnier(){
+  const auj = new Date(), univers = ls('roze_univers')||'';
+  const perso = lsJ('roze_dates_perso') || [];
+  const resultats = [], horizon = 21;
+  const jDiff = (m,j) => {
+    const d = new Date(auj.getFullYear(), m-1, j);
+    if(d < new Date(auj.getFullYear(), auj.getMonth(), auj.getDate())) d.setFullYear(d.getFullYear()+1);
+    return Math.ceil((d - new Date(auj.getFullYear(), auj.getMonth(), auj.getDate())) / 86400000);
+  };
+  const etiq = n => n===0?'aujourd\'hui':n===1?'demain':`dans ${n}j`;
+  MARRONNIERS.forEach(([m,j,label,sect]) => {
+    const d = jDiff(m,j);
+    if(d >= 0 && d <= horizon && (!sect || !univers || sect.includes(univers)))
+      resultats.push(`${label} (${etiq(d)})`);
+  });
+  perso.forEach(({mois,jour,label}) => {
+    if(!mois||!jour||!label) return;
+    const d = jDiff(mois,jour);
+    if(d >= 0 && d <= horizon) resultats.push(`📌 ${label} (${etiq(d)})`);
+  });
+  return resultats.length ? 'Contexte saisonnier : ' + resultats.join(' ; ') : '';
 }
 
                       //        fondDeg, titreSize, sstitreSize, corpsSize,
@@ -8173,6 +8271,36 @@ function setTronc(val, btn){
   if(btn) btn.classList.add('on');
 }
 
+// ── Dates perso (marronnier) ──
+function renderDatesPerso(){
+  const list = document.getElementById('dates-perso-list'); if(!list) return;
+  const dates = lsJ('roze_dates_perso') || [];
+  const moisNoms = ['','Jan','Fév','Mars','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+  list.innerHTML = dates.map((d,i) => `<div style="display:flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.04);border-radius:6px;padding:.25rem .5rem;">
+    <span style="font-size:.75rem;color:var(--rose);font-weight:600;min-width:44px;">${d.jour} ${moisNoms[d.mois]||''}</span>
+    <span style="font-size:.75rem;color:var(--blanc-doux);flex:1;">${d.label||''}</span>
+    <button onclick="supprimerDatePerso(${i})" style="background:none;border:none;color:#666;cursor:pointer;font-size:.8rem;padding:0 .2rem;" title="Supprimer">✕</button>
+  </div>`).join('');
+}
+function ajouterDatePerso(){
+  const j=parseInt(document.getElementById('dp-jour')?.value), m=parseInt(document.getElementById('dp-mois')?.value);
+  const label=(document.getElementById('dp-label')?.value||'').trim();
+  if(!j||!m||!label){ toast('Remplis le jour, le mois et le label','err'); return; }
+  const dates = lsJ('roze_dates_perso') || [];
+  dates.push({jour:j, mois:m, label});
+  dates.sort((a,b) => a.mois!==b.mois ? a.mois-b.mois : a.jour-b.jour);
+  ss('roze_dates_perso', JSON.stringify(dates));
+  document.getElementById('dp-jour').value=''; document.getElementById('dp-mois').value=''; document.getElementById('dp-label').value='';
+  renderDatesPerso();
+  toast('📅 Date ajoutée','ok');
+}
+function supprimerDatePerso(idx){
+  const dates = lsJ('roze_dates_perso') || [];
+  dates.splice(idx,1);
+  ss('roze_dates_perso', JSON.stringify(dates));
+  renderDatesPerso();
+}
+
 function chargerCompte(){
   const setV2 = (id,val)=>{ const e=document.getElementById(id); if(e){ e.value=val||''; e.dispatchEvent(new Event('input')); } };
   setV2('cfg-prenom',       CFG.prenom);
@@ -8241,6 +8369,7 @@ function chargerCompte(){
     if(el) el.addEventListener('input', majCompletionCompte);
   });
   chargerMailOptin();
+  renderDatesPerso();
 }
 
 function sauvegarderCompte(){

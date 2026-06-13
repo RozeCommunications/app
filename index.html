@@ -5769,8 +5769,9 @@ function appliquerStylesSlide(idx){
     const mH = Math.max(18, st.margeH ?? 28);
     inner.style.padding = `${mV}px ${mH}px`;
 
-    // Couleur de base (fallback pour tous les éléments)
-    const baseCoul = st.textColor || texteSlide(fondSlide(s.num||idx+1, slides.length, c1, c2));
+    // Couleur de base - adapte au fond réel (clair = texte sombre, sombre = texte blanc)
+    const amb = s.ambiance || 'sombre';
+    const baseCoul = st.textColor || (amb==='clair' ? '#1A1A1A' : '#ffffff');
     inner.style.color = baseCoul;
     inner.style.fontFamily = `'${st.policeCorps}',sans-serif`;
 
@@ -6906,11 +6907,11 @@ async function sauvegarderGenPanel(){
   let slides = null;
 
   if(isCarrousel){
-    // Récupérer les slides depuis le dataset ou depuis le viewer inline
-    try{ slides = JSON.parse(result.dataset.slides||'null'); }catch(e){}
-    // Fallback : récupérer depuis carrouselCourant si dataset vide
-    if(!slides && typeof carrouselCourant !== 'undefined' && carrouselCourant){
+    // Priorité à carrouselCourant (contient les modifications de l'éditeur) sur dataset (original)
+    if(typeof carrouselCourant !== 'undefined' && carrouselCourant && carrouselCourant.slides){
       slides = carrouselCourant.slides;
+    } else {
+      try{ slides = JSON.parse(result.dataset.slides||'null'); }catch(e){}
     }
     if(slides) texte = JSON.stringify({slides, legende});
     else texte = result.textContent.trim();
@@ -7973,11 +7974,16 @@ function sauvegarderEdit(){
   const b=getBiblio(); const it=b.find(i=>i.id===editId); if(!it) return;
   it.reseau   = getReseauSelectionne();
   it.date     = document.getElementById('edit-date').value||dateAujourdhui();
-  it.texte    = document.getElementById('edit-texte').value;
-  it.legende  = document.getElementById('edit-legende').value;
+  // Carrousel : sauvegarder les slides modifiées depuis carrouselCourant
+  if(it.typeContenu === 'Carrousel' && carrouselCourant && carrouselCourant.slides){
+    it.texte   = JSON.stringify({slides: carrouselCourant.slides, legende: document.getElementById('edit-legende').value||''});
+    it.legende = document.getElementById('edit-legende').value||carrouselCourant.legende||'';
+  } else {
+    it.texte   = document.getElementById('edit-texte').value;
+    it.legende = document.getElementById('edit-legende').value;
+  }
   it.dateAffiche = new Date(it.date+'T12:00:00').toLocaleDateString('fr-FR');
   setBiblio(b); fermerEdit(); rendreCal(); toast('💾 Post sauvegardé !','ok');
-  // Sync vers Sheets : mise à jour du post édité
   syncPostMajVersSheets(it);
 }
 

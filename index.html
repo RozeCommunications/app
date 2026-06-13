@@ -1448,6 +1448,27 @@
     [data-theme="light"] #login-screen{background:var(--noir);}
     [data-theme="light"] .login-card{background:#fff;border-color:var(--gris-border);}
 
+    /* Feedback performance post */
+    .fb-row{display:flex;gap:.4rem;margin-top:.4rem;align-items:center;}
+    .fb-btn{font-size:.7rem;padding:.2rem .5rem;border-radius:6px;border:1px solid rgba(255,255,255,.12);background:none;color:var(--gris-clair);cursor:pointer;transition:all .15s;}
+    .fb-btn:hover{border-color:var(--rose);color:var(--rose);}
+    .fb-btn.fb-on{border-color:var(--rose);background:rgba(232,24,109,.12);color:var(--rose);}
+    .fb-detail{display:none;margin-top:.35rem;padding:.5rem .6rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:.7rem;}
+    .fb-detail.on{display:block;}
+    .fb-metrics{display:flex;flex-wrap:wrap;gap:.35rem;margin:.3rem 0;}
+    .fb-metric{display:flex;align-items:center;gap:.25rem;padding:.2rem .45rem;border-radius:5px;border:1px solid rgba(255,255,255,.1);cursor:pointer;color:var(--gris-clair);transition:all .12s;font-size:.68rem;user-select:none;}
+    .fb-metric:hover{border-color:var(--rose-clair);}
+    .fb-metric.on{border-color:var(--rose);background:rgba(232,24,109,.1);color:var(--rose);}
+    /* Donut piliers */
+    .pilier-donut-wrap{display:flex;align-items:center;gap:1rem;margin-top:.6rem;padding:.7rem 1rem;background:var(--gris-carte);border-radius:12px;}
+    .pilier-legende{display:flex;flex-direction:column;gap:.25rem;font-size:.68rem;color:var(--gris-clair);}
+    .pilier-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:.3rem;}
+    /* Hook variations */
+    .hook-pills{display:flex;flex-direction:column;gap:.4rem;margin:.6rem 0;}
+    .hook-pill{font-size:.78rem;padding:.5rem .7rem;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);color:var(--blanc-doux);cursor:pointer;text-align:left;transition:all .15s;line-height:1.4;}
+    .hook-pill:hover{border-color:var(--rose);background:rgba(232,24,109,.06);}
+    .hook-pill.on{border-color:var(--rose);background:rgba(232,24,109,.1);}
+
   </style>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -1621,6 +1642,12 @@
       </div>
     </div>
 
+    <!-- Répartition piliers (4 dernières semaines) -->
+    <div class="pilier-donut-wrap" id="pilier-donut-zone" style="display:none;">
+      <svg id="pilier-donut-svg" viewBox="0 0 36 36" width="58" height="58" style="flex-shrink:0;"></svg>
+      <div class="pilier-legende" id="pilier-donut-leg"></div>
+    </div>
+
     <div class="grid2">
       <div class="mini" onclick="go('p-generer')"><span class="ic">✨</span><h3>Générer</h3><p>Contenus de la semaine</p></div>
       <div class="mini" onclick="go('p-calendrier')"><span class="ic">📅</span><h3>Calendrier</h3><p>Mes contenus planifiés</p></div>
@@ -1734,6 +1761,19 @@
         <input type="text" id="gen-sujet" placeholder="Ex : mon retour sur le dernier salon pro…"/>
       </div>
 
+      <!-- Mode série -->
+      <div style="margin-top:.5rem;display:flex;align-items:center;gap:.5rem;">
+        <label style="font-size:.75rem;color:var(--gris-clair);display:flex;align-items:center;gap:.4rem;cursor:pointer;">
+          <input type="checkbox" id="cb-serie" style="accent-color:var(--rose);"/>
+          📚 Mode série
+        </label>
+        <span id="serie-config" style="display:none;font-size:.72rem;color:var(--gris-clair);">
+          Partie <input type="number" id="serie-num" min="1" max="10" value="1" style="width:36px;font-size:14px;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:4px;color:var(--blanc-doux);padding:1px 3px;text-align:center;"/>
+          / <input type="number" id="serie-total" min="2" max="10" value="4" style="width:36px;font-size:14px;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:4px;color:var(--blanc-doux);padding:1px 3px;text-align:center;"/>
+        </span>
+      </div>
+      <script>document.getElementById('cb-serie').onchange=function(){document.getElementById('serie-config').style.display=this.checked?'inline':'none';}</script>
+
       <!-- Actu web - visible uniquement pour piliers Visibilité et Expertise -->
       <div class="actu-row" id="gen-actu-row" style="margin-top:.7rem;display:none;" onclick="toggleActu()">
         <div class="actu-lbl">
@@ -1784,8 +1824,22 @@
         <button class="btn btn-rose" onclick="sauvegarderGenPanel()">💾 Sauvegarder</button>
         <button class="btn btn-ghost" id="btn-regen-style" onclick="regenStylePhoto()" style="display:none;">🎨 Regénérer le style</button>
         <button class="btn btn-outline" onclick="copierGenPanel()">📋 Copier</button>
+        <button class="btn btn-ghost" onclick="genHooksAlternatifs()" id="btn-hooks-alt" style="font-size:.78rem;">🎣 Hooks alternatifs</button>
+        <button class="btn btn-ghost" onclick="adapterPostAutreReseau()" id="btn-adapter" style="font-size:.78rem;">🔄 Adapter</button>
         <button class="btn btn-ghost" id="btn-publier-gen" onclick="publierSurReseau()" style="font-size:.78rem;">🚀 Publier →</button>
         <button class="btn btn-ghost" onclick="supprimerGenPanel()" style="font-size:.78rem;color:rgba(255,100,100,.7);">🗑️ Supprimer</button>
+      </div>
+      <div id="hooks-alt-zone" style="display:none;margin-top:.5rem;">
+        <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.3rem;">Choisis une accroche alternative :</div>
+        <div class="hook-pills" id="hooks-alt-list"></div>
+      </div>
+      <div id="adapt-result-zone" style="display:none;margin-top:.6rem;">
+        <div style="font-size:.72rem;font-weight:600;color:var(--rose-clair);margin-bottom:.3rem;" id="adapt-label"></div>
+        <div class="gen-result on" id="adapt-result" style="font-size:.82rem;"></div>
+        <div class="edit-actions" style="margin-top:.4rem;">
+          <button class="btn btn-outline btn-sm" onclick="copierTexte(document.getElementById('adapt-result').textContent)">📋 Copier</button>
+          <button class="btn btn-rose btn-sm" onclick="sauvegarderAdaptation()">💾 Sauvegarder</button>
+        </div>
       </div>
     </div>
 
@@ -3480,39 +3534,29 @@ function fermerStreakModal(){
 }
 
 async function enrSemaine(){
-  if(!CFG.as){ toast('⚙️ URL Google Sheets manquante - va dans Mon Compte → Connexions','err'); return; }
+  if(!CFG.as){ toast('⚙️ URL Google Sheets manquante - va dans Mon Compte','err'); return; }
   const btn = document.getElementById('btn-enr-semaine');
-  if(btn){ btn.classList.add('btn-progress'); btn.textContent = '⏳ Enregistrement…'; }
+
+  // 1. Sauvegarde locale + feedback IMMÉDIAT (< 50ms)
+  calculerEtMajStreak();
+  const lundi = lundiSem(new Date());
+  localStorage.setItem('roze_sem_'+lundi.toISOString().split('T')[0],'1');
+  majAccueil();
+  if(btn){ btn.classList.remove('btn-progress'); btn.innerHTML = '✅ Semaine enregistrée !'; setTimeout(()=>{btn.innerHTML='💾 Enregistrer ma semaine';},2500); }
+  toast('✅ Semaine enregistrée - mémoire IA en cours de mise à jour','ok');
+
+  // 2. Envoi réseau EN FOND (l'utilisateur n'attend pas)
   const d={
     action: 'enregistrer_semaine',
     semaine: getSemaineCourante(),
-    ia:      CFG.ia || 'claude',
-    cle_ia:  CFG.ia === 'gemini' ? CFG.apiGemini : CFG.api,
-    questions: {
-      q1:v('q1'), q2:v('q2'), q3:v('q3'), q4:v('q4'),
-      q5:v('q5'), q6:v('q6'), q7:v('q7'), q8:v('q8')
-    }
+    ia: CFG.ia||'claude',
+    cle_ia: CFG.ia==='gemini' ? CFG.apiGemini : CFG.api,
+    questions: {q1:v('q1'),q2:v('q2'),q3:v('q3'),q4:v('q4'),q5:v('q5'),q6:v('q6'),q7:v('q7'),q8:v('q8')}
   };
-  try{
-    const r=await fetch(CFG.as,{method:'POST',body:JSON.stringify(d)});
-    const j=await r.json();
-    if(j.succes){
-      calculerEtMajStreak();
-      const lundi=lundiSem(new Date());
-      localStorage.setItem('roze_sem_'+lundi.toISOString().split('T')[0],'1');
-      majAccueil();
-      viderDraft();
-      syncConfigVersSheets(); // Propager aux autres appareils
-      if(btn){ btn.classList.remove('btn-progress'); btn.innerHTML = '✅ Semaine enregistrée !'; setTimeout(()=>{btn.innerHTML='💾 Enregistrer ma semaine';},2500); }
-      toast('✅ Semaine enregistrée - mémoire IA mise à jour !','ok');
-    } else {
-      if(btn){ btn.classList.remove('btn-progress'); btn.innerHTML = '💾 Enregistrer ma semaine'; }
-      toast('❌ '+(j.erreur||'Erreur'),'err');
-    }
-  }catch{
-    if(btn){ btn.classList.remove('btn-progress'); btn.innerHTML = '💾 Enregistrer ma semaine'; }
-    toast('❌ Impossible de joindre Google Sheets','err');
-  }
+  fetch(CFG.as,{method:'POST',body:JSON.stringify(d)})
+    .then(r=>r.json())
+    .then(j=>{ if(j.succes){ viderDraft(); syncConfigVersSheets(); } else console.warn('[enrSemaine]',j.erreur); })
+    .catch(e=>console.warn('[enrSemaine] réseau:',e));
 }
 
 // ══════════════════════════════════════════
@@ -3844,7 +3888,7 @@ function buildExportSlide(i, s, st, c1, c2, ptit, pcorp, W, H){
   const corpsCol  = st.corpsCouleur  || baseCoul;
   const shadow = st.ombreActive ? `text-shadow:0 2px ${st.ombreBlur||6}px rgba(0,0,0,${st.ombreOpacite||0.6});` : '';
 
-  const pad = Math.round(H*(st.margeV??14)/14*0.055)+'px '+Math.round(W*(st.margeH??12)/12*0.065)+'px';
+  const pad = Math.round(H*Math.max(10,st.margeV??18)/18*0.055)+'px '+Math.round(W*Math.max(18,st.margeH??28)/28*0.065)+'px';
   const titreFs = s.type==='hook' ? Math.round(H*0.048) : Math.round(H*0.038);
   const corpsFs = Math.round(H*0.022), ssFs = Math.round(H*0.018);
 
@@ -4519,7 +4563,22 @@ function matiereSemaine(){
     'Intention éditoriale : '+ qv('q8'),
   ].filter(l => !l.endsWith(': ')).join('\n');
   const marr = contexteMarronnier();
-  return marr ? (lignes ? lignes + '\n' + marr : marr) : lignes;
+  // Contexte conversationnel : résumé des 5 derniers posts pour éviter les répétitions thématiques
+  const bib = getBiblio().slice(0,5);
+  const ctxPosts = bib.length ? 'Posts récents (ne pas répéter les mêmes angles) : ' + bib.map(p => (p.texte||'').split('\n')[0].substring(0,60)).join(' ; ') : '';
+  // Mémoire de performance : posts validés avec métriques et structure
+  const perfs = lsJ('roze_posts_performants') || [];
+  let ctxPerf = '';
+  if(perfs.length){
+    const resume = perfs.slice(0,5).map(p => {
+      let desc = `"${p.hook}" (${p.reseau} ${p.format})`;
+      if(p.metriques?.length) desc += ` - fort en ${p.metriques.join(', ')}`;
+      if(p.structure) desc += ` - Structure : ${p.structure}`;
+      return desc;
+    }).join('\n');
+    ctxPerf = 'Posts performants (s\'en inspirer pour la structure et le ton) :\n' + resume;
+  }
+  return [lignes, marr, ctxPosts, ctxPerf].filter(Boolean).join('\n');
 }
 
 // ── Autosave brouillon questions (debounce 1.5s) ──
@@ -5244,7 +5303,7 @@ function getSlideStyle(idx){
     titreCouleur:'', sstitreCouleur:'', corpsCouleur:'',
     ombreActive:false, ombreOpacite:0.6, ombreBlur:6,
     align:'left', textColor:'',
-    margeH:12, margeV:14,
+    margeH:28, margeV:18,
     titreItalic:false, sstitreItalic:false, corpsItalic:false,
     numVisible:false, logoPos:'center'
   };
@@ -5706,8 +5765,8 @@ function appliquerStylesSlide(idx){
     inner.style.textAlign = st.align;
 
     // Marges via curseurs (margeH px / margeV px)
-    const mV = st.margeV ?? 14;
-    const mH = st.margeH ?? 12;
+    const mV = Math.max(10, st.margeV ?? 18);
+    const mH = Math.max(18, st.margeH ?? 28);
     inner.style.padding = `${mV}px ${mH}px`;
 
     // Couleur de base (fallback pour tous les éléments)
@@ -6233,17 +6292,17 @@ function majPanneauEditeur(idx){
       <div class="cvp-section-titre">Mise en page</div>
       <div class="cvp-row">
         <span class="cvp-lbl">Marge H</span>
-        <input type="range" min="4" max="60" step="2" value="${st.margeH??12}"
+        <input type="range" min="18" max="60" step="2" value="${st.margeH??28}"
           oninput="setSlideStyle(${idx},'margeH',parseInt(this.value));this.nextElementSibling.textContent=this.value+'px'"
           class="cvp-slider"/>
-        <span class="cvp-val">${st.margeH??12}px</span>
+        <span class="cvp-val">${st.margeH??28}px</span>
       </div>
       <div class="cvp-row">
         <span class="cvp-lbl">Marge V</span>
-        <input type="range" min="4" max="80" step="2" value="${st.margeV??14}"
+        <input type="range" min="10" max="80" step="2" value="${st.margeV??18}"
           oninput="setSlideStyle(${idx},'margeV',parseInt(this.value));this.nextElementSibling.textContent=this.value+'px'"
           class="cvp-slider"/>
-        <span class="cvp-val">${st.margeV??14}px</span>
+        <span class="cvp-val">${st.margeV??18}px</span>
       </div>
       <div class="cvp-row" style="justify-content:space-between;">
         <span class="cvp-lbl">Numéro slide</span>
@@ -6635,23 +6694,35 @@ async function genUnPost(){
   result.textContent=''; result.classList.remove('on');
   legZone.classList.remove('on'); actions.style.display='none';
   document.getElementById('lbl-gen-texte').style.display='none';
+  const hooksZone = document.getElementById('hooks-alt-zone'); if(hooksZone) hooksZone.style.display='none';
+  const adaptZone = document.getElementById('adapt-result-zone'); if(adaptZone) adaptZone.style.display='none';
   // Loader inline désactivé - le bouton lui-même affiche "Génération..."
   // inlineLoader.classList.add('on');
-  if(btnGen){ btnGen.disabled=true; btnGen.textContent='⏳ Génération…'; btnGen.classList.add('btn-progress'); }
+  if(btnGen){ btnGen.disabled=true; btnGen.textContent='🧠 Analyse du profil…'; btnGen.classList.add('btn-progress'); }
+
+  // Progression liée aux étapes réelles (pas de timer)
+  const isCarr = (format==='Carrousel');
+  const progMsg = (msg) => { if(btnGen) btnGen.textContent = msg; };
 
   try{
     const mat = matiereSemaine();
 
-    // Si toggle actu activé OU pilier=expertise → lancer la recherche web
+    // Si toggle actu activé : lancer la recherche EN PARALLÈLE du build body
     const cbActu = document.getElementById('cb-actu');
-    const pilierActuel = genPilier || 'autorite';
     const peutRechercher = !!CFG.api;
-    if(peutRechercher && cbActu && cbActu.checked){
-      inlineLoaderTxt.textContent = '🔍 Recherche une donnée de ton secteur…';
-      if(!actuTexte) await rechercherActu();
+    let actuPromise = null;
+    if(peutRechercher && cbActu && cbActu.checked && !actuTexte){
+      actuPromise = rechercherActu();
     }
 
-    // Envoi vers Apps Script - la génération se fait côté serveur
+    // Construire le body pendant que l'actu cherche
+    const serieActive = document.getElementById('cb-serie')?.checked;
+    const serieNum = serieActive ? parseInt(document.getElementById('serie-num')?.value||1) : 0;
+    const serieTotal = serieActive ? parseInt(document.getElementById('serie-total')?.value||4) : 0;
+    const sujetComplet = serieActive && sujet
+      ? `[SÉRIE ${serieNum}/${serieTotal}] ${sujet}${serieNum>1 ? ' - Suite du post précédent. Progresse dans le sujet, ne répète pas les points déjà couverts.' : ' - Premier post de la série. Pose le contexte et annonce la suite.'}`
+      : sujet;
+
     const body = {
       action:          'generer_post',
       ia:              CFG.ia || 'claude',
@@ -6659,15 +6730,14 @@ async function genUnPost(){
       reseau,
       format,
       pilier:          genPilier || 'autorite',
-      sujet,
+      sujet:           sujetComplet,
       matiere:         mat,
-      actu:            actuTexte || '',
+      actu:            '',
       stats_eviter:    buildStatsEviterBloc(),
       anti_redondance: contexteAntiRedondance(),
       figure_forcee:   genFigureForce || '',
       figures_recentes: ls('roze_figures_recentes') || '',
       story_type:      format === 'Stories' ? (genPilier === 'vente' ? 'vente' : genPilier === 'expertise' ? 'valeur' : 'lifestyle') : '',
-      // Profil enrichi
       cat_metier:   ls('roze_cat_metier')  || '',
       tronc:        ls('roze_tronc')       || '',
       registre:     ls('roze_registre')    || '',
@@ -6678,10 +6748,18 @@ async function genUnPost(){
       mots_interdits: ls('roze_mots_interdits') || '',
     };
 
-    const r = await fetch(CFG.as, {
-      method: 'POST',
-      body: JSON.stringify(body)
-    });
+    // Attendre l'actu seulement si elle a été lancée
+    if(actuPromise){
+      progMsg('🔍 Recherche actu du secteur…');
+      await actuPromise;
+    }
+    body.actu = actuTexte || '';
+
+    // Envoi principal - c'est ici que l'IA travaille
+    progMsg(isCarr ? '✍️ Rédaction des slides…' : '✍️ Rédaction en cours…');
+    const r = await fetch(CFG.as, { method:'POST', body:JSON.stringify(body) });
+
+    progMsg('🎨 Mise en forme…');
     const j = await r.json();
     if(j.erreur) throw new Error(j.erreur);
     const texte = nettoyerIntroIA(j.texte || '');
@@ -6762,6 +6840,8 @@ async function genUnPost(){
     if(parsed.isCarrousel) result.dataset.slides = JSON.stringify(parsed.slides);
 
     if(btnGen){ btnGen.disabled=false; btnGen.textContent='✨ Générer ce post'; btnGen.classList.remove('btn-progress'); }
+    const btnAdapt = document.getElementById('btn-adapter');
+    if(btnAdapt) btnAdapt.textContent = reseau==='LinkedIn' ? '🔄 Adapter à Instagram' : '🔄 Adapter à LinkedIn';
     afficherChipSource(); // Afficher chip source si actu disponible
     // Sauvegarder la stat de l'actu pour éviter répétition ce mois
     if(actuTexte) ajouterStatMois(actuTexte.substring(0,120));
@@ -6867,9 +6947,12 @@ async function sauvegarderGenPanel(){
 }
 
 function copierGenPanel(){
-  const t = document.getElementById('gen-result').textContent;
-  const l = document.getElementById('gen-legende').value;
-  navigator.clipboard.writeText(l ? t+'\n\n'+l : t).then(()=>toast('✅ Copié !','ok'));
+  const txt = document.getElementById('gen-result')?.textContent||'';
+  const leg = document.getElementById('gen-legende')?.value||'';
+  copierTexte(txt + (leg ? '\n\n' + leg : ''));
+}
+function copierTexte(texte){
+  navigator.clipboard.writeText(texte).then(()=>toast('✅ Copié !','ok')).catch(()=>toast('Copie impossible','err'));
 }
 
 async function genSemaine(){
@@ -6901,7 +6984,7 @@ async function genSemaine(){
 
     const resultats = j.resultats || [];
 
-    // Sauvegarder chaque post
+    // Sauvegarder localement d'abord (instantané) puis afficher
     for(let i=0;i<resultats.length;i++){
       const res = resultats[i];
       const parsed = splitTexteLegende(res.texte||'');
@@ -6909,17 +6992,26 @@ async function genSemaine(){
       const t = parsed.isCarrousel ? res.texte : parsed.texte;
       const date = res.date || posts[i]?.date || jours[i % jours.length];
       const id = Date.now()+i;
-      await sauvegarderEtSyncPost({id, reseau:res.reseau, typeContenu:res.typeContenu, texte:t, legende:l,
+      sauvegarderPost({id, reseau:res.reseau, typeContenu:res.typeContenu, texte:t, legende:l,
         date, dateProg:date, dateGen:dateAujourdhui(),
         dateAffiche:new Date(date+'T12:00:00').toLocaleDateString('fr-FR'), statut:'À relire'});
       resultats[i] = {...res, texte:t, legende:l, id,
         label:`${res.reseau} · ${res.typeContenu}`,
         isCarrousel: parsed.isCarrousel, slides: parsed.slides};
     }
+    majSemMini(); majKPIs();
 
     loader.classList.remove('on');
     afficherRes(resultats);
     toast(`✅ ${resultats.length} contenus générés et planifiés !`,'ok');
+
+    // Sync réseau en fond (ne bloque pas l'affichage)
+    resultats.forEach(res => syncPostVersSheets({
+      id:res.id, reseau:res.reseau, typeContenu:res.typeContenu,
+      texte:res.texte, legende:res.legende, date:res.date||res.dateProg,
+      dateProg:res.dateProg||res.date, dateGen:dateAujourdhui(),
+      dateAffiche:res.dateAffiche, statut:'À relire'
+    }).catch(()=>{}));
 
   }catch(e){
     loader.classList.remove('on');
@@ -6996,7 +7088,22 @@ function afficherRes(resultats){
           ${dateAff ? `<span class="res-item-date">📅 ${dateAff}</span>` : ''}
           <button class="btn btn-sm btn-ghost" onclick="ouvrirEdit(${r.id})" style="margin:0;padding:.25rem .6rem;font-size:.72rem;">✏️ Éditer</button>
         </div>
-        <div class="res-item-texte">${texteHtml}</div>`;
+        <div class="res-item-texte">${texteHtml}</div>
+        <div class="fb-row">
+          <button class="fb-btn${getFeedback(r.id)==='top'?' fb-on':''}" onclick="toggleFbDetail(${r.id},this)">👍 A marché</button>
+          <button class="fb-btn${getFeedback(r.id)==='flop'?' fb-on':''}" onclick="setFeedback(${r.id},'flop',this)">👎 Pas d'engagement</button>
+        </div>
+        <div class="fb-detail" id="fb-detail-${r.id}">
+          <div style="color:var(--blanc-doux);margin-bottom:.25rem;">Qu'est-ce qui a fonctionné ?</div>
+          <div class="fb-metrics" id="fb-metrics-${r.id}">
+            <span class="fb-metric" data-m="vues" onclick="this.classList.toggle('on')">👁️ Vues</span>
+            <span class="fb-metric" data-m="commentaires" onclick="this.classList.toggle('on')">💬 Commentaires</span>
+            <span class="fb-metric" data-m="sauvegardes" onclick="this.classList.toggle('on')">🔖 Sauvegardes</span>
+            <span class="fb-metric" data-m="repartages" onclick="this.classList.toggle('on')">🔄 Repartages</span>
+            <span class="fb-metric" data-m="duree" onclick="this.classList.toggle('on')">⏱️ Durée visionnage</span>
+          </div>
+          <button class="fb-btn" style="margin-top:.3rem;border-color:var(--rose);color:var(--rose);" onclick="validerFeedback(${r.id})">✓ Valider</button>
+        </div>`;
       body.appendChild(item);
     });
   });
@@ -7476,6 +7583,171 @@ function majBadgeSync(n){
   if(txt) txt.textContent = n + ' post' + (n > 1 ? 's' : '') + ' en attente de synchronisation Google Sheets';
 }
 
+// ── Feedback performance post (enrichi) ──
+function getFeedback(id){ return (lsJ('roze_feedbacks')||{})[id] || ''; }
+function toggleFbDetail(id, btn){
+  const detail = document.getElementById('fb-detail-'+id);
+  if(!detail) return;
+  const isOpen = detail.classList.contains('on');
+  // Fermer tous les autres
+  document.querySelectorAll('.fb-detail.on').forEach(d=>d.classList.remove('on'));
+  if(!isOpen) detail.classList.add('on');
+}
+function setFeedback(id, val, btn){
+  const fbs = lsJ('roze_feedbacks') || {};
+  fbs[id] = fbs[id]===val ? '' : val;
+  ss('roze_feedbacks', JSON.stringify(fbs));
+  const row = btn.parentElement;
+  row.querySelectorAll('.fb-btn').forEach(b=>b.classList.remove('fb-on'));
+  if(fbs[id]) btn.classList.add('fb-on');
+  // Fermer le panneau détail si flop
+  const detail = document.getElementById('fb-detail-'+id);
+  if(detail) detail.classList.remove('on');
+}
+function analyserStructure(texte, format){
+  if(!texte) return '';
+  const lignes = texte.split('\n').filter(l=>l.trim());
+  const nbParagraphes = lignes.length;
+  const finQuestion = /\?[^)]*$/.test(lignes[lignes.length-1]||'');
+  const aChiffres = /\d+\s*%|\d+\s*(sur|de|fois|jours|mois|euros|clients)/.test(texte);
+  const isScript = ['Stories','Réel','Vidéo'].includes(format);
+  const parts = [];
+  if(isScript) parts.push('script complet');
+  else parts.push(nbParagraphes + ' paragraphes');
+  if(aChiffres) parts.push('données chiffrées');
+  if(finQuestion) parts.push('CTA question');
+  if(texte.split('\n')[0].length < 40) parts.push('hook court');
+  else if(texte.split('\n')[0].endsWith('?')) parts.push('hook question');
+  else if(texte.split('\n')[0].endsWith('.')) parts.push('hook affirmatif');
+  return parts.join(' + ');
+}
+function validerFeedback(id){
+  const metricsEl = document.getElementById('fb-metrics-'+id);
+  if(!metricsEl) return;
+  const metriques = [...metricsEl.querySelectorAll('.fb-metric.on')].map(m=>m.dataset.m);
+  if(!metriques.length){ toast('Sélectionne au moins une métrique','err'); return; }
+  // Marquer comme top
+  const fbs = lsJ('roze_feedbacks') || {};
+  fbs[id] = 'top';
+  ss('roze_feedbacks', JSON.stringify(fbs));
+  // Trouver le post et sauvegarder l'analyse complète
+  const bib = getBiblio(); const post = bib.find(p=>p.id===id);
+  if(post && post.texte){
+    const hook = post.texte.split('\n')[0].substring(0,80);
+    const structure = analyserStructure(post.texte, post.typeContenu);
+    const isScript = ['Stories','Réel','Vidéo'].includes(post.typeContenu);
+    const perfs = lsJ('roze_posts_performants') || [];
+    perfs.unshift({
+      hook,
+      structure,
+      format: post.typeContenu||'',
+      reseau: post.reseau||'',
+      metriques,
+      // Pour les scripts/vidéos, sauvegarder le texte complet (structure narrative)
+      texteRef: isScript || metriques.includes('duree') ? post.texte.substring(0,500) : '',
+      date: dateAujourdhui()
+    });
+    ss('roze_posts_performants', JSON.stringify(perfs.slice(0,20)));
+  }
+  // UI
+  const detail = document.getElementById('fb-detail-'+id);
+  if(detail) detail.classList.remove('on');
+  const row = detail?.previousElementSibling;
+  if(row) row.querySelectorAll('.fb-btn').forEach((b,i)=>{ b.classList.remove('fb-on'); if(i===0) b.classList.add('fb-on'); });
+  toast('✅ Performance mémorisée - l\'IA s\'en inspirera','ok');
+}
+
+// ── Hooks alternatifs ──
+async function genHooksAlternatifs(){
+  const texte = document.getElementById('gen-result')?.textContent?.trim();
+  if(!texte){ toast('Génère d\'abord un post','err'); return; }
+  const zone = document.getElementById('hooks-alt-zone');
+  const list = document.getElementById('hooks-alt-list');
+  const btn = document.getElementById('btn-hooks-alt');
+  if(btn){ btn.disabled=true; btn.textContent='🎣 Génération…'; }
+  try{
+    const hookActuel = texte.split('\n')[0];
+    const prompt = `Voici un post dont le hook est : "${hookActuel}"\n\nPropose exactement 3 hooks alternatifs pour ce même post. Chaque hook doit avoir un angle différent (question, chiffre, provocation douce, anecdote...).\nRéponds UNIQUEMENT avec les 3 hooks, un par ligne, sans numérotation ni tiret.`;
+    const res = await appelIA(prompt);
+    const hooks = (res||'').split('\n').filter(l=>l.trim().length>5).slice(0,3);
+    list.innerHTML = hooks.map((h,i)=>`<button class="hook-pill" onclick="appliquerHook(this)">${escapeHtml(h.trim())}</button>`).join('');
+    zone.style.display='block';
+  }catch(e){ toast('Erreur : '+e.message,'err'); }
+  if(btn){ btn.disabled=false; btn.textContent='🎣 Hooks alternatifs'; }
+}
+function appliquerHook(btn){
+  const result = document.getElementById('gen-result');
+  if(!result) return;
+  const texte = result.textContent;
+  const lignes = texte.split('\n');
+  lignes[0] = btn.textContent;
+  result.textContent = lignes.join('\n');
+  btn.parentElement.querySelectorAll('.hook-pill').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  toast('✅ Hook appliqué','ok');
+}
+
+// ── Adaptation cross-plateforme ──
+async function adapterPostAutreReseau(){
+  const texte = document.getElementById('gen-result')?.textContent?.trim();
+  if(!texte){ toast('Génère d\'abord un post','err'); return; }
+  const reseauActuel = getGenReseau();
+  const reseauCible = reseauActuel==='LinkedIn' ? 'Instagram' : 'LinkedIn';
+  const btn = document.getElementById('btn-adapter');
+  if(btn){ btn.disabled=true; btn.textContent=`🔄 Adaptation ${reseauCible}…`; }
+  try{
+    const prompt = `Adapte ce post ${reseauActuel} pour ${reseauCible}.\n\nRègles :\n- ${reseauCible==='Instagram' ? 'Plus court, plus visuel, emojis autorisés, 3-5 hashtags en fin' : 'Plus long, plus structuré, ton professionnel, 3 hashtags max en fin'}\n- Garde le message central et le hook\n- Adapte la longueur et le ton au réseau cible\n\nPost original :\n${texte}\n\nRéponds UNIQUEMENT avec le post adapté, sans préambule.`;
+    const res = await appelIA(prompt);
+    document.getElementById('adapt-label').textContent = `Version ${reseauCible} :`;
+    document.getElementById('adapt-result').textContent = nettoyerIntroIA(res||'');
+    document.getElementById('adapt-result-zone').style.display = 'block';
+    document.getElementById('adapt-result-zone').dataset.reseau = reseauCible;
+  }catch(e){ toast('Erreur : '+e.message,'err'); }
+  if(btn){ btn.disabled=false; btn.textContent=`🔄 Adapter à ${reseauCible}`; }
+}
+function sauvegarderAdaptation(){
+  const zone = document.getElementById('adapt-result-zone');
+  const texte = document.getElementById('adapt-result').textContent.trim();
+  const reseau = zone.dataset.reseau || 'Instagram';
+  if(!texte) return;
+  const format = getGenFormat();
+  const datePub = document.getElementById('gen-date').value || dateAujourdhui();
+  const {texte:t, legende:l} = splitTexteLegende(texte);
+  const id = Date.now();
+  sauvegarderEtSyncPost({id, reseau, typeContenu:format, texte:t, legende:l, date:datePub, dateProg:datePub, dateGen:dateAujourdhui(), dateAffiche:new Date(datePub+'T12:00:00').toLocaleDateString('fr-FR'), statut:'À relire'});
+  toast(`✅ Version ${reseau} sauvegardée !`,'ok');
+}
+
+// ── Donut piliers (accueil) ──
+function renderDonutPiliers(){
+  const zone = document.getElementById('pilier-donut-zone');
+  const svg = document.getElementById('pilier-donut-svg');
+  const leg = document.getElementById('pilier-donut-leg');
+  if(!zone||!svg||!leg) return;
+  const bib = getBiblio();
+  const il4sem = new Date(); il4sem.setDate(il4sem.getDate()-28);
+  const recents = bib.filter(p=>p.date && p.date >= il4sem.toISOString().split('T')[0]);
+  if(recents.length < 3){ zone.style.display='none'; return; }
+  const counts = {expertise:0,autorite:0,visibilite:0,activite:0};
+  recents.forEach(p=>{ if(p.pilier && counts[p.pilier]!==undefined) counts[p.pilier]++; });
+  const total = Object.values(counts).reduce((s,n)=>s+n,0);
+  if(!total){ zone.style.display='none'; return; }
+  const colors = {expertise:'#6C63FF',autorite:'#E8186D',visibilite:'#00C9A7',activite:'#FFB347'};
+  const labels = {expertise:'Expertise',autorite:'Autorité',visibilite:'Visibilité',activite:'Activité'};
+  let offset = 25; // start at top
+  let paths = '';
+  leg.innerHTML = '';
+  Object.entries(counts).forEach(([k,n])=>{
+    if(!n) return;
+    const pct = n/total*100;
+    paths += `<circle cx="18" cy="18" r="15.915" fill="none" stroke="${colors[k]}" stroke-width="3" stroke-dasharray="${pct} ${100-pct}" stroke-dashoffset="${-offset}" stroke-linecap="round"/>`;
+    offset -= pct;
+    leg.innerHTML += `<span><span class="pilier-dot" style="background:${colors[k]}"></span>${labels[k]} ${Math.round(pct)}%</span>`;
+  });
+  svg.innerHTML = `<circle cx="18" cy="18" r="15.915" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="3"/>${paths}`;
+  zone.style.display='flex';
+}
+
 // ── Mini vue semaine dans l'accueil (7 prochains jours) ──
 function majSemMini(){
   const container = document.getElementById('sem-mini-jours');
@@ -7557,6 +7829,7 @@ function majKPIs(){
       elProchain.textContent = jrs[d.getDay()]+' '+d.getDate();
     }
   }
+  renderDonutPiliers();
 }
 
 function getSemaineCourante(){

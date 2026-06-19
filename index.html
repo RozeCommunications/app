@@ -8151,7 +8151,22 @@ function rendreSemaine(){
     else items.forEach(it=>{
       const cl=it.reseau==='LinkedIn'?'li':'ig';
       const c=document.createElement('div'); c.className='cont-carte'; c.onclick=()=>ouvrirEdit(it.id);
-      c.innerHTML=`<div class="cont-hd"><div class="cont-tags"><span class="tag-${cl==='li'?'li':'ig'}">${escapeHtml(it.reseau)}</span><span class="tag-type">${it.typeContenu}</span></div><button class="cont-st ${it.statut==='Publié'?'st-publie':'st-relire'}" onclick="event.stopPropagation();toggleStatut(${it.id})">${it.statut}</button></div><div class="cont-ap">${it.texte.substring(0,80)}…</div>`;
+      // Aperçu intelligent selon le type de contenu
+      let apercu = '';
+      if(it.typeContenu==='Carrousel'){
+        try{
+          const data = JSON.parse(it.texte);
+          const sl = data.slides || (Array.isArray(data)?data:null);
+          if(sl && sl.length){
+            const titre1 = (sl[0].titre||sl[0].corps||'').replace(/\[ACCENT\]|\[\/ACCENT\]/g,'').substring(0,55);
+            apercu = `📑 ${sl.length} slides - "${titre1}"`;
+          } else apercu = '📑 Carrousel';
+        }catch(e){ apercu = (it.texte||'').split('\n')[0].substring(0,60); }
+      } else {
+        // Posts texte, photo, scripts : première ligne lisible
+        apercu = (it.texte||'').split('\n').find(l=>l.trim()&&!l.startsWith('{'))?.substring(0,80) || '';
+      }
+      c.innerHTML=`<div class="cont-hd"><div class="cont-tags"><span class="tag-${cl==='li'?'li':'ig'}">${escapeHtml(it.reseau)}</span><span class="tag-type">${it.typeContenu}</span></div><button class="cont-st ${it.statut==='Publié'?'st-publie':'st-relire'}" onclick="event.stopPropagation();toggleStatut(${it.id})">${it.statut}</button></div><div class="cont-ap">${escapeHtml(apercu)}${apercu?'':'…'}</div>`;
       cont.appendChild(c);
     });
     row.appendChild(cont); grid.appendChild(row);

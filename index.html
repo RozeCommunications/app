@@ -4578,7 +4578,9 @@ function matiereSemaine(){
     }).join('\n');
     ctxPerf = 'Posts performants (s\'en inspirer pour la structure et le ton) :\n' + resume;
   }
-  return [lignes, marr, ctxPosts, ctxPerf].filter(Boolean).join('\n');
+  // Règle de style permanente (injectée à chaque génération)
+  const styleIA = 'Règle de style ABSOLUE : les épanorthoses (corrections du type "Ce n\'est pas X. C\'est Y.", "Pas juste X. Mais Y.", "Non pas X. Plutôt Y.") sont INTERDITES sauf maximum 1 par post/carrousel entier, et jamais sur la slide 1. Les hooks commençant par "Et si..." sont également INTERDITS (trop IA, trop vu). Varier les figures : métaphore, anaphore, question rhétorique directe, antithèse, chute inattendue, interpellation.';
+  return [lignes, marr, ctxPosts, ctxPerf, styleIA].filter(Boolean).join('\n');
 }
 
 // ── Autosave brouillon questions (debounce 1.5s) ──

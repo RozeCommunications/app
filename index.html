@@ -3927,21 +3927,37 @@ async function exporterPNG(){
   const ptit = CFG.policeTitre||'Playfair Display', pcorp = CFG.policeCorps||'DM Sans';
   const fmt = CAR_FORMATS[carFormatRatio]||CAR_FORMATS['4:5'];
   const W = fmt.w, H = fmt.h;
+  // Résolution viewer identique au plein écran (~400px), scalé pour atteindre 1080px
+  const viewW = 400, viewH = Math.round(viewW * H / W);
+  const scaleFactor = W / viewW;
+
+  // Fermer le fullscreen temporairement pour éviter les conflits d'ID
+  const fs = document.getElementById('cv-fullscreen');
+  const fsWasOpen = fs && fs.classList.contains('on');
+  if(fsWasOpen) fs.classList.remove('on');
 
   for(let i = 0; i < slides.length; i++){
-    const { div, bgCss } = buildExportSlide(i, slides[i], getSlideStyle(i), c1, c2, ptit, pcorp, W, H);
-    document.body.appendChild(div);
+    // Rendu identique au viewer (même renderCvSlide + appliquerStylesSlide)
+    const html = renderCvSlide(slides[i], i, slides.length, c1, c2, ptit, pcorp, {small:false, editable:false, idPrefix:'fs-cv-slide'});
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;';
+    wrap.innerHTML = html;
+    document.body.appendChild(wrap);
+    const slideEl = wrap.querySelector('.cv-slide');
+    if(slideEl) slideEl.style.cssText += `width:${viewW}px;height:${viewH}px;max-height:none;border-radius:0;`;
+    appliquerStylesSlide(i);
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     try{
-      const isGrad = bgCss.startsWith('linear')||bgCss.startsWith('radial');
-      const canvas = await window.html2canvas(div, {width:W, height:H, scale:1, useCORS:true, allowTaint:true, backgroundColor:isGrad?null:bgCss});
+      const canvas = await window.html2canvas(slideEl, {width:viewW, height:viewH, scale:scaleFactor, useCORS:true, allowTaint:true});
       const link = document.createElement('a');
       link.download = `carrousel-slide-${String(i+1).padStart(2,'0')}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
       await new Promise(r=>setTimeout(r,350));
     }catch(e){ console.error('PNG slide '+i,e); }
-    document.body.removeChild(div);
+    document.body.removeChild(wrap);
   }
+  if(fsWasOpen) fs.classList.add('on');
   toast('✅ Slides PNG téléchargées !','ok');
 }
 
@@ -3959,21 +3975,34 @@ async function exporterPDF(){
   const ptit = CFG.policeTitre||'Playfair Display', pcorp = CFG.policeCorps||'DM Sans';
   const fmt = CAR_FORMATS[carFormatRatio]||CAR_FORMATS['4:5'];
   const W = fmt.w, H = fmt.h;
+  const viewW = 400, viewH = Math.round(viewW * H / W);
+  const scaleFactor = W / viewW;
+
+  const fs = document.getElementById('cv-fullscreen');
+  const fsWasOpen = fs && fs.classList.contains('on');
+  if(fsWasOpen) fs.classList.remove('on');
 
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ orientation:'portrait', unit:'px', format:[W, H] });
 
   for(let i = 0; i < slides.length; i++){
-    const { div, bgCss } = buildExportSlide(i, slides[i], getSlideStyle(i), c1, c2, ptit, pcorp, W, H);
-    document.body.appendChild(div);
+    const html = renderCvSlide(slides[i], i, slides.length, c1, c2, ptit, pcorp, {small:false, editable:false, idPrefix:'fs-cv-slide'});
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;left:-9999px;top:0;';
+    wrap.innerHTML = html;
+    document.body.appendChild(wrap);
+    const slideEl = wrap.querySelector('.cv-slide');
+    if(slideEl) slideEl.style.cssText += `width:${viewW}px;height:${viewH}px;max-height:none;border-radius:0;`;
+    appliquerStylesSlide(i);
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     try{
-      const isGrad = bgCss.includes('gradient');
-      const canvas = await window.html2canvas(div, {width:W, height:H, scale:1, useCORS:true, allowTaint:true, backgroundColor:isGrad?null:bgCss});
+      const canvas = await window.html2canvas(slideEl, {width:viewW, height:viewH, scale:scaleFactor, useCORS:true, allowTaint:true});
       if(i > 0) pdf.addPage([W, H]);
       pdf.addImage(canvas.toDataURL('image/jpeg',0.95), 'JPEG', 0, 0, W, H);
     }catch(e){ console.error('PDF slide '+i, e); }
-    document.body.removeChild(div);
+    document.body.removeChild(wrap);
   }
+  if(fsWasOpen) fs.classList.add('on');
   pdf.save('carrousel-roze.pdf');
   toast('✅ PDF téléchargé !','ok');
 }
@@ -5504,6 +5533,30 @@ function renderLogoSlide(idx){
   </div>`;
 }
 
+// Formate le corps avec les paires ❌/✅ en 2 colonnes
+function formatCorpsHtml(corps){
+  if(!corps) return '';
+  const lignes = corps.split('\n');
+  let html = '', i = 0;
+  while(i < lignes.length){
+    const l = lignes[i].trim();
+    const next = (i+1 < lignes.length) ? lignes[i+1].trim() : '';
+    // Détecter une paire ❌/✅ (ou inverse) sur 2 lignes consécutives
+    const isContra = (l.startsWith('❌') || l.startsWith('✗')) && (next.startsWith('✅') || next.startsWith('✓'));
+    const isContraInv = (l.startsWith('✅') || l.startsWith('✓')) && (next.startsWith('❌') || next.startsWith('✗'));
+    if(isContra || isContraInv){
+      html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:.4em 0;">
+        <div>${escapeHtml(l)}</div><div>${escapeHtml(next)}</div></div>`;
+      i += 2;
+    } else {
+      if(html && l === '') html += '<br>';
+      else html += (html?'<br>':'') + escapeHtml(l);
+      i++;
+    }
+  }
+  return html;
+}
+
 function renderCvSlide(s, idx, total, c1, c2, ptit, pcorp, opts){
   // opts = { small: bool, editable: bool }
   opts = opts || {};
@@ -5525,7 +5578,7 @@ function renderCvSlide(s, idx, total, c1, c2, ptit, pcorp, opts){
   const corpsHtml = isRespiration ? '' : `<div class="cv-slide-corps"
         ${editAttr}
         data-idx="${idx}" data-field="corps"
-        oninput="cvUpdateSlide(${idx},'corps',this.innerText)">${(s.corps||'').split('\n').map(l=>escapeHtml(l)).join('<br>')}</div>`;
+        oninput="cvUpdateSlide(${idx},'corps',this.innerText)">${formatCorpsHtml(s.corps)}</div>`;
 
   // Grille subtile pour ambiance "clair"
   const gridOverlay = (amb === 'clair') ? `<div style="position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);background-size:${small?'12px 12px':'40px 40px'};"></div>` : '';

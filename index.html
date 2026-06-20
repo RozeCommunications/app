@@ -1778,7 +1778,7 @@
 
       <!-- Actu web - activée automatiquement selon le pilier (E1/E2/A4/V4) -->
       <input type="hidden" id="cb-actu" checked/>
-      <div class="web-loader" id="web-loader"><div class="web-ring"></div><span>Recherche web en cours…</span></div>
+      <div class="web-loader" id="web-loader" style="display:none!important;"><div class="web-ring"></div><span>Recherche web en cours…</span></div>
       <div class="actu-result" id="actu-result"><strong>🌐 Actu trouvée</strong><span id="actu-txt"></span></div>
 
       <!-- Bouton générer -->
@@ -3810,7 +3810,6 @@ async function rechercherActu(){
   if(!CFG.as){ actuTexte = ''; return; }
 
   const wl = document.getElementById('web-loader');
-  wl.classList.add('on');
   document.getElementById('actu-result').classList.remove('on');
 
   try{
@@ -3840,7 +3839,6 @@ async function rechercherActu(){
   }catch(e){
     actuTexte = '';
   }
-  wl.classList.remove('on');
 }
 // ── HELPER EXPORT : construit le DOM d'une slide identique au viewer ──
 function buildExportSlide(i, s, st, c1, c2, ptit, pcorp, W, H){
@@ -4612,7 +4610,14 @@ function matiereSemaine(){
     ctxPerf = 'Posts performants (s\'en inspirer pour la structure et le ton) :\n' + resume;
   }
   // Règle de style permanente (injectée à chaque génération)
-  const styleIA = 'Règle de style ABSOLUE : les épanorthoses (corrections du type "Ce n\'est pas X. C\'est Y.", "Pas juste X. Mais Y.", "Non pas X. Plutôt Y.") sont INTERDITES sauf maximum 1 par post/carrousel entier, et jamais sur la slide 1. Les hooks commençant par "Et si..." sont également INTERDITS (trop IA, trop vu). Varier les figures : métaphore, anaphore, question rhétorique directe, antithèse, chute inattendue, interpellation.';
+  const styleIA = [
+    'RÈGLES DE STYLE ABSOLUES (violation = contenu rejeté) :',
+    '1. ÉPANORTHOSES INTERDITES : JAMAIS écrire "Ce n\'est pas X. C\'est Y.", "Pas X. Mais Y.", "Non pas X. Plutôt Y.", "Ce n\'est pas X. C\'est plutôt Y.", "Pas tant X que Y.", "Moins X que Y.". AUCUNE tolérance. ZÉRO occurrence autorisée dans tout le contenu (slides + légende). Reformule TOUJOURS autrement : affirmation directe, métaphore, question rhétorique, antithèse sans correction.',
+    '2. "ET SI..." INTERDIT : JAMAIS commencer un hook ou une phrase par "Et si...". Utiliser plutôt une affirmation, un chiffre, une question directe, ou une interpellation.',
+    '3. APPELS À SWIPER dans les carrousels : JAMAIS écrire "(Alors préparez-vous à enregistrer)", "(Prêt à enregistrer ce carrousel ?)", "(Swipez)", "(Suite en slide suivante)". Pour inviter à swiper, utiliser UNIQUEMENT le biais de curiosité : poser une question ouverte, annoncer un bénéfice concret sur la slide suivante, ou créer un cliffhanger naturel lié au propos.',
+    '4. META-LABELS INTERDITS : JAMAIS écrire "AVIS DE PRO", "CONSEIL D\'EXPERT", "POINT CLÉ", "À RETENIR", "ASTUCE", "BON À SAVOIR" en majuscules comme titre de section. Si le contenu est un avis, le formuler naturellement : "Mon avis :", "Ce que j\'en pense :" suffit.',
+    '5. Varier les figures : métaphore, anaphore, question rhétorique directe, antithèse, chute inattendue, interpellation, liste à contraste (❌/✅).'
+  ].join('\n');
   return [lignes, marr, ctxPosts, ctxPerf, styleIA].filter(Boolean).join('\n');
 }
 

@@ -775,7 +775,7 @@
     .cv-slide-sstitre{font-size:.58rem;font-weight:600;margin-bottom:3px;opacity:.85;line-height:1.3;}
     .cv-slide-titre{font-size:.78rem;font-weight:700;line-height:1.25;margin-bottom:5px;}
     .cv-slide-corps{font-size:.65rem;line-height:1.45;overflow:hidden;}
-    .cv-slide-lg .cv-slide-inner{padding:22px 18px;}
+    .cv-slide-lg .cv-slide-inner{padding:22px 18px;display:flex;flex-direction:column;justify-content:center;}
     .cv-slide-lg .cv-slide-titre{font-size:1.12rem;line-height:1.22;}
     .cv-slide-lg .cv-slide-sstitre{font-size:.72rem;}
     .cv-slide-lg .cv-slide-corps{font-size:.86rem;overflow:auto;}
@@ -840,7 +840,7 @@
     }
     .cv-fullscreen.on{display:flex;}
     .cv-fs-slide{width:min(360px,85vw);height:min(480px,85vw * 1.333);border-radius:14px;overflow:hidden;position:relative;}
-    .cv-fs-slide .cv-slide-inner{width:100%;height:100%;padding:24px 20px;}
+    .cv-fs-slide .cv-slide-inner{width:100%;height:100%;padding:24px 20px;display:flex;flex-direction:column;justify-content:center;}
     .cv-fs-slide .cv-slide-titre{font-size:1.1rem;}
     .cv-fs-slide .cv-slide-corps{font-size:.88rem;}
     .cv-fs-nav{display:flex;align-items:center;gap:1rem;}
@@ -3277,14 +3277,29 @@ function toggleDuoTab(id){
 // ══════════════════════════════════════════════════════
 // LOGO - upload local en base64 (fiable, pas de CORS)
 // ══════════════════════════════════════════════════════
+// Compresse une image base64 pour tenir dans localStorage
+function compresserImage(b64, maxW, maxH, q){
+  return new Promise(r => {
+    const img = new Image();
+    img.onload = () => {
+      let w=img.width, h=img.height;
+      if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}
+      if(h>maxH){w=Math.round(w*maxH/h);h=maxH;}
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      r(c.toDataURL('image/jpeg', q||0.75));
+    };
+    img.onerror = () => r(b64);
+    img.src = b64;
+  });
+}
 function uploadLogoLocal(input){
   const file = input.files && input.files[0];
   if(!file) return;
-  if(file.size > 500000){ toast('⚠️ Logo trop lourd (max 500 Ko)','err'); return; }
   const reader = new FileReader();
-  reader.onload = function(e){
-    const b64 = e.target.result; // data:image/png;base64,...
-    localStorage.setItem('roze_logo_base64', b64);
+  reader.onload = async function(e){
+    const b64 = await compresserImage(e.target.result, 400, 200, 0.85);
+    try{ localStorage.setItem('roze_logo_base64', b64); }catch(e){ toast('⚠️ Stockage plein - réduis la taille','err'); return; }
     CFG.logoUrl = b64;
     const preview = document.getElementById('cfg-logo-preview');
     const clearBtn = document.getElementById('cfg-logo-clear');
@@ -3325,11 +3340,10 @@ const MAX_FONDS = 3;
 function uploadFondPerso(input, index){
   const file = input.files && input.files[0];
   if(!file) return;
-  if(file.size > 2000000){ toast('⚠️ Image trop lourde (max 2 Mo)','err'); return; }
   const reader = new FileReader();
-  reader.onload = function(e){
-    const b64 = e.target.result;
-    localStorage.setItem('roze_fond_perso_' + index, b64);
+  reader.onload = async function(e){
+    const b64 = await compresserImage(e.target.result, 1080, 1350, 0.7);
+    try{ localStorage.setItem('roze_fond_perso_' + index, b64); }catch(e){ toast('⚠️ Stockage plein - réduis la taille ou supprime un ancien fond','err'); return; }
     const preview = document.getElementById('fond-perso-preview-' + index);
     const clearBtn = document.getElementById('fond-perso-clear-' + index);
     if(preview){ preview.src = b64; preview.style.display = 'inline-block'; }
@@ -5754,6 +5768,9 @@ function appliquerStylesSlide(idx){
   if(inner){
     // position gérée par CSS (relative pour lg, absolute pour sm+scale)
     inner.style.zIndex   = '1';
+    inner.style.display  = 'flex';
+    inner.style.flexDirection = 'column';
+    inner.style.justifyContent = 'center';
     inner.style.textAlign = st.align;
 
     // Marges via curseurs (margeH px / margeV px)
@@ -7651,6 +7668,32 @@ function validerFeedback(id){
   toast('✅ Performance mémorisée - l\'IA s\'en inspirera','ok');
 }
 
+// ── Adapter un post depuis l'éditeur (crée un duplicat adapté) ──
+async function adapterDepuisEdit(id){
+  const bib = getBiblio(); const it = bib.find(i=>i.id===id); if(!it) return;
+  const reseauCible = it.reseau==='LinkedIn' ? 'Instagram' : 'LinkedIn';
+  // Récupérer le texte source
+  let texteSource = it.texte||'';
+  if(it.typeContenu==='Carrousel'){
+    try{ const d=JSON.parse(texteSource); const sl=d.slides||d; if(Array.isArray(sl)) texteSource=sl.map(s=>(s.titre||'')+'\n'+(s.corps||'')).join('\n\n'); }catch(e){}
+  }
+  if(!texteSource.trim()){ toast('Aucun texte à adapter','err'); return; }
+  // Bouton feedback
+  const optBtn = it.reseau==='LinkedIn' ? document.getElementById('opt-ig') : document.getElementById('opt-li');
+  if(optBtn){ optBtn.innerHTML=`⏳ Adaptation…`; optBtn.onclick=null; }
+  try{
+    const prompt = `Adapte ce post ${it.reseau} pour ${reseauCible}.\n\nRègles :\n- ${reseauCible==='Instagram' ? 'Plus court, plus visuel, emojis autorisés, 3-5 hashtags en fin' : 'Plus long, plus structuré, ton professionnel, 3 hashtags max en fin'}\n- Garde le message central et le hook\n- Adapte la longueur et le ton au réseau cible\n\nPost original :\n${texteSource}\n\nRéponds UNIQUEMENT avec le post adapté, sans préambule.`;
+    const res = await appelIA(prompt);
+    const texteAdapte = nettoyerIntroIA(res||'');
+    const {texte:t, legende:l} = splitTexteLegende(texteAdapte);
+    const newId = Date.now();
+    sauvegarderEtSyncPost({id:newId, reseau:reseauCible, typeContenu:it.typeContenu==='Carrousel'?'Post texte':it.typeContenu, texte:t, legende:l||it.legende||'', date:it.date, dateProg:it.dateProg||it.date, dateGen:dateAujourdhui(), dateAffiche:it.dateAffiche, statut:'À relire'});
+    toast(`✅ Version ${reseauCible} créée et ajoutée au calendrier !`,'ok');
+    fermerEdit(); rendreCal();
+  }catch(e){ toast('Erreur : '+e.message,'err'); }
+  if(optBtn){ optBtn.innerHTML=`🔄 Adapter à ${reseauCible}`; optBtn.onclick=()=>adapterDepuisEdit(id); }
+}
+
 // ── Hooks alternatifs ──
 async function genHooksAlternatifs(){
   const texte = document.getElementById('gen-result')?.textContent?.trim();
@@ -7873,9 +7916,18 @@ function ouvrirEdit(id){
   // Meta
   const cl=it.reseau==='LinkedIn'?'tag-li':'tag-ig';
   document.getElementById('edit-meta').innerHTML=`<span class="${cl}">${escapeHtml(it.reseau)}</span><span class="tag-type">${it.typeContenu}</span><span style="font-size:.75rem;color:var(--gris-clair);">${it.dateAffiche||''}</span>`;
-  // Réseau
-  document.getElementById('opt-li').className='reseau-opt'+(it.reseau==='LinkedIn'?' on-li':'');
-  document.getElementById('opt-ig').className='reseau-opt'+(it.reseau==='Instagram'?' on-ig':'');
+  // Réseau : indicateur actif + bouton "Adapter à [autre réseau]"
+  const reseauActuel = it.reseau || 'LinkedIn';
+  const reseauCible = reseauActuel==='LinkedIn' ? 'Instagram' : 'LinkedIn';
+  const optLi = document.getElementById('opt-li');
+  const optIg = document.getElementById('opt-ig');
+  if(reseauActuel==='LinkedIn'){
+    optLi.className='reseau-opt on-li'; optLi.innerHTML='💼 LinkedIn'; optLi.onclick=null; optLi.style.cursor='default';
+    optIg.className='reseau-opt'; optIg.innerHTML=`🔄 Adapter à Instagram`; optIg.onclick=()=>adapterDepuisEdit(id); optIg.style.cursor='pointer';
+  } else {
+    optIg.className='reseau-opt on-ig'; optIg.innerHTML='📸 Instagram'; optIg.onclick=null; optIg.style.cursor='default';
+    optLi.className='reseau-opt'; optLi.innerHTML=`🔄 Adapter à LinkedIn`; optLi.onclick=()=>adapterDepuisEdit(id); optLi.style.cursor='pointer';
+  }
   // Date
   document.getElementById('edit-date').value=it.date||dateAujourdhui();
   // Texte - carrousel, script (Stories/Réel/Vidéo), ou post standard
@@ -8711,7 +8763,6 @@ function sauvegarderCompte(){
   const ctv = gv('cfg-couleur-texte'); CFG.couleurTexte = (ctv && isHex(ctv)) ? ctv : (CFG.couleurTexte || '#111111');
   CFG.policeTitre  = gv('cfg-police-titre') || 'Playfair Display';
   CFG.policeCorps  = gv('cfg-police-corps') || 'DM Sans';
-  CFG.logoUrl      = gv('cfg-logo-url');
   CFG.nom          = gv('cfg-nom');
   CFG.entreprise   = gv('cfg-entreprise');
   CFG.metier       = gv('cfg-metier');
@@ -8731,11 +8782,9 @@ function sauvegarderCompte(){
       document.head.appendChild(lk);
     }
   });
-  localStorage.setItem('roze_logo_url',     CFG.logoUrl);
-  // Logo : prioriser le base64 uploadé sur l'URL manuelle
-  const logoB64 = localStorage.getItem('roze_logo_base64') || '';
-  if(logoB64) CFG.logoUrl = logoB64;
-  else CFG.logoUrl = gv('cfg-logo-url') || CFG.logoUrl;
+  localStorage.setItem('roze_logo_url',     gv('cfg-logo-url'));
+  // Logo : base64 uploadé toujours prioritaire sur l'URL manuelle
+  CFG.logoUrl = localStorage.getItem('roze_logo_base64') || gv('cfg-logo-url') || '';
   localStorage.setItem('roze_nom',          CFG.nom);
   localStorage.setItem('roze_entreprise',   CFG.entreprise);
   localStorage.setItem('roze_metier',       CFG.metier);

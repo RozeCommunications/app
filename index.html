@@ -769,12 +769,12 @@
     .cv-slide-editable .cv-slide-titre:focus,
     .cv-slide-editable .cv-slide-sstitre:focus,
     .cv-slide-editable .cv-slide-corps:focus{background:rgba(255,255,255,.08);}
-    .cv-slide-inner{width:100%;height:100%;display:flex;flex-direction:column;padding:10px 9px;box-sizing:border-box;position:relative;}
+    .cv-slide-inner{width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;padding:10px 9px;box-sizing:border-box;position:relative;}
     .cv-slide-num{position:absolute;top:6px;right:8px;font-size:.55rem;font-weight:700;opacity:.4;display:none;}
     .cv-slide-type{font-size:.52rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;opacity:.7;}
     .cv-slide-sstitre{font-size:.58rem;font-weight:600;margin-bottom:3px;opacity:.85;line-height:1.3;}
     .cv-slide-titre{font-size:.78rem;font-weight:700;line-height:1.25;margin-bottom:5px;}
-    .cv-slide-corps{font-size:.65rem;line-height:1.45;flex:1;overflow:hidden;}
+    .cv-slide-corps{font-size:.65rem;line-height:1.45;overflow:hidden;}
     .cv-slide-lg .cv-slide-inner{padding:22px 18px;}
     .cv-slide-lg .cv-slide-titre{font-size:1.12rem;line-height:1.22;}
     .cv-slide-lg .cv-slide-sstitre{font-size:.72rem;}
@@ -1762,29 +1762,22 @@
       </div>
 
       <!-- Mode série -->
-      <div style="margin-top:.5rem;display:flex;align-items:center;gap:.5rem;">
-        <label style="font-size:.75rem;color:var(--gris-clair);display:flex;align-items:center;gap:.4rem;cursor:pointer;">
-          <input type="checkbox" id="cb-serie" style="accent-color:var(--rose);"/>
+      <div style="margin-top:.6rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;">
+        <label style="font-size:.78rem;color:var(--gris-clair);display:flex;align-items:center;gap:.35rem;cursor:pointer;">
+          <input type="checkbox" id="cb-serie" style="accent-color:var(--rose);width:18px;height:18px;"/>
           📚 Mode série
         </label>
-        <span id="serie-config" style="display:none;font-size:.72rem;color:var(--gris-clair);">
-          Partie <input type="number" id="serie-num" min="1" max="10" value="1" style="width:36px;font-size:14px;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:4px;color:var(--blanc-doux);padding:1px 3px;text-align:center;"/>
-          / <input type="number" id="serie-total" min="2" max="10" value="4" style="width:36px;font-size:14px;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:4px;color:var(--blanc-doux);padding:1px 3px;text-align:center;"/>
-        </span>
-      </div>
-      <script>document.getElementById('cb-serie').onchange=function(){document.getElementById('serie-config').style.display=this.checked?'inline':'none';}</script>
-
-      <!-- Actu web - visible uniquement pour piliers Visibilité et Expertise -->
-      <div class="actu-row" id="gen-actu-row" style="margin-top:.7rem;display:none;" onclick="toggleActu()">
-        <div class="actu-lbl">
-          🔍 Inclure une actu du secteur
-          <span>Recherche web sur tes références</span>
+        <div id="serie-config" style="display:none;font-size:.75rem;color:var(--gris-clair);display:none;align-items:center;gap:.3rem;">
+          Partie
+          <input type="number" id="serie-num" min="1" max="10" value="1" style="width:38px;font-size:14px;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:6px;color:var(--blanc-doux);padding:2px 4px;text-align:center;"/>
+          /
+          <input type="number" id="serie-total" min="2" max="10" value="4" style="width:38px;font-size:14px;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:6px;color:var(--blanc-doux);padding:2px 4px;text-align:center;"/>
         </div>
-        <label class="toggle-sw" onclick="event.stopPropagation()">
-          <input type="checkbox" id="cb-actu" onchange="toggleActu()"/>
-          <span class="sw"></span>
-        </label>
       </div>
+      <script>document.getElementById('cb-serie').onchange=function(){document.getElementById('serie-config').style.display=this.checked?'flex':'none';}</script>
+
+      <!-- Actu web - activée automatiquement selon le pilier (E1/E2/A4/V4) -->
+      <input type="hidden" id="cb-actu" checked/>
       <div class="web-loader" id="web-loader"><div class="web-ring"></div><span>Recherche web en cours…</span></div>
       <div class="actu-result" id="actu-result"><strong>🌐 Actu trouvée</strong><span id="actu-txt"></span></div>
 
@@ -1913,7 +1906,12 @@
 
   <!-- ══ CALENDRIER ══ -->
   <section id="p-calendrier" class="page">
-    <div class="titre"><h2>Mon <em>calendrier</em></h2><p>Visualise, édite et planifie</p></div>
+    <div class="titre" style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div><h2>Mon <em>calendrier</em></h2><p>Visualise, édite et planifie</p></div>
+      <button onclick="toggleBrouillonsPanel()" id="btn-brouillons" style="display:flex;align-items:center;gap:.4rem;padding:.4rem .8rem;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--blanc-doux);font-size:.78rem;cursor:pointer;margin-top:.3rem;white-space:nowrap;transition:border-color .15s,background .15s;">
+        💡 <span style="font-weight:600;">Idées</span> <span id="brouillons-count" style="font-size:.68rem;background:var(--rose);color:#fff;border-radius:10px;padding:0 .4rem;min-width:16px;text-align:center;">0</span>
+      </button>
+    </div>
     <div class="cal-top">
       <div class="cal-nav">
         <button class="cal-btn" onclick="navCal(-1)">‹</button>
@@ -1926,21 +1924,13 @@
       </div>
     </div>
 
-    <!-- Boutons Stories + Brouillons -->
+    <!-- Bouton Stories -->
     <div class="cal-panels-row">
       <button class="cal-stories-btn" onclick="toggleStoriesPanel()">
         <span class="csb-icon">📱</span>
         <div class="csb-text">
           <span class="csb-titre">Stories</span>
           <span class="csb-sub" id="csb-txt">0/7 publiées</span>
-        </div>
-        <span class="csb-chevron">›</span>
-      </button>
-      <button class="cal-stories-btn" onclick="toggleBrouillonsPanel()" id="btn-brouillons">
-        <span class="csb-icon">💡</span>
-        <div class="csb-text">
-          <span class="csb-titre">Idées</span>
-          <span class="csb-sub" id="brouillons-count">0 idée</span>
         </div>
         <span class="csb-chevron">›</span>
       </button>
@@ -3900,12 +3890,12 @@ function buildExportSlide(i, s, st, c1, c2, ptit, pcorp, W, H){
   const titreItal = (isRespiration || st.titreItalic) ? 'font-style:italic;' : '';
   const titreStyle = `font-family:'${st.policeTitre||ptit}',serif;font-size:${Math.round(titreFs*(st.titreSize||1))}px;font-weight:700;line-height:${st.titreLH||1.25};color:${titreCol};${shadow}${titreItal}${isRespiration?'':'margin-bottom:'+Math.round(H*0.018)+'px;'}`;
   const titreRendu = rendreTitreAccent(s.titre||'', c1, bgCss);
-  const corpsHtml = isRespiration ? '' : `<div style="font-family:'${st.policeCorps||pcorp}',sans-serif;font-size:${Math.round(corpsFs*(st.corpsSize||1))}px;line-height:${st.corpsLH||1.6};flex:1;white-space:pre-line;color:${corpsCol};${shadow}${st.corpsItalic?'font-style:italic;':''}">${s.corps||''}</div>`;
+  const corpsHtml = isRespiration ? '' : `<div style="font-family:'${st.policeCorps||pcorp}',sans-serif;font-size:${Math.round(corpsFs*(st.corpsSize||1))}px;line-height:${st.corpsLH||1.6};white-space:pre-line;color:${corpsCol};${shadow}${st.corpsItalic?'font-style:italic;':''}">${s.corps||''}</div>`;
 
   const div = document.createElement('div');
-  div.style.cssText = `position:fixed;left:-9999px;top:0;width:${W}px;height:${H}px;overflow:hidden;background:${bgCss};font-family:'${st.policeCorps||pcorp}',sans-serif;color:${baseCoul};padding:${pad};box-sizing:border-box;display:flex;flex-direction:column;${isRespiration?'justify-content:center;align-items:center;':''}text-align:${isRespiration?'center':(st.align||'left')};`;
+  div.style.cssText = `position:fixed;left:-9999px;top:0;width:${W}px;height:${H}px;overflow:hidden;background:${bgCss};font-family:'${st.policeCorps||pcorp}',sans-serif;color:${baseCoul};padding:${pad};box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;${isRespiration?'align-items:center;':''}text-align:${isRespiration?'center':(st.align||'left')};`;
   div.innerHTML = `${photoHtml}${gridHtml}
-    <div style="position:relative;z-index:2;display:flex;flex-direction:column;${isRespiration?'justify-content:center;align-items:center;':''}height:100%;width:100%;text-align:${isRespiration?'center':(st.align||'left')};">
+    <div style="position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;${isRespiration?'align-items:center;':''}height:100%;width:100%;text-align:${isRespiration?'center':(st.align||'left')};">
       ${logoHtml}${sstitreHtml}
       <div style="${titreStyle}">${titreRendu}</div>
       ${corpsHtml}
@@ -5532,7 +5522,7 @@ function renderCvSlide(s, idx, total, c1, c2, ptit, pcorp, opts){
     ${!editable ? `onclick="cvSelectSlide(${idx})"` : ''}>
     ${gridOverlay}
     <div class="cv-slide-num">${idx+1}/${total}</div>
-    <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};${isRespiration ? 'justify-content:center;align-items:center;text-align:center;' : ''}">
+    <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};${isRespiration ? 'align-items:center;text-align:center;' : ''}">
       ${(s.type==='conclusion' && CFG.logoUrl) ? renderLogoSlide(idx) : ''}
       <!-- type masqué - ne s'affiche pas sur les slides -->
       ${sstitre ? `<div class="cv-slide-sstitre" ${editAttr}
@@ -6710,11 +6700,12 @@ async function genUnPost(){
   try{
     const mat = matiereSemaine();
 
-    // Si toggle actu activé : lancer la recherche EN PARALLÈLE du build body
-    const cbActu = document.getElementById('cb-actu');
+    // Actu secteur automatique selon le pilier (figures E1/E2/A4/V4 en bénéficient)
     const peutRechercher = !!CFG.api;
+    const pilierActuel = genPilier || 'autorite';
+    const pilierAvecActu = ['expertise','autorite','visibilite'].includes(pilierActuel);
     let actuPromise = null;
-    if(peutRechercher && cbActu && cbActu.checked && !actuTexte){
+    if(peutRechercher && pilierAvecActu && !actuTexte){
       actuPromise = rechercherActu();
     }
 
@@ -7367,7 +7358,7 @@ function toggleBrouillonsPanel(){
 function majCompteurBrouillons(){
   const n = getBrouillons().length;
   const el = document.getElementById('brouillons-count');
-  if(el) el.textContent = n + (n <= 1 ? ' idée' : ' idées');
+  if(el) el.textContent = n;
 }
 
 function ajouterBrouillon(){

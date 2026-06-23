@@ -3901,7 +3901,7 @@ function buildExportSlide(i, s, st, c1, c2, ptit, pcorp, W, H){
 
   const titreItal = (isRespiration || st.titreItalic) ? 'font-style:italic;' : '';
   const titreStyle = `font-family:'${st.policeTitre||ptit}',serif;font-size:${Math.round(titreFs*(st.titreSize||1))}px;font-weight:700;line-height:${st.titreLH||1.25};color:${titreCol};${shadow}${titreItal}${isRespiration?'':'margin-bottom:'+Math.round(H*0.018)+'px;'}`;
-  const titreRendu = rendreTitreAccent(s.titre||'', c1, bgCss);
+  const titreRendu = rendreTitreAccent(nettoyerMetaLabels(s.titre||''), c1, bgCss);
   const corpsHtml = isRespiration ? '' : `<div style="font-family:'${st.policeCorps||pcorp}',sans-serif;font-size:${Math.round(corpsFs*(st.corpsSize||1))}px;line-height:${st.corpsLH||1.6};white-space:pre-line;color:${corpsCol};${shadow}${st.corpsItalic?'font-style:italic;':''}">${s.corps||''}</div>`;
 
   const div = document.createElement('div');
@@ -5539,19 +5539,29 @@ function renderLogoSlide(idx){
 }
 
 // Formate le corps avec les paires ❌/✅ en 2 colonnes
+// Nettoie les meta-labels IA des titres et sous-titres de slides
+const META_LABELS_RE = /^(AVIS DE PRO|Avis de pro|CONSEIL D'EXPERT|Conseil d'expert|POINT CLÉ|Point clé|À RETENIR|BON À SAVOIR|ASTUCE|LA RÈGLE D'OR|ATTENTION|IMPORTANT|RAPPEL|EN RÉSUMÉ|LE SAVIEZ-VOUS)\s*[:.\-–]\s*/i;
+function nettoyerMetaLabels(texte){
+  return texte ? texte.replace(META_LABELS_RE, '').trim() : texte;
+}
+
 function formatCorpsHtml(corps){
   if(!corps) return '';
-  const lignes = corps.split('\n');
+  // Pré-traitement : si ❌ et ✅ sont collés sur la même ligne, les séparer
+  const lignes = corps.replace(/([.!?…])✅/g, '$1\n✅').replace(/([.!?…])❌/g, '$1\n❌').split('\n');
   let html = '', i = 0;
+  const renderPair = (a, b) =>
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:.4em 0;">
+      <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;font-size:inherit;">${escapeHtml(a)}</div>
+      <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;font-size:inherit;">${escapeHtml(b)}</div></div>`;
   while(i < lignes.length){
     const l = lignes[i].trim();
     const next = (i+1 < lignes.length) ? lignes[i+1].trim() : '';
-    // Détecter une paire ❌/✅ (ou inverse) sur 2 lignes consécutives
-    const isContra = (l.startsWith('❌') || l.startsWith('✗')) && (next.startsWith('✅') || next.startsWith('✓'));
-    const isContraInv = (l.startsWith('✅') || l.startsWith('✓')) && (next.startsWith('❌') || next.startsWith('✗'));
-    if(isContra || isContraInv){
-      html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:.4em 0;">
-        <div>${escapeHtml(l)}</div><div>${escapeHtml(next)}</div></div>`;
+    // Paire ❌/✅ sur 2 lignes consécutives (dans les deux ordres)
+    const isPair = ((l.startsWith('❌')||l.startsWith('✗')) && (next.startsWith('✅')||next.startsWith('✓')))
+                || ((l.startsWith('✅')||l.startsWith('✓')) && (next.startsWith('❌')||next.startsWith('✗')));
+    if(isPair){
+      html += renderPair(l, next);
       i += 2;
     } else {
       if(html && l === '') html += '<br>';
@@ -5604,7 +5614,7 @@ function renderCvSlide(s, idx, total, c1, c2, ptit, pcorp, opts){
         style="font-family:'${ptit}',serif;${isRespiration ? 'color:'+accent+';font-style:italic;' : ''}"
         ${editAttr}
         data-idx="${idx}" data-field="titre"
-        oninput="cvUpdateSlide(${idx},'titre',this.innerText)">${rendreTitreAccent(s.titre||'', accent, fond)}</div>
+        oninput="cvUpdateSlide(${idx},'titre',this.innerText)">${rendreTitreAccent(nettoyerMetaLabels(s.titre||''), accent, fond)}</div>
       ${corpsHtml}
     </div>
   </div>`;
@@ -7509,7 +7519,14 @@ function rendreBrouillons(){
 }
 
 function getBiblio(){ return lsJ('roze_biblio')||[]; }
-function setBiblio(b){ localStorage.setItem('roze_biblio',JSON.stringify(b)); }
+function setBiblio(b){
+  // Limite à 200 posts max - supprimer les plus anciens au-delà
+  if(b.length > 200){
+    b.sort((a,c) => (c.id||0) - (a.id||0)); // plus récents d'abord (id = timestamp)
+    b = b.slice(0, 200);
+  }
+  localStorage.setItem('roze_biblio',JSON.stringify(b));
+}
 
 // ══════════════════════════════════════════
 // SYNCHRONISATION SHEETS - Posts générés

@@ -4415,6 +4415,9 @@ function buildConfigPayload(){
     semaines:      JSON.stringify(semaines),
     stories_pub:   JSON.stringify(storiesPub),
     stories_scripts: JSON.stringify(storiesScripts),
+    fond_url_0:    ls('roze_fond_url_0') || '',
+    fond_url_1:    ls('roze_fond_url_1') || '',
+    fond_url_2:    ls('roze_fond_url_2') || '',
   };
 }
 
@@ -4441,6 +4444,9 @@ function appliquerConfig(config){
     couleur_texte:['couleurTexte','roze_couleur_texte'],
     police_titre: ['policeTitre', 'roze_police_titre'],
     police_corps: ['policeCorps', 'roze_police_corps'],
+    fond_url_0:   ['fondUrl0',    'roze_fond_url_0'],
+    fond_url_1:   ['fondUrl1',    'roze_fond_url_1'],
+    fond_url_2:   ['fondUrl2',    'roze_fond_url_2'],
   };
   Object.entries(map).forEach(([sheetKey, [cfgKey, lsKey]]) => {
     const val = config[sheetKey];

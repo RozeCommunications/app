@@ -1764,17 +1764,23 @@
       <!-- Mode série -->
       <div style="margin-top:.6rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;">
         <label style="font-size:.78rem;color:var(--gris-clair);display:flex;align-items:center;gap:.35rem;cursor:pointer;">
-          <input type="checkbox" id="cb-serie" style="accent-color:var(--rose);width:18px;height:18px;"/>
+          <input type="checkbox" id="cb-serie" style="accent-color:var(--rose);width:18px;height:18px;" onchange="toggleSerieMode(this.checked)"/>
           📚 Mode série
         </label>
-        <div id="serie-config" style="display:none;font-size:.75rem;color:var(--gris-clair);display:none;align-items:center;gap:.3rem;">
-          Partie
-          <input type="number" id="serie-num" min="1" max="10" value="1" style="width:38px;font-size:14px;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:6px;color:var(--blanc-doux);padding:2px 4px;text-align:center;"/>
-          /
-          <input type="number" id="serie-total" min="2" max="10" value="4" style="width:38px;font-size:14px;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:6px;color:var(--blanc-doux);padding:2px 4px;text-align:center;"/>
+      </div>
+      <div id="serie-config" style="display:none;margin-top:.4rem;padding:.6rem .7rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;">
+        <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.3rem;">Titre de la série</div>
+        <div style="position:relative;">
+          <input type="text" id="serie-titre" list="serie-list" placeholder="Ex : SOS Instagram, 5 erreurs du débutant…" style="font-size:14px;width:100%;box-sizing:border-box;" oninput="onSerieTitreChange(this.value)"/>
+          <datalist id="serie-list"></datalist>
+        </div>
+        <div style="display:flex;gap:.6rem;align-items:center;margin-top:.4rem;">
+          <span style="font-size:.75rem;color:var(--gris-clair);">Épisode</span>
+          <input type="number" id="serie-num" min="1" max="99" value="1" style="width:42px;font-size:14px;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:6px;color:var(--blanc-doux);padding:2px 4px;text-align:center;"/>
+          <span style="font-size:.75rem;color:var(--gris-clair);">/ total</span>
+          <input type="number" id="serie-total" min="2" max="99" value="4" style="width:42px;font-size:14px;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:6px;color:var(--blanc-doux);padding:2px 4px;text-align:center;"/>
         </div>
       </div>
-      <script>document.getElementById('cb-serie').onchange=function(){document.getElementById('serie-config').style.display=this.checked?'flex':'none';}</script>
 
       <!-- Actu web - activée automatiquement selon le pilier (E1/E2/A4/V4) -->
       <input type="hidden" id="cb-actu" checked/>
@@ -2025,9 +2031,30 @@
             <button type="button" class="ed-chip" id="tronc-mixte"     onclick="setTronc('mixte',this)">🔀 Les deux</button>
           </div>
 
-          <label class="lbl" style="margin-top:.8rem;">Cible client idéal</label>
-          <textarea id="cfg-cible" rows="2" placeholder="Ex : indépendantes 30-50 ans qui se lancent dans le digital, ou artisans débordés qui cherchent à structurer leur visibilité…" style="font-size:16px;width:100%;resize:none;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.55rem .8rem;color:var(--blanc-doux);font-family:'DM Sans',sans-serif;"></textarea>
-          <div style="font-size:.7rem;color:var(--gris-clair);margin-top:.3rem;">Décris en 1-2 phrases ton client type. L'IA adressera les posts à cette cible.</div>
+          <label class="lbl" style="margin-top:.8rem;">📋 Fiche client idéal</label>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;">
+            <div style="font-size:.7rem;color:var(--gris-clair);line-height:1.4;flex:1;">Plus tu es précis, plus l'IA parlera directement à ton client. Les exemples s'adaptent à ton métier.</div>
+            <button type="button" id="btn-preremplir-client" onclick="preremplirFicheClient()" style="flex-shrink:0;margin-left:.5rem;padding:.35rem .7rem;border-radius:8px;border:1px solid var(--rose);background:rgba(232,24,109,.08);color:var(--rose);font-size:.72rem;cursor:pointer;white-space:nowrap;transition:all .15s;">✨ Pré-remplir avec l'IA</button>
+          </div>
+
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-bottom:.15rem;font-weight:600;">Qui est-il ?</div>
+          <textarea id="cfg-cible" rows="2" placeholder="" style="font-size:15px;width:100%;resize:none;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.5rem .7rem;color:var(--blanc-doux);font-family:'DM Sans',sans-serif;"></textarea>
+
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.5rem;margin-bottom:.15rem;font-weight:600;">🎯 Ses objectifs</div>
+          <textarea id="cfg-client-objectifs" rows="2" placeholder="" style="font-size:15px;width:100%;resize:none;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.5rem .7rem;color:var(--blanc-doux);font-family:'DM Sans',sans-serif;"></textarea>
+
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.5rem;margin-bottom:.15rem;font-weight:600;">🧱 Ses freins</div>
+          <textarea id="cfg-client-freins" rows="2" placeholder="" style="font-size:15px;width:100%;resize:none;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.5rem .7rem;color:var(--blanc-doux);font-family:'DM Sans',sans-serif;"></textarea>
+
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.5rem;margin-bottom:.15rem;font-weight:600;">🛡️ Ses objections avant d'acheter</div>
+          <textarea id="cfg-client-objections" rows="2" placeholder="" style="font-size:15px;width:100%;resize:none;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.5rem .7rem;color:var(--blanc-doux);font-family:'DM Sans',sans-serif;"></textarea>
+
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.5rem;margin-bottom:.15rem;font-weight:600;">✨ Son rêve / la transformation qu'il espère</div>
+          <textarea id="cfg-client-reves" rows="2" placeholder="" style="font-size:15px;width:100%;resize:none;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.5rem .7rem;color:var(--blanc-doux);font-family:'DM Sans',sans-serif;"></textarea>
+
+          <div style="font-size:.72rem;color:var(--gris-clair);margin-top:.5rem;margin-bottom:.15rem;font-weight:600;">❓ Ses questions fréquentes</div>
+          <textarea id="cfg-client-questions" rows="2" placeholder="" style="font-size:15px;width:100%;resize:none;background:var(--gris-input);border:1px solid var(--gris-border);border-radius:8px;padding:.5rem .7rem;color:var(--blanc-doux);font-family:'DM Sans',sans-serif;"></textarea>
+          <div style="font-size:.68rem;color:var(--gris-clair);margin-top:.3rem;line-height:1.4;">L'IA utilise ces informations pour adresser les vrais problèmes de ton client dans chaque post.</div>
 
           <label class="lbl" style="margin-top:.6rem;">
             Sources de veille
@@ -4602,7 +4629,13 @@ function matiereSemaine(){
   const marr = contexteMarronnier();
   // Contexte conversationnel : résumé des 5 derniers posts pour éviter les répétitions thématiques
   const bib = getBiblio().slice(0,5);
-  const ctxPosts = bib.length ? 'Posts récents (ne pas répéter les mêmes angles) : ' + bib.map(p => (p.texte||'').split('\n')[0].substring(0,60)).join(' ; ') : '';
+  const ctxPosts = bib.length ? 'Posts récents (ne pas répéter les mêmes angles) : ' + bib.map(p => {
+    const t = p.texte||'';
+    if(t.trim().startsWith('{')){
+      try{ const d=JSON.parse(t); const sl=d.slides||d; if(Array.isArray(sl)&&sl[0]) return (sl[0].titre||'').replace(/\[ACCENT\]|\[\/ACCENT\]/g,'').substring(0,60); }catch(e){}
+    }
+    return t.split('\n').find(l=>l.trim()&&!l.startsWith('{'))?.substring(0,60)||'';
+  }).filter(Boolean).join(' ; ') : '';
   // Mémoire de performance : posts validés avec métriques et structure
   const perfs = lsJ('roze_posts_performants') || [];
   let ctxPerf = '';
@@ -4624,7 +4657,19 @@ function matiereSemaine(){
     '4. META-LABELS INTERDITS : JAMAIS écrire "AVIS DE PRO", "CONSEIL D\'EXPERT", "POINT CLÉ", "À RETENIR", "ASTUCE", "BON À SAVOIR" en majuscules comme titre de section. Si le contenu est un avis, le formuler naturellement : "Mon avis :", "Ce que j\'en pense :" suffit.',
     '5. Varier les figures : métaphore, anaphore, question rhétorique directe, antithèse, chute inattendue, interpellation, liste à contraste (❌/✅).'
   ].join('\n');
-  return [lignes, marr, ctxPosts, ctxPerf, styleIA].filter(Boolean).join('\n');
+  // Fiche client idéal (parle directement à cette personne dans les posts)
+  const clientFields = [
+    ['Objectifs', ls('roze_client_objectifs')],
+    ['Freins', ls('roze_client_freins')],
+    ['Objections avant achat', ls('roze_client_objections')],
+    ['Rêve / Transformation', ls('roze_client_reves')],
+    ['Questions fréquentes', ls('roze_client_questions')]
+  ].filter(([,v]) => v?.trim());
+  const ctxClient = clientFields.length
+    ? 'Fiche client idéal (adresse-toi à cette personne, touche SES problèmes, SES mots, SES aspirations) :\n' + clientFields.map(([k,v]) => `- ${k} : ${v.trim()}`).join('\n')
+    : '';
+
+  return [lignes, marr, ctxPosts, ctxPerf, ctxClient, styleIA].filter(Boolean).join('\n');
 }
 
 // ── Autosave brouillon questions (debounce 1.5s) ──
@@ -6607,7 +6652,18 @@ function majPreviewCouleurs(){
 }
 
 function resumePost(texte){
-  // Extrait les 30 premiers mots comme "empreinte" du sujet
+  if(!texte) return '';
+  // Si c'est un carrousel (JSON), extraire les titres des slides
+  if(texte.trim().startsWith('{')){
+    try{
+      const data = JSON.parse(texte);
+      const sl = data.slides || (Array.isArray(data) ? data : null);
+      if(sl && sl.length){
+        return sl.map(s => (s.titre||'').replace(/\[ACCENT\]|\[\/ACCENT\]/g,'')).filter(Boolean).join(' | ').substring(0,120).toLowerCase();
+      }
+    }catch(e){}
+  }
+  // Post texte normal : premiers 30 mots
   return texte.split(/\s+/).slice(0,30).join(' ').toLowerCase();
 }
 
@@ -6804,8 +6860,9 @@ async function genUnPost(){
     const serieActive = document.getElementById('cb-serie')?.checked;
     const serieNum = serieActive ? parseInt(document.getElementById('serie-num')?.value||1) : 0;
     const serieTotal = serieActive ? parseInt(document.getElementById('serie-total')?.value||4) : 0;
-    const sujetComplet = serieActive && sujet
-      ? `[SÉRIE ${serieNum}/${serieTotal}] ${sujet}${serieNum>1 ? ' - Suite du post précédent. Progresse dans le sujet, ne répète pas les points déjà couverts.' : ' - Premier post de la série. Pose le contexte et annonce la suite.'}`
+    const serieTitre = serieActive ? (document.getElementById('serie-titre')?.value||'').trim() : '';
+    const sujetComplet = serieActive
+      ? `[SÉRIE "${serieTitre || sujet}" - Épisode ${serieNum}/${serieTotal}] ${sujet || serieTitre}${serieNum>1 ? ' - Suite des épisodes précédents. Progresse dans le sujet, ne répète pas les points déjà couverts.' : ' - Premier épisode de la série. Pose le contexte et annonce la suite.'}`
       : sujet;
 
     const body = {
@@ -6850,18 +6907,16 @@ async function genUnPost(){
     const texte = nettoyerIntroIA(j.texte || '');
 
     // Afficher le badge figure narrative si retourné par l'AS
-    if(j.figure_code && (format === 'Post texte' || format === 'Photo')){
+    if(j.figure_code){
       genFigureCourante = { code: j.figure_code, nom: j.figure_nom, levier: j.figure_levier };
       afficherBadgeFigure(genFigureCourante);
-      // Mémoriser pour anti-répétition
+      // Mémoriser pour anti-répétition (TOUS les formats)
       const recentes = (ls('roze_figures_recentes') || '').split(',').filter(Boolean).slice(0,5);
       recentes.unshift(j.figure_code);
       ss('roze_figures_recentes', recentes.join(','));
     } else {
       genFigureCourante = null;
-      if(format !== 'Carrousel' && format !== 'Réel' && format !== 'Vidéo' && format !== 'Stories'){
-        cacherBadgeFigure();
-      }
+      cacherBadgeFigure();
     }
     genFigureForce = null; // Réinitialiser après utilisation
 
@@ -6927,6 +6982,7 @@ async function genUnPost(){
     if(btnGen){ btnGen.disabled=false; btnGen.textContent='✨ Générer ce post'; btnGen.classList.remove('btn-progress'); }
     const btnAdapt = document.getElementById('btn-adapter');
     if(btnAdapt) btnAdapt.textContent = reseau==='LinkedIn' ? '🔄 Adapter à Instagram' : '🔄 Adapter à LinkedIn';
+    majSerieApresGeneration();
     afficherChipSource(); // Afficher chip source si actu disponible
     // Sauvegarder la stat de l'actu pour éviter répétition ce mois
     if(actuTexte) ajouterStatMois(actuTexte.substring(0,120));
@@ -7773,6 +7829,41 @@ async function adapterDepuisEdit(id){
     fermerEdit(); rendreCal();
   }catch(e){ toast('Erreur : '+e.message,'err'); }
   if(optBtn){ optBtn.innerHTML=`🔄 Adapter à ${reseauCible}`; optBtn.onclick=()=>adapterDepuisEdit(id); }
+}
+
+// ── Gestion des séries ──
+function getSeries(){ return lsJ('roze_series') || []; }
+function setSeries(s){ ss('roze_series', JSON.stringify(s)); }
+
+function toggleSerieMode(checked){
+  document.getElementById('serie-config').style.display = checked ? 'block' : 'none';
+  if(checked) majSerieDropdown();
+}
+function majSerieDropdown(){
+  const dl = document.getElementById('serie-list'); if(!dl) return;
+  const series = getSeries();
+  dl.innerHTML = series.map(s => `<option value="${escapeHtml(s.titre)}">`).join('');
+}
+function onSerieTitreChange(titre){
+  if(!titre) return;
+  const series = getSeries();
+  const match = series.find(s => s.titre.toLowerCase() === titre.toLowerCase());
+  if(match){
+    const numEl = document.getElementById('serie-num');
+    if(numEl) numEl.value = match.dernierNum + 1;
+  }
+}
+function majSerieApresGeneration(){
+  const cbSerie = document.getElementById('cb-serie');
+  if(!cbSerie || !cbSerie.checked) return;
+  const titre = (document.getElementById('serie-titre')?.value||'').trim();
+  const num = parseInt(document.getElementById('serie-num')?.value||1);
+  if(!titre) return;
+  const series = getSeries();
+  const idx = series.findIndex(s => s.titre.toLowerCase() === titre.toLowerCase());
+  if(idx >= 0){ series[idx].dernierNum = Math.max(series[idx].dernierNum, num); }
+  else { series.unshift({titre, dernierNum: num}); }
+  setSeries(series.slice(0, 20));
 }
 
 // ── Hooks alternatifs ──
@@ -8622,6 +8713,136 @@ const SOUS_CATEGORIES_PAR_UNIVERS = {
   ]
 };
 
+// ── Pré-remplir la fiche client avec l'IA selon le métier ──
+async function preremplirFicheClient(){
+  const metier = ls('roze_metier') || gv('cfg-metier') || '';
+  const univers = ls('roze_univers') || '';
+  const cat = ls('roze_cat_metier') || '';
+  if(!metier && !cat){ toast('Renseigne d\'abord ton métier dans Mon Compte','err'); return; }
+
+  const btn = document.getElementById('btn-preremplir-client');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Analyse en cours…'; }
+
+  const description = [metier, cat, univers].filter(Boolean).join(', ');
+  const prompt = `Tu es expert en marketing et psychologie client. Analyse le métier suivant : "${description}".
+
+Génère une fiche du CLIENT FINAL typique de ce professionnel (pas le professionnel lui-même, mais SON client à lui).
+
+Réponds UNIQUEMENT avec un JSON valide, sans préambule, sans markdown :
+{
+  "cible": "Description du client type en 1-2 phrases (âge, situation, contexte)",
+  "objectifs": "3-4 objectifs concrets du client, séparés par des virgules",
+  "freins": "3-4 freins psychologiques ou pratiques qui empêchent le client de passer à l'action",
+  "objections": "3-4 phrases exactes que le client dit avant d'acheter (entre guillemets, séparées par des virgules)",
+  "reves": "2-3 descriptions de la transformation rêvée par le client après avoir fait appel à ce professionnel",
+  "questions": "3-4 questions fréquentes que le client pose, entre guillemets"
+}
+
+RÈGLES :
+- Sois CONCRET et SPÉCIFIQUE à ce métier, pas générique
+- Les objections doivent sonner comme de VRAIES phrases prononcées par de vrais clients
+- Les freins doivent refléter la psychologie réelle de ce type de client
+- Les rêves doivent être des transformations émotionnelles ET pratiques`;
+
+  try{
+    const res = await appelIA(prompt);
+    let clean = (res||'').replace(/```json|```/g,'').trim();
+    const data = JSON.parse(clean);
+
+    // Remplir uniquement les champs VIDES (ne pas écraser les données existantes)
+    const champs = {
+      'cfg-cible': data.cible,
+      'cfg-client-objectifs': data.objectifs,
+      'cfg-client-freins': data.freins,
+      'cfg-client-objections': data.objections,
+      'cfg-client-reves': data.reves,
+      'cfg-client-questions': data.questions
+    };
+    let remplis = 0;
+    Object.entries(champs).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if(el && !el.value.trim() && val){
+        el.value = val;
+        remplis++;
+      }
+    });
+    toast(remplis > 0 ? `✅ ${remplis} champ${remplis>1?'s':''} pré-rempli${remplis>1?'s':''} - ajuste selon TON expérience` : 'Tous les champs sont déjà remplis','ok');
+  }catch(e){
+    console.error('Pré-remplir client:', e);
+    toast('Erreur : ' + (e.message||'réponse IA invalide'),'err');
+  }
+  if(btn){ btn.disabled=false; btn.textContent='✨ Pré-remplir avec l\'IA'; }
+}
+
+// ── Placeholders fiche client adaptés au métier ──
+const PLACEHOLDERS_CLIENT = {
+  manuel: {
+    cible: "Ex : propriétaires de maisons anciennes, couples en rénovation, syndics de copropriété…",
+    objectifs: "Ex : trouver un artisan de confiance, éviter les mauvaises surprises, respecter un budget",
+    freins: "Ex : peur des devis gonflés, mauvaises expériences passées, ne sait pas évaluer la qualité du travail",
+    objections: "Ex : 'un voisin me l'a fait moins cher', 'je vais essayer moi-même', 'les délais sont trop longs'",
+    reves: "Ex : une maison enfin rénovée, un artisan qui répond au téléphone, un chantier sans stress",
+    questions: "Ex : 'Combien de temps pour une rénovation ?', 'Vous vous déplacez pour un devis ?', 'Quelles garanties ?'"
+  },
+  commerce: {
+    cible: "Ex : habitants du quartier, familles qui cherchent des produits locaux, touristes de passage…",
+    objectifs: "Ex : découvrir de nouveaux produits, faire ses courses rapidement, trouver des idées cadeaux",
+    freins: "Ex : habitude d'acheter en grande surface, perception 'trop cher', horaires pas adaptés",
+    objections: "Ex : 'c'est plus cher qu'au supermarché', 'je n'ai pas le temps de passer', 'je commande tout en ligne'",
+    reves: "Ex : un commerce de proximité avec du conseil personnalisé, des produits qu'on ne trouve pas ailleurs",
+    questions: "Ex : 'Vous faites des paniers cadeaux ?', 'Vous livrez ?', 'C'est quoi la différence avec le bio ?'"
+  },
+  bienetre: {
+    cible: "Ex : femmes 30-55 ans stressées par leur quotidien, sportifs en récupération, personnes en reconversion…",
+    objectifs: "Ex : retrouver de l'énergie, gérer son stress, prendre soin de soi sans culpabiliser",
+    freins: "Ex : manque de temps pour soi, peur que ça ne marche pas, ne sait pas par où commencer",
+    objections: "Ex : 'je n'ai pas le budget', 'une séance ça ne suffit pas', 'je ne crois pas trop à ça'",
+    reves: "Ex : se sentir enfin bien dans son corps, retrouver un sommeil réparateur, une routine qui tient",
+    questions: "Ex : 'Combien de séances pour voir des résultats ?', 'C'est remboursé ?', 'Ça fait mal ?'"
+  },
+  conseil: {
+    cible: "Ex : dirigeants de PME, créateurs d'entreprise, managers en poste qui veulent évoluer…",
+    objectifs: "Ex : structurer son activité, augmenter son chiffre d'affaires, mieux gérer son temps",
+    freins: "Ex : doute sur le ROI d'un accompagnement, a déjà essayé sans résultat, manque de temps",
+    objections: "Ex : 'je connais déjà mon métier', 'un consultant ça coûte cher pour ce que c'est', 'je verrai plus tard'",
+    reves: "Ex : une entreprise qui tourne sans être au four et au moulin, des décisions prises sereinement",
+    questions: "Ex : 'Combien de temps dure un accompagnement ?', 'Quels résultats concrets ?', 'Vous connaissez mon secteur ?'"
+  },
+  creation: {
+    cible: "Ex : marques en lancement, PME qui refont leur identité visuelle, entrepreneurs qui veulent se démarquer…",
+    objectifs: "Ex : avoir une image pro, se différencier de la concurrence, communiquer avec cohérence",
+    freins: "Ex : ne sait pas exprimer ce qu'il veut, peur du résultat, budget limité pour la créa",
+    objections: "Ex : 'mon neveu peut le faire sur Canva', 'c'est juste un logo', 'je n'ai pas de brief précis'",
+    reves: "Ex : une identité visuelle dont il est fier, des supports pro qui inspirent confiance",
+    questions: "Ex : 'Combien coûte un logo ?', 'Vous refaites aussi le site ?', 'Combien de propositions ?'"
+  },
+  services: {
+    cible: "Ex : particuliers en recherche de solution rapide, entreprises qui externalisent, associations…",
+    objectifs: "Ex : gagner du temps, déléguer en confiance, résoudre un problème précis",
+    freins: "Ex : peur de perdre le contrôle, a été déçu par un prestataire, ne sait pas comment choisir",
+    objections: "Ex : 'je préfère gérer en interne', 'c'est trop cher pour ce que c'est', 'je vais attendre'",
+    reves: "Ex : un prestataire fiable sur qui compter, ne plus avoir à y penser, un résultat pro",
+    questions: "Ex : 'Quels sont vos délais ?', 'Vous vous occupez de tout ?', 'Comment on travaille ensemble ?'"
+  }
+};
+
+function majPlaceholdersClient(){
+  const u = ls('roze_univers') || '';
+  const ph = PLACEHOLDERS_CLIENT[u] || PLACEHOLDERS_CLIENT.services;
+  const map = {
+    'cfg-cible':              ph.cible,
+    'cfg-client-objectifs':   ph.objectifs,
+    'cfg-client-freins':      ph.freins,
+    'cfg-client-objections':  ph.objections,
+    'cfg-client-reves':       ph.reves,
+    'cfg-client-questions':   ph.questions
+  };
+  Object.entries(map).forEach(([id, txt]) => {
+    const el = document.getElementById(id);
+    if(el) el.placeholder = txt;
+  });
+}
+
 function onUniversChange(univers){
   const select = document.getElementById('cfg-cat-metier');
   const lbl    = document.getElementById('lbl-cat-metier');
@@ -8655,6 +8876,7 @@ function onUniversChange(univers){
   select.style.display = '';
   if(lbl)  lbl.style.display  = '';
   if(hint) hint.style.display = '';
+  majPlaceholdersClient();
 }
 
 function resetGenForm(){
@@ -8756,6 +8978,7 @@ function chargerCompte(){
     if(troncBtn) troncBtn.classList.add('on');
   }
   setV2('cfg-cible', ls('roze_cible') || '');
+  ['objectifs','freins','objections','reves','questions'].forEach(f => setV2('cfg-client-'+f, ls('roze_client_'+f) || ''));
 
   // Registre et ton éditorial
   const reg = ls('roze_registre') || 'tutoiement';
@@ -8790,6 +9013,7 @@ function chargerCompte(){
   });
   chargerMailOptin();
   renderDatesPerso();
+  majPlaceholdersClient();
 }
 
 function sauvegarderCompte(){
@@ -8811,6 +9035,11 @@ function sauvegarderCompte(){
   // Tronc déjà sauvé via setTronc
   const cibleEl = document.getElementById('cfg-cible');
   if(cibleEl) ss('roze_cible', cibleEl.value);
+  // Fiche client structurée
+  ['objectifs','freins','objections','reves','questions'].forEach(f => {
+    const el = document.getElementById('cfg-client-'+f);
+    if(el) ss('roze_client_'+f, el.value);
+  });
 
   // Registre et ton
   const registre = document.getElementById('reg-vouvoiement')?.classList.contains('on') ? 'vouvoiement' : 'tutoiement';

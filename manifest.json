@@ -1,7 +1,7 @@
 {
-  "name": "Roze — Assistante Réseaux Sociaux",
+  "name": "Roze — Assistant Réseaux Sociaux",
   "short_name": "Roze",
-  "description": "Ton assistante réseaux sociaux personnalisée",
+  "description": "Ton assistant réseaux sociaux personnalisé",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#111111",

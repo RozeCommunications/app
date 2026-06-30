@@ -4655,7 +4655,8 @@ function matiereSemaine(){
     '2. "ET SI..." INTERDIT : JAMAIS commencer un hook ou une phrase par "Et si...". Utiliser plutôt une affirmation, un chiffre, une question directe, ou une interpellation.',
     '3. APPELS À SWIPER dans les carrousels : JAMAIS écrire "(Alors préparez-vous à enregistrer)", "(Prêt à enregistrer ce carrousel ?)", "(Swipez)", "(Suite en slide suivante)". Pour inviter à swiper, utiliser UNIQUEMENT le biais de curiosité : poser une question ouverte, annoncer un bénéfice concret sur la slide suivante, ou créer un cliffhanger naturel lié au propos.',
     '4. META-LABELS INTERDITS : JAMAIS écrire "AVIS DE PRO", "CONSEIL D\'EXPERT", "POINT CLÉ", "À RETENIR", "ASTUCE", "BON À SAVOIR" en majuscules comme titre de section. Si le contenu est un avis, le formuler naturellement : "Mon avis :", "Ce que j\'en pense :" suffit.',
-    '5. Varier les figures : métaphore, anaphore, question rhétorique directe, antithèse, chute inattendue, interpellation, liste à contraste (❌/✅).'
+    '5. ACCROCHES CARROUSEL : JAMAIS de sous-titre formulaïque type "La méthode, les étapes, et comment l\'appliquer", "Ce que personne ne vous dit", "Tout ce que vous devez savoir". Si le titre est un chiffre ou une affirmation (ex: "80% des pros publient sans stratégie"), la phrase qui suit DOIT être une suite naturelle et spécifique qui crée de la curiosité (ex: "voici comment ne plus en faire partie"). Pas de promesse creuse, un angle concret et personnel.',
+    '6. Varier les figures : métaphore, anaphore, question rhétorique directe, antithèse, chute inattendue, interpellation.'
   ].join('\n');
   // Fiche client idéal (parle directement à cette personne dans les posts)
   const clientFields = [
@@ -4769,6 +4770,7 @@ async function appelGemini(prompt){
 // ══════════════════════════════════════════
 function traduireErreurIA(err) {
   const code = err.message || '';
+  const plateforme = CFG.ia === 'gemini' ? 'Gemini' : 'Claude';
 
   if (code === 'RESEAU')
     return '📶 Pas de connexion internet. Vérifie ton réseau et réessaie.';
@@ -4780,27 +4782,27 @@ function traduireErreurIA(err) {
     return '⚙️ Clé API Gemini manquante. Va dans Mon Compte → Connexions pour la saisir.';
 
   if (code === 'CLE_INVALIDE_CLAUDE')
-    return '🔑 Clé API Claude invalide. Vérifie-la dans console.anthropic.com → API Keys.';
+    return '🔑 Clé API Claude invalide ou expirée. Vérifie-la sur console.anthropic.com → API Keys.';
 
   if (code === 'CLE_INVALIDE_GEMINI')
-    return '🔑 Clé API Gemini invalide. Vérifie-la dans aistudio.google.com → Clés API.';
+    return '🔑 Clé API Gemini invalide. Vérifie-la sur aistudio.google.com → Clés API.';
 
   if (code === 'QUOTA_CLAUDE')
-    return '💳 Crédit Claude épuisé. Recharge ton compte sur console.anthropic.com (5€ suffisent).';
+    return '💳 Crédits Claude épuisés. Recharge sur console.anthropic.com → Plans & Billing (5€ minimum).';
 
   if (code === 'QUOTA_GEMINI')
-    return '⏱️ Limite Gemini atteinte. Attends quelques minutes et réessaie.';
+    return '⏱️ Limite Gemini atteinte. Attends quelques minutes ou passe au plan payant sur aistudio.google.com.';
 
   if (code === 'SURCHARGE_CLAUDE')
-    return '⏳ Serveurs Claude surchargés. Réessaie dans 1 minute.';
+    return '⏳ Serveurs Claude surchargés. Réessaie dans 1-2 minutes.';
 
   if (code.startsWith('ERREUR_API_'))
-    return '❌ Erreur technique (' + code.replace('ERREUR_API_','') + '). Réessaie dans quelques instants.';
+    return '❌ Erreur ' + plateforme + ' (' + code.replace('ERREUR_API_','') + '). Vérifie ta clé API et tes crédits dans Mon Compte → Connexions.';
 
   if (code.startsWith('API_ERR:'))
-    return '❌ ' + code.replace('API_ERR:','');
+    return '❌ ' + plateforme + ' : ' + code.replace('API_ERR:','');
 
-  return '❌ Erreur inattendue. Vérifie ta connexion et ta clé API dans Mon Compte.';
+  return '❌ Erreur inattendue avec ' + plateforme + '. Vérifie ta connexion et ta clé API dans Mon Compte → Connexions.';
 }
 
 // Vérification clé présente selon IA sélectionnée
@@ -4820,15 +4822,20 @@ async function appelClaude(prompt){
     r = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':CFG.api,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4096,messages:[{role:'user',content:prompt}]})
     });
   } catch(e) {
     throw new Error('RESEAU');
   }
   if(r.status === 401) throw new Error('CLE_INVALIDE_CLAUDE');
+  if(r.status === 402) throw new Error('QUOTA_CLAUDE');
   if(r.status === 429) throw new Error('QUOTA_CLAUDE');
   if(r.status === 529) throw new Error('SURCHARGE_CLAUDE');
-  if(!r.ok) throw new Error('ERREUR_API_' + r.status);
+  if(!r.ok){
+    const body = await r.text().catch(()=>'');
+    console.warn('[appelClaude] HTTP', r.status, body);
+    throw new Error('ERREUR_API_' + r.status);
+  }
   const d = await r.json();
   if(d.error) throw new Error('API_ERR:' + d.error.message);
   return d.content?.[0]?.text||'';
@@ -7827,7 +7834,7 @@ async function adapterDepuisEdit(id){
     sauvegarderEtSyncPost({id:newId, reseau:reseauCible, typeContenu:it.typeContenu==='Carrousel'?'Post texte':it.typeContenu, texte:t, legende:l||it.legende||'', date:it.date, dateProg:it.dateProg||it.date, dateGen:dateAujourdhui(), dateAffiche:it.dateAffiche, statut:'À relire'});
     toast(`✅ Version ${reseauCible} créée et ajoutée au calendrier !`,'ok');
     fermerEdit(); rendreCal();
-  }catch(e){ toast('Erreur : '+e.message,'err'); }
+  }catch(e){ toast(traduireErreurIA(e),'err'); }
   if(optBtn){ optBtn.innerHTML=`🔄 Adapter à ${reseauCible}`; optBtn.onclick=()=>adapterDepuisEdit(id); }
 }
 
@@ -7881,7 +7888,7 @@ async function genHooksAlternatifs(){
     const hooks = (res||'').split('\n').filter(l=>l.trim().length>5).slice(0,3);
     list.innerHTML = hooks.map((h,i)=>`<button class="hook-pill" onclick="appliquerHook(this)">${escapeHtml(h.trim())}</button>`).join('');
     zone.style.display='block';
-  }catch(e){ toast('Erreur : '+e.message,'err'); }
+  }catch(e){ toast(traduireErreurIA(e),'err'); }
   if(btn){ btn.disabled=false; btn.textContent='🎣 Hooks alternatifs'; }
 }
 function appliquerHook(btn){
@@ -7911,7 +7918,7 @@ async function adapterPostAutreReseau(){
     document.getElementById('adapt-result').textContent = nettoyerIntroIA(res||'');
     document.getElementById('adapt-result-zone').style.display = 'block';
     document.getElementById('adapt-result-zone').dataset.reseau = reseauCible;
-  }catch(e){ toast('Erreur : '+e.message,'err'); }
+  }catch(e){ toast(traduireErreurIA(e),'err'); }
   if(btn){ btn.disabled=false; btn.textContent=`🔄 Adapter à ${reseauCible}`; }
 }
 function sauvegarderAdaptation(){
@@ -8769,7 +8776,7 @@ RÈGLES :
     toast(remplis > 0 ? `✅ ${remplis} champ${remplis>1?'s':''} pré-rempli${remplis>1?'s':''} - ajuste selon TON expérience` : 'Tous les champs sont déjà remplis','ok');
   }catch(e){
     console.error('Pré-remplir client:', e);
-    toast('Erreur : ' + (e.message||'réponse IA invalide'),'err');
+    toast(traduireErreurIA(e),'err');
   }
   if(btn){ btn.disabled=false; btn.textContent='✨ Pré-remplir avec l\'IA'; }
 }

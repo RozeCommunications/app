@@ -2906,8 +2906,8 @@ let sqpDate = null;  // date ISO de la story du jour
 function genererSuggestionStoryIA(idx, typo, dateCle){
   // Construire la suggestion localement depuis le profil - pas d'appel API
   // pour éviter de recevoir un hook de post au lieu d'un sujet court
-  const metier = localStorage.getItem('roze_tronc') || localStorage.getItem('roze_metier') || '';
-  const cible  = localStorage.getItem('roze_cible') || '';
+  const metier = localStorage.getItem('roze_metier') || localStorage.getItem('roze_cat_metier') || 'ton métier';
+  const cible  = localStorage.getItem('roze_cible') || localStorage.getItem('roze_client_objectifs') || 'tes clients';
 
   // Pools de suggestions par typo, avec variables {metier} et {cible}
   const pools = {
@@ -2915,22 +2915,22 @@ function genererSuggestionStoryIA(idx, typo, dateCle){
       `Parler d'un client qui hésitait → ce qui l'a décidé → invitation à te contacter`,
       `Montrer le "avant" d'un client, sa situation, puis ce que ça a changé pour lui`,
       `Évoquer la question que te posent le plus souvent tes clients → ta réponse directe`,
-      `Partager ce que tu aurais voulu savoir avant de te lancer dans ${metier||'ton métier'}`,
-      `Décrire une douleur concrète de ${cible||'ta cible'} → ce que tu proposes → comment prendre RDV`,
+      `Partager ce que tu aurais voulu savoir avant de te lancer dans ton métier de ${metier}`,
+      `Décrire une douleur concrète de ${cible} → ce que tu proposes → comment prendre RDV`,
     ],
     lifestyle: [
       `Une scène de ce matin dans ton quotidien pro qui dit quelque chose sur qui tu es`,
-      `Une conviction que tu as sur ${metier||'ton métier'} que peu de gens dans ton secteur défendent`,
+      `Une conviction que tu as sur le métier de ${metier} que peu de gens dans ton secteur défendent`,
       `Ce que tu fais différemment des autres dans ta façon de travailler`,
       `Un moment cette semaine qui t'a rappelé pourquoi tu fais ce métier`,
-      `Ton avis tranché sur une idée reçue que ${cible||'tes clients'} ont souvent`,
+      `Ton avis tranché sur une idée reçue que ${cible} ont souvent`,
     ],
     valeur: [
-      `L'erreur la plus fréquente que font ${cible||'tes clients'} - et comment l'éviter`,
-      `1 astuce concrète sur ${metier||'ton domaine'} que peu de gens connaissent`,
-      `Ce que ${cible||'tes clients'} font souvent à l'envers - et la bonne façon de faire`,
+      `L'erreur la plus fréquente que font ${cible} - et comment l'éviter`,
+      `1 astuce concrète liée à ton métier de ${metier} que peu de gens connaissent`,
+      `Ce que ${cible} font souvent à l'envers - et la bonne façon de faire`,
       `La question que tu poses à chaque nouveau client et pourquoi elle change tout`,
-      `3 choses à vérifier avant de ${cible ? 'choisir un ' + metier : 'démarrer'}`,
+      `3 choses à vérifier avant de faire appel à un professionnel comme toi`,
     ]
   };
 
@@ -3305,6 +3305,15 @@ function toggleDuoTab(id){
 // LOGO - upload local en base64 (fiable, pas de CORS)
 // ══════════════════════════════════════════════════════
 // Compresse une image base64 pour tenir dans localStorage
+// Convertit un lien de partage Google Drive en URL directe utilisable comme img src
+function driveUrlToDirectUrl(url){
+  if(!url) return '';
+  url = url.trim();
+  if(!url.includes('drive.google.com') && !url.includes('docs.google.com')) return url;
+  const m = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  return m ? 'https://lh3.googleusercontent.com/d/' + m[1] : url;
+}
+
 function compresserImage(b64, maxW, maxH, q){
   return new Promise(r => {
     const img = new Image();
@@ -3349,13 +3358,19 @@ function clearLogoLocal(){
 }
 
 function initLogoPreview(){
+  // Priorité : base64 uploadé (toujours fiable) → URL convertie
   const b64 = localStorage.getItem('roze_logo_base64');
+  const url = localStorage.getItem('roze_logo_url');
   if(b64){
     CFG.logoUrl = b64;
     const preview = document.getElementById('cfg-logo-preview');
     const clearBtn = document.getElementById('cfg-logo-clear');
     if(preview){ preview.src = b64; preview.style.display = 'inline-block'; }
     if(clearBtn) clearBtn.style.display = 'inline-block';
+  } else if(url){
+    CFG.logoUrl = driveUrlToDirectUrl(url);
+    const preview = document.getElementById('cfg-logo-preview');
+    if(preview){ preview.src = CFG.logoUrl; preview.style.display = 'inline-block'; preview.onerror=()=>{preview.style.display='none';}; }
   }
 }
 
@@ -9100,8 +9115,8 @@ function sauvegarderCompte(){
     }
   });
   localStorage.setItem('roze_logo_url',     gv('cfg-logo-url'));
-  // Logo : base64 uploadé toujours prioritaire sur l'URL manuelle
-  CFG.logoUrl = localStorage.getItem('roze_logo_base64') || gv('cfg-logo-url') || '';
+  // Logo : base64 uploadé prioritaire, sinon URL convertie
+  CFG.logoUrl = localStorage.getItem('roze_logo_base64') || driveUrlToDirectUrl(gv('cfg-logo-url')) || '';
   localStorage.setItem('roze_nom',          CFG.nom);
   localStorage.setItem('roze_entreprise',   CFG.entreprise);
   localStorage.setItem('roze_metier',       CFG.metier);

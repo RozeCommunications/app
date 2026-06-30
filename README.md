@@ -1,2 +1,2 @@
 # app
-Roze Communications - Assistante Réseaux Sociaux
+Roze Communications - Assistant Réseaux Sociaux

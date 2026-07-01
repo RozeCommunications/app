@@ -5613,7 +5613,7 @@ function renderLogoSlide(idx){
 
 // Formate le corps avec les paires ❌/✅ en 2 colonnes
 // Nettoie les meta-labels IA des titres et sous-titres de slides
-const META_LABELS_RE = /^(AVIS DE PRO|Avis de pro|CONSEIL D'EXPERT|Conseil d'expert|POINT CLÉ|Point clé|À RETENIR|BON À SAVOIR|ASTUCE|LA RÈGLE D'OR|ATTENTION|IMPORTANT|RAPPEL|EN RÉSUMÉ|LE SAVIEZ-VOUS)\s*[:.\-–]\s*/i;
+const META_LABELS_RE = /^(AVIS DE PRO|Avis de pro|CONSEIL D'EXPERT|Conseil d'expert|POINT CLÉ|Point clé|À RETENIR|BON À SAVOIR|ASTUCE|LA RÈGLE D'OR|ATTENTION|IMPORTANT|RAPPEL|EN RÉSUMÉ|LE SAVIEZ-VOUS|Tension narrative[^.]*|POINT DE VUE PERSONNEL)\s*[:.\-–]\s*/i;
 function nettoyerMetaLabels(texte){
   return texte ? texte.replace(META_LABELS_RE, '').trim() : texte;
 }
@@ -5679,15 +5679,14 @@ function renderCvSlide(s, idx, total, c1, c2, ptit, pcorp, opts){
     <div class="cv-slide-num">${idx+1}/${total}</div>
     <div class="cv-slide-inner" style="font-family:'${pcorp}',sans-serif;color:${tcoul};${isRespiration ? 'align-items:center;text-align:center;' : ''}">
       ${(s.type==='conclusion' && CFG.logoUrl) ? renderLogoSlide(idx) : ''}
-      <!-- type masqué - ne s'affiche pas sur les slides -->
-      ${sstitre ? `<div class="cv-slide-sstitre" ${editAttr}
-        data-idx="${idx}" data-field="sousTitre"
-        oninput="cvUpdateSlide(${idx},'sousTitre',this.innerText)">${escapeHtml(sstitre)}</div>` : ''}
       <div class="cv-slide-titre"
         style="font-family:'${ptit}',serif;${isRespiration ? 'color:'+accent+';font-style:italic;' : ''}"
         ${editAttr}
         data-idx="${idx}" data-field="titre"
         oninput="cvUpdateSlide(${idx},'titre',this.innerText)">${rendreTitreAccent(nettoyerMetaLabels(s.titre||''), accent, fond)}</div>
+      ${(sstitre && s.type==='hook') ? `<div class="cv-slide-sstitre" ${editAttr}
+        data-idx="${idx}" data-field="sousTitre"
+        oninput="cvUpdateSlide(${idx},'sousTitre',this.innerText)">${escapeHtml(sstitre)}</div>` : ''}
       ${corpsHtml}
     </div>
   </div>`;

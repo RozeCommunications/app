@@ -1699,22 +1699,24 @@
       <span style="font-size:.75rem;color:var(--rose-clair);font-weight:600;flex-shrink:0;">Modifier ›</span>
     </div>
 
-    <!-- 2 gros boutons -->
-    <div class="gen-2btns">
-      <div class="gen-bigbtn primaire" onclick="genSemaine()">
+    <!-- Boutons de génération -->
+    <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.5rem;">
+      <div class="gen-bigbtn primaire" onclick="genSemaine()" style="width:100%;">
         <span class="gb-ic">🗓️</span>
-        <span class="gb-titre">Semaine complète</span>
+        <span class="gb-titre">Générer ma semaine entière</span>
         <span class="gb-desc">Tous les posts + stories en 1 clic</span>
       </div>
-      <div class="gen-bigbtn" onclick="togglePanel()">
-        <span class="gb-ic">✨</span>
-        <span class="gb-titre">1 post</span>
-        <span class="gb-desc">Choisir réseau + format</span>
-      </div>
-      <div class="gen-bigbtn" onclick="toggleStoryPanel()">
-        <span class="gb-ic">📱</span>
-        <span class="gb-titre">1 story</span>
-        <span class="gb-desc">Ta prochaine story en 1 clic</span>
+      <div class="gen-2btns">
+        <div class="gen-bigbtn" onclick="toggleStoryPanel()">
+          <span class="gb-ic">📱</span>
+          <span class="gb-titre">1 story</span>
+          <span class="gb-desc">Ta prochaine story en 1 clic</span>
+        </div>
+        <div class="gen-bigbtn" onclick="togglePanel()">
+          <span class="gb-ic">✨</span>
+          <span class="gb-titre">1 post</span>
+          <span class="gb-desc">Choisir réseau + format</span>
+        </div>
       </div>
     </div>
 
@@ -1726,21 +1728,21 @@
       <span class="creer-lbl">📅 Date de publication</span>
       <input type="date" id="gen-date" style="margin-bottom:.2rem;font-size:16px;width:100%;max-width:100%;box-sizing:border-box;display:block;"/>
 
-      <!-- Réseau social - en premier -->
+      <!-- Réseau social - boutons plus grands -->
       <span class="creer-lbl">Réseau social</span>
-      <div class="format-chips" id="gen-reseaux">
-        <div class="chip on" onclick="setGenReseau(this,'LinkedIn')">💼 LinkedIn</div>
-        <div class="chip" onclick="setGenReseau(this,'Instagram')">📸 Instagram</div>
+      <div class="format-chips" id="gen-reseaux" style="gap:.5rem;">
+        <div class="chip on" onclick="setGenReseau(this,'LinkedIn')" style="flex:1;text-align:center;padding:.6rem .8rem;font-size:.85rem;">💼 LinkedIn</div>
+        <div class="chip" onclick="setGenReseau(this,'Instagram')" style="flex:1;text-align:center;padding:.6rem .8rem;font-size:.85rem;">📸 Instagram</div>
       </div>
 
-      <!-- Pilier de contenu - en second -->
+      <!-- Pilier de contenu -->
       <span class="creer-lbl">Pilier de contenu</span>
       <div class="piliers-row" id="gen-piliers">
         <div class="pilier-chip" onclick="setGenPilier(this,'visibilite')"><span class="pi">🔭</span><span class="pn">Visibilité</span></div>
         <div class="pilier-chip" onclick="setGenPilier(this,'autorite')"><span class="pi">👑</span><span class="pn">Autorité</span></div>
         <div class="pilier-chip" onclick="setGenPilier(this,'expertise')"><span class="pi">🧠</span><span class="pn">Expertise</span></div>
         <div class="pilier-chip" onclick="setGenPilier(this,'activite')"><span class="pi">🏪</span><span class="pn">Activité</span></div>
-        <div class="pilier-chip pilier-chip-autre" onclick="setGenPilier(this,'autre')"><span class="pi">✏️</span><span class="pn">Autre / Série personnalisée</span></div>
+        <div class="pilier-chip pilier-chip-autre" onclick="setGenPilier(this,'autre')" style="grid-column:span 2;"><span class="pi">✏️</span><span class="pn">Autre / Personnaliser</span></div>
       </div>
       <div class="pilier-autre-input" id="gen-pilier-autre-zone">
         <input type="text" id="gen-pilier-autre" placeholder="Ex : Série Excel 30 secondes, Lancement offre…" style="font-size:16px;"/>
@@ -2647,7 +2649,6 @@
     </div>
     <div class="regen-row">
       <button class="btn btn-ghost btn-sm" onclick="regenPost()">🔄 Regénérer le sujet</button>
-      <button class="btn btn-ghost btn-sm" onclick="regenManuel()">✏️ Saisir un sujet</button>
     </div>
     <div class="mini-loader" id="loader-regen"><div class="mini-ring"></div><span>Regénération en cours…</span></div>
 
@@ -3287,6 +3288,7 @@ function go(id, btn){
   if(id==='p-calendrier'){
     if(document.getElementById('stories-panel').classList.contains('on')) majStoriesPanel();
     rendreCal();
+    if(CFG.as) syncPostsDepuisSheets().catch(()=>{});
   }
   if(id==='p-accueil') majAccueil();
   if(id==='p-generer') majGenFormats(getGenReseau());
@@ -3655,13 +3657,11 @@ function majGenFormats(reseau){
     {fmt:'Post texte',ic:'📝'},{fmt:'Carrousel',ic:'🎠'},{fmt:'Vidéo',ic:'🎬'},{fmt:'Photo',ic:'🖼️'}
   ];
   const igFormats = [
-    // Instagram : pas de "Post texte" - format inexistant sur ce réseau
     {fmt:'Photo',ic:'🖼️'},{fmt:'Carrousel',ic:'🎠'},{fmt:'Réel',ic:'🎬'}
   ];
   const fmts = reseau === 'LinkedIn' ? liFormats : igFormats;
   zone.innerHTML = fmts.map((f,i)=>
-    `<div class="chip${i===0?' on':''}" data-fmt="${f.fmt}"
-      onclick="this.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));this.classList.add('on');">
+    `<div class="chip${i===0?' on':''}" data-fmt="${f.fmt}" onclick="setGenFormat(this)">
       ${f.ic} ${f.fmt}
     </div>`
   ).join('');
@@ -8478,20 +8478,18 @@ function majCreerFormats(reseau){
   const zone = document.getElementById('creer-formats');
   const liFormats = [
     {fmt:'Post texte', ic:'📝'},
-    {fmt:'Carrousel',  ic:'🎠', badge:'📐 3:4'},
+    {fmt:'Carrousel',  ic:'🎠'},
     {fmt:'Vidéo',      ic:'🎬'},
     {fmt:'Photo',      ic:'🖼️'},
   ];
   const igFormats = [
     {fmt:'Photo',      ic:'🖼️'},
-    {fmt:'Carrousel',  ic:'🎠', badge:'📐 3:4'},
+    {fmt:'Carrousel',  ic:'🎠'},
     {fmt:'Réel',       ic:'🎬'},
-    {fmt:'Post texte', ic:'📝'},
   ];
   const fmts = reseau === 'LinkedIn' ? liFormats : igFormats;
   zone.innerHTML = fmts.map((f, i) =>
-    `<div class="chip${i===0?' on':''}" data-fmt="${f.fmt}"
-      onclick="this.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));this.classList.add('on');">
+    `<div class="chip${i===0?' on':''}" data-fmt="${f.fmt}" onclick="setCreerFormat(this)">
       ${f.ic} ${f.fmt}
     </div>`
   ).join('');
